@@ -26,24 +26,6 @@ Enter four command line arguments (e.g. simu 1234 1234 4.5 5.0):
 
 ****************************************************/
 
-/*
-
-WHAT YOU MUST ADD TO MAKE THIS PROGRAM WORK
--------------------------------------------
-
-1) Find the correct parameter values "a" and "b" (command line
-parameters) with help of some analytical work (see the assignments for
-more information).
-
-2) Add the values of the stationary states "u_0" and "v_0" (answers to
-Problem 1) and the amplitude of initial noise "var" (e.g. .01).
-
-3) Add the calculation of the next iteration step (Euler's method) for
-"u" and "v", i.e., implement Equation 8 of the instructions using the
-kinetics of Equation 3.
-
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
