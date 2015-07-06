@@ -9,49 +9,61 @@ gamma = 0.2;
 rho   = 0.03;
 Dn    = 0.1;
 Dc    = 0.3;
-% Dot cont parameter.
-s = 1;
+% Bifurcataion parameter.
+s = 0.5;
 
 length = 3;
-tend = 5;
+tend = 0.1;
 
-dt = 0.001;
-dx = 0.1;
-J = 20;
+dt = 0.00001;
+J = 100;
+gps = 2:(J-1);
+
+steps = floor(tend/dt)
 
 %there are only cells at the center.
 [x,y] = meshgrid(linspace(0,1,J));
-N = 15*(x - x.^2).*(y-y.^2).*exp(-50 .*((x - 0.5).^2 + (y - 0.5).^2 ));
+%N = 15*(x - x.^2).*(y-y.^2).*exp(-50 .*((x - 0.5).^2 + (y - 0.5).^2 ));
+
+N = 0.*x + 0.*y;
+N((J/2-10):(J/2+10),(J/2-10):(J/2+10)) = 1;
 Nnew = N;
 %transmitters are zero initially.
 C = 0.*x+0.*y;
 Cnew = C;
+iChem = C;
 
 %% start computation!
-for t = 1:floor(tend/dt)
+for t = 1:steps
     
-    for i = 2:(J-1)
-        for j = 2:(J-1)
+      %compute the inner chemotaxis term.
+      iChem(gps,gps) = N(gps,gps) ./ ((1 + beta.*N(gps,gps)).^2) ...
+              .* (C(gps+1,gps) + C(gps-1,gps) + C(gps,gps+1) + ...
+              C(gps-1,gps) - 4.*C(gps,gps)./(dx^2)); 
             
-        Nnew(i,j) = N(i,j) + dt*( Dn/(dx^2)*(N(i+1,j) + N(i-1,j) + ...
-                    N(i,j+1) + N(i,j-1) - 4*N(i,j))  ...
-                    - (N(i,j) * alpha) / (1 + beta*C(i,j)) *    ...
-                    (N(i-1,j) + N(i+1,j) + N(i,j+1) + N(i,j-1)) *  ... 
-                    (C(i-1,j) + C(i+1,j) + C(i,j+1) + C(i,j-1))/(dx) ...
-                    + rho*N(i,j)*( 1  - N(i,j)/s));
+                  %diffusion term.
+      Nnew(gps,gps) = N(gps,gps) + dt.*( Dn./(dx^2).*(N(gps+1,gps) + N(gps-1,gps) + ...
+                  N(gps,gps+1) + N(gps,gps-1) - 4.*N(gps,gps))  ...
+                  ... %chemotaxis term.
+                  - (alpha./(dx.^2)).*(iChem(gps+1,gps) + iChem(gps-1,gps) ...
+                  + iChem(gps,gps+1) + iChem(gps,gps-1) - 4.*iChem(gps,gps)) ...
+                  ... %logistic growth.
+                  + rho.*N(gps,gps).*( 1  - N(gps,gps)./s));
+        
+      %Only the growth model.
+      %Nnew(i,j) = N(i,j) + dt*( rho*N(i,j)*( 1  - N(i,j)/s));
                 
-        Cnew(i,j) = C(i,j) + dt*( Dc * (C(i+1,j) + C(i-1,j) + C(i,j+1) + ...
-                    C(i,j-1) - 4*C(i,j))/(dx^2) ...
-                    + s*N(i,j)/(1 + gamma*N(i,j))  ...
-                    - C(i,j)*N(i,j)/(1 + gamma*C(i,j)) );
+      Cnew(gps,gps) = C(gps,gps) + dt*( Dc/(dx^2) .* (C(gps+1,gps) + ...
+                  C(gps-1,gps) + C(gps,gps+1) + ...
+                  C(gps,gps-1) - 4.*C(gps,gps))  ...
+                  + s.*N(gps,gps)./(1 + gamma.*N(gps,gps))  ...
+                  - C(gps,gps).*N(gps,gps)./(1 + gamma.*C(gps,gps)) );
     
-        end
-    end
-    N = Nnew;
-    C = Cnew;
+   N = Nnew;
+   C = Cnew;
 end
 figure(1)
-surf(N);
+surf(N);shading('flat');
 figure(2)
-surf(C);
+surf(C);shading('flat');
 
