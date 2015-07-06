@@ -17,13 +17,13 @@ r = 0.9;
 %r = 0;
 
 length = 3;
-tend = 20;
+tend = 0.1;
 
 dt = 0.005;
-J = 300;
+J = 40;
 idx = 2:(J-1);
 
-dx = length/J;
+dx = length/J
 
 steps = floor(tend/dt)
 
