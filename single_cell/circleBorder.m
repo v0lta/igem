@@ -19,13 +19,19 @@ classdef circleBorder
 
 			r=sqrt(x^2+y^2);
 
+			%if outside border
 			if r>=obj.radius
+				%rescale to border
 				bacterium.xCoordinate=x*obj.radius/r;
 				bacterium.yCoordinate=y*obj.radius/r;
+			
+				%randomize angle away from border
+				theta=acos(1-bacterium.STEP_SIZE^2/(2*obj.radius^2));
+				bacterium.angle=bacterium.angle+pi/2+theta/2+rand*(pi-theta);
+
+				%reset counter
+				bacterium.runCounter=bacterium.MAX_RUN_COUNTER;
 			end
-			theta=acos(1-bacterium.STEP_SIZE^2/(2*obj.radius^2));
-			bacterium.angle=bacterium.angle+pi/2+theta/2+rand*(pi-theta);
-			bacterium.runCounter=bacterium.MAX_RUN_COUNTER;
 		end
 
 

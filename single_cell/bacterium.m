@@ -11,9 +11,9 @@ classdef bacterium < handle
 	end
 	
 	properties (Constant)
-		MAX_RUN_COUNTER=10;
+		MAX_RUN_COUNTER=45;
 		%10 µm per step size
-		STEP_SIZE=1000;
+		STEP_SIZE=10;
 		%STEP_SIZE=10;
 	end
 
@@ -23,7 +23,7 @@ classdef bacterium < handle
 			obj.yCoordinate=yCoordinate;
 			obj.angle=rand*2*pi;
 			obj.runCounter=obj.MAX_RUN_COUNTER;
-			path=[xCoordinate,yCoordinate];
+			obj.path=[xCoordinate,yCoordinate];
 		end
 
 		function resetToTumble(obj)
@@ -42,7 +42,9 @@ classdef bacterium < handle
 			obj.runCounter=obj.runCounter-1;
 			if obj.runCounter==0
 				%disp('test')
-				obj.resetToTumble();
+				%obj.resetToTumble();
+				obj.randomizeAngle();
+				obj.runCounter=obj.MAX_RUN_COUNTER;
 			end
 		end
 

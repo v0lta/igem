@@ -13,12 +13,14 @@ stripes=[stripes stripe(2e4,2.3e4)];
 stripes=[stripes stripe(2.5e4,2.8e4)];
 border=circleBorder(3e4);
 
+
 %stripes=[stripes stripe(0,0.8e3)];
 %stripes=[stripes stripe(1e3,1.3e3)];
 %stripes=[stripes stripe(1.5e3,1.8e3)];
 %stripes=[stripes stripe(2e3,2.3e3)];
 %stripes=[stripes stripe(2.5e3,2.8e3)];
 %border=circleBorder(1.5e3);
+%border=circleBorder(3e3);
 
 %Add patterns and border
 for stripe=stripes
@@ -31,7 +33,7 @@ p.plot(fig);
 axis equal;
 
 %timesteps
-for N=1e3
+for N=1e8
 	disp([num2str(N) ' timesteps']);
 	%disp('test');
 	tic;
