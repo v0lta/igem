@@ -4,13 +4,13 @@
 %Model.
 
 Dn = 1/10;
-Ds = 1.5;
+Ds = 1/10;
 k2 = 10^-3;
 
-dt = 0.0001;
-tend = 1;
+dt = 0.00001;
+tend = 0.1;
 Xlen = 1;
-J = 20;
+J = 30;
 
 dx = Xlen/J;
 steps = tend/dt
@@ -21,7 +21,7 @@ S = zeros(int32(steps),J);
 preDif = zeros(1,J);
 
 constK = 2;
-ks = 0.9;
+ks = 0.8;
 idx = 2:1:(J-1);
 
 
@@ -31,7 +31,7 @@ x = meshgrid(linspace(0,Xlen,J));
 
 N(1,(J/2-2):(J/2+2)) = 2;
 
-S(1,:) = 1;
+S(1,:) = 0.1;
 
 
 for t = 1:1:steps
