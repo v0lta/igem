@@ -7,10 +7,14 @@ classdef chemotaxisModel<handle
 		mu;			%diffusion constant
 		kappa;		%chemotactic sensitivity constant
 		d;			%consumption rate
+		Ds;			%Diffusion constant of nutrient
 
 		%kernel function and bandwidth
 		kernelfun;
 		bandwidth;
+
+		%timestep
+		timestep;
 
 		%array of density array & nutrient fields
 		rhoArray;
@@ -19,14 +23,16 @@ classdef chemotaxisModel<handle
 	end
 
 	methods
-		function obj=chemotaxisModel(bacteriaPop,nutrientField,mu,kappa,d,kernelfun,bandwidth)
+		function obj=chemotaxisModel(bacteriaPop,nutrientField,mu,kappa,d,Ds,kernelfun,bandwidth,timestep)
 			obj.bacteriaPop=bacteriaPop;
 			obj.nutrientField=nutrientField;
 			obj.mu=mu;
 			obj.kappa=kappa;
 			obj.d=d;
+			obj.Ds=Ds;
 			obj.kernelfun=kernelfun;
 			obj.bandwidth=bandwidth;
+			obj.timestep=timestep;
 
 			%record initial density function, coordinates & nutrient fields
 			domain=nutrientField.getdomain();
@@ -36,16 +42,34 @@ classdef chemotaxisModel<handle
 			obj.nutrientArray=nutrientField.getconcentration();	%nutrient field
 		end
 
+		%function update(obj)
+		%	%calculate bacteria density
+		%	rho=obj.bacteriaPop.bacteriadensity(obj.kernelfun,obj.bandwidth);
+		%	%update nutrient field
+		%	obj.nutrientField.update(rho,obj.d);
+		%	%record nutrient field
+		%	obj.nutrientArray(end+1,:)=obj.nutrientField.getconcentration();
+
+		%	%update bacteria positions
+		%	obj.bacteriaPop.update(obj.nutrientField,obj.mu,obj.kappa);
+		%	%record rho
+		%	domain=obj.nutrientField.getdomain();
+		%	rho=obj.bacteriaPop.bacteriadensity(obj.kernelfun,obj.bandwidth);
+		%	obj.rhoArray(end+1,:)=rho(domain);
+		%	%record coordinates
+		%	obj.coordinateMatrix(end+1,:)=obj.bacteriaPop.coordinates();
+		%end
+
 		function update(obj)
+			%update bacteria positions
+			obj.bacteriaPop.update(obj.nutrientField,obj.mu,obj.kappa);
 			%calculate bacteria density
 			rho=obj.bacteriaPop.bacteriadensity(obj.kernelfun,obj.bandwidth);
 			%update nutrient field
-			obj.nutrientField.update(rho,obj.d);
+			obj.nutrientField.update(rho,obj.d,obj.Ds,obj.timestep);
+
 			%record nutrient field
 			obj.nutrientArray(end+1,:)=obj.nutrientField.getconcentration();
-
-			%update bacteria positions
-			obj.bacteriaPop.update(obj.nutrientField,obj.mu,obj.kappa);
 			%record rho
 			domain=obj.nutrientField.getdomain();
 			rho=obj.bacteriaPop.bacteriadensity(obj.kernelfun,obj.bandwidth);
