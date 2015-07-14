@@ -66,14 +66,11 @@ classdef chemotaxisModel<handle
 			%calculate bacteria density
 			rho=obj.bacteriaPop.bacteriadensity(obj.kernelfun,obj.bandwidth);
 
-			%bacteria density at boundaries at previous timestep
-			%rhoBoundaries=[obj.rhoArray(end-1,1) obj.rhoArray(end-1,end)]
-
 			%update nutrient field
 			obj.nutrientField.update(rho,obj.d,obj.Ds,obj.timestep);
-
 			%record nutrient field
 			obj.nutrientArray(end+1,:)=obj.nutrientField.getconcentration();
+
 			%record rho
 			domain=obj.nutrientField.getdomain();
 			rho=obj.bacteriaPop.bacteriadensity(obj.kernelfun,obj.bandwidth);
@@ -101,6 +98,7 @@ classdef chemotaxisModel<handle
 			domain=obj.nutrientField.getdomain();
 			nutrient=obj.nutrientArray(k,:);
 			%plot(domain,nutrient);
+			%multiply for scaling
 			plot(domain,nutrient*50);
 
 			hold off;

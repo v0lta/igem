@@ -8,7 +8,7 @@ classdef nutrient<handle
 	end
 
 	methods
-		function obj=nutrient(domain,concentration,boundaries)
+		function obj=nutrient(domain,concentration,boundaries=[0 0])
 		obj.domain=domain;
 		obj.concentration=concentration;
 		obj.calculategradient();
@@ -133,6 +133,13 @@ classdef nutrient<handle
 		obj.concentration=(A\b')';
 		%fixed concentration
 		%obj.concentration=[obj.leftBoundary,(A\b')',obj.rightBoundary];
+
+		%correct for negative concentrations
+		for i=1:n
+			if obj.concentration(i)<1e-5
+				obj.concentration(i)=1e-5;
+			end
+		end
 
 		%update gradient
 		obj.calculategradient();
