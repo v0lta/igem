@@ -101,40 +101,38 @@ classdef nutrient<handle
 
 		function update(obj,bacteriaDensity,consumptionRate,Ds,dt)
 		%Update concentration based on bacteria density, consumption rate diffusion constant of nutrient and timestep
-		%disp('length concentration');
-		%disp(num2str(length(obj.concentration)));
-		%disp('length domain');
-		%disp(num2str(length(obj.domain)));
 		n=length(obj.domain);
 		dx=obj.domain(2)-obj.domain(1);
 		r=dt/dx^2;
 
 		%bacteria density
-		rho=bacteriaDensity(obj.domain);
-		%disp('length rho');
-		%disp(num2str(length(rho)));
+		%zero flux
+		rho=bacteriaDensity(obj.domain(1:end));
+		%fixed concentration
+		%rho=bacteriaDensity(obj.domain(2:end-1));
 
 		%matrix
-		A=diag(ones(n,1)*(1+2*Ds*r))+diag(ones(n-1,1)*(-Ds*r),1)+diag(ones(n-1,1)*(-Ds*r),-1);
+		%Zero flux boundary condition
+		A=diag(ones(n,1)*(1+2*Ds*r));
+		A=A+diag([-2*Ds*r;ones(n-2,1)*(-Ds*r)],1);
+		A=A+diag([ones(n-2,1)*(-Ds*r);-2*Ds*r],-1);
 		b=obj.concentration;
-		b(1)=b(1)+Ds*r*obj.leftBoundary;
-		b(n)=b(n)+Ds*r*obj.rightBoundary;
-		%disp('length b');
-		%disp(num2str(length(b)));
-		%disp('length rho*consumptionRate*dt');
-		%disp(num2str(length(rho*consumptionRate*dt)));
+
+		%fixed concentration boundary condition
+		%A=diag(ones(n-2,1)*(1+2*Ds*r));
+		%A=A+diag(ones(n-3,1)*(-Ds*r),1);
+		%A=A+diag(ones(n-3,1)*(-Ds*r),-1);
+		%b=obj.concentration(2:end-1);
+		%b(1)=b(1)+Ds*r*obj.leftBoundary;
+		%b(end)=b(end)+Ds*r*obj.rightBoundary;
+
 		b=b-rho*consumptionRate*dt;
-		%[k,l]=size(b);
-		%disp(['size of b: ' num2str(k) ' x ' num2str(l)]);
-		%[k,l]=size(A);
-		%disp(['size of A: ' num2str(k) ' x ' num2str(l)]);
 
 		%Calculate new concentration field
-		%disp('A');
-		%A;
-		%disp('b');
-		%b;
+		%zero flux
 		obj.concentration=(A\b')';
+		%fixed concentration
+		%obj.concentration=[obj.leftBoundary,(A\b')',obj.rightBoundary];
 
 		%update gradient
 		obj.calculategradient();

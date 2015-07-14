@@ -53,7 +53,7 @@ end
 %model.plot(k,fig);
 
 %vidObj=VideoWriter('simulation2.avi');
-vidObj=VideoWriter('simulation_low_diffusion.avi');
+vidObj=VideoWriter('simulation_zero_flux.avi');
 set(vidObj,'FrameRate',5);
 open(vidObj);
 
