@@ -3,12 +3,17 @@ classdef nutrient<handle
 		domain;
 		concentration;
 		gradient;
+		leftBoundary;
+		rightBoundary;
 	end
 
 	methods
-		function obj=nutrient(domain,concentration)
+		function obj=nutrient(domain,concentration,boundaries)
 		obj.domain=domain;
 		obj.concentration=concentration;
+		obj.calculategradient();
+		obj.leftBoundary=boundaries(1);
+		obj.rightBoundary=boundaries(2);
 		end
 		
 		function domain=getdomain(obj)
@@ -34,8 +39,14 @@ classdef nutrient<handle
 		function interpolatedValue=interpol(obj,field,xCoordinate)
 		%interpolate nutrient concentration at bacterium position
 
+		%xCoordinate
+		%xmin=min(obj.domain)
+		%xmax=max(obj.domain)
+
 		x=obj.domain;
 		C=field;
+		%length(C)
+		%C(1001)
 
 		n=length(x);
 
@@ -88,18 +99,40 @@ classdef nutrient<handle
 		interpolatedGradient=obj.interpol(field,xCoordinate);
 		end
 
-		function update(obj,bacteriaDensity,consumptionRate)
-		%Update concentration based on bacteria density and consumption rate
+		function update(obj,bacteriaDensity,consumptionRate,Ds,dt)
+		%Update concentration based on bacteria density, consumption rate diffusion constant of nutrient and timestep
 		n=length(obj.domain);
-		for i=1:n
-			x=obj.domain(i);
-			rho=bacteriaDensity(x);
-			obj.concentration(i)=obj.concentration(i)-consumptionRate*rho;
-			%prevent negative concentration
-			if obj.concentration(i)<0.01
-				obj.concentration(i)=0.01;
-			end
-		end
+		dx=obj.domain(2)-obj.domain(1);
+		r=dt/dx^2;
+
+		%bacteria density
+		%zero flux
+		rho=bacteriaDensity(obj.domain(1:end));
+		%fixed concentration
+		%rho=bacteriaDensity(obj.domain(2:end-1));
+
+		%matrix
+		%Zero flux boundary condition
+		A=diag(ones(n,1)*(1+2*Ds*r));
+		A=A+diag([-2*Ds*r;ones(n-2,1)*(-Ds*r)],1);
+		A=A+diag([ones(n-2,1)*(-Ds*r);-2*Ds*r],-1);
+		b=obj.concentration;
+
+		%fixed concentration boundary condition
+		%A=diag(ones(n-2,1)*(1+2*Ds*r));
+		%A=A+diag(ones(n-3,1)*(-Ds*r),1);
+		%A=A+diag(ones(n-3,1)*(-Ds*r),-1);
+		%b=obj.concentration(2:end-1);
+		%b(1)=b(1)+Ds*r*obj.leftBoundary;
+		%b(end)=b(end)+Ds*r*obj.rightBoundary;
+
+		b=b-rho*consumptionRate*dt;
+
+		%Calculate new concentration field
+		%zero flux
+		obj.concentration=(A\b')';
+		%fixed concentration
+		%obj.concentration=[obj.leftBoundary,(A\b')',obj.rightBoundary];
 
 		%update gradient
 		obj.calculategradient();

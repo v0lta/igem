@@ -3,7 +3,8 @@ close all;clear all;clc;
 N=200;			%time steps
 nBacteria=100;	%number of bacteria
 %k=20;			%plot kth iteration
-domain=-10:0.01:10;%domain
+domain=[-10:0.1:10];%domain
+%domain=[0:5];%domain
 
 
 %initialize bacteria
@@ -18,12 +19,15 @@ bacteriaPop=bacteriaPopulation(bacteria,domain);
 
 %initialize nutrient field
 concentration=domain*0+1;
-nutrientField=nutrient(domain,concentration);
+%boundary conditions
+boundaries=[1 1];
+nutrientField=nutrient(domain,concentration,boundaries);
 
 %define constants
 mu=1/30;	%diffusion constant
 kappa=2;	%chemotactic sensitivity constant
 d=1e-3;		%consumption rate
+Ds=1/300;	%Diffusion constant of nutrient
 
 %define kernel function and bandwidth
 addpath ..\..\..\kernel;
@@ -33,8 +37,11 @@ addpath ..\..\..\kernel;
 kernelfun=@epanechnikov;
 bandwidth=0.25;
 
+%define timestep
+timestep=1;
+
 %initialize model
-model=chemotaxisModel(bacteriaPop,nutrientField,mu,kappa,d,kernelfun,bandwidth);
+model=chemotaxisModel(bacteriaPop,nutrientField,mu,kappa,d,Ds,kernelfun,bandwidth,timestep);
 
 %run for N time steps
 for i=1:N
@@ -45,7 +52,8 @@ end
 %fig=figure(1);
 %model.plot(k,fig);
 
-vidObj=VideoWriter('simulation.avi');
+%vidObj=VideoWriter('simulation2.avi');
+vidObj=VideoWriter('simulation_zero_flux.avi');
 set(vidObj,'FrameRate',5);
 open(vidObj);
 
