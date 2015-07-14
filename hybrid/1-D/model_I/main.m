@@ -1,7 +1,9 @@
+%Model I
 close all;clear all;clc;
 
 N=200;			%time steps
 nBacteria=100;	%number of bacteria
+%nBacteria=1;	%number of bacteria
 %k=20;			%plot kth iteration
 domain=[-10:0.1:10];%domain
 %domain=[0:5];%domain
@@ -13,18 +15,23 @@ for i=1:nBacteria
 	%x=normrnd(0,1);
 	%b=bacterium(5);
 	b=bacterium(0);
+	%b=bacterium(x);
 	bacteria=[bacteria b];
 end
 bacteriaPop=bacteriaPopulation(bacteria,domain);
 
 %initialize nutrient field
-concentration=domain*0+1;
+n=length(domain);
+concentration=zeros(1,n)+1;
+%concentration=cos(domain)+1;
+%concentration=sin(domain)+1;
+
 %boundary conditions
 boundaries=[1 1];
 nutrientField=nutrient(domain,concentration,boundaries);
 
 %define constants
-mu=1/30;	%diffusion constant
+mu=1/30;	%diffusion constant of bacteria
 kappa=2;	%chemotactic sensitivity constant
 d=1e-3;		%consumption rate
 Ds=1/300;	%Diffusion constant of nutrient
@@ -53,8 +60,8 @@ end
 %model.plot(k,fig);
 
 %vidObj=VideoWriter('simulation2.avi');
-vidObj=VideoWriter('simulation_zero_flux.avi');
-set(vidObj,'FrameRate',5);
+vidObj=VideoWriter('simulation_sin.avi');
+set(vidObj,'FrameRate',10);
 open(vidObj);
 
 fig=figure(1);
