@@ -3,6 +3,7 @@
 %A continuous model of the Keller-Segel system used within the hybrid 
 %Model.
 
+%% Load constants.
 Dn = 1/10;
 Ds = 1/10;
 k2 = 10^-3;
@@ -24,16 +25,16 @@ constK = 2;
 ks = 0.8;
 idx = 2:1:(J-1);
 
-
+%% Set intial condition.
 x = meshgrid(linspace(0,Xlen,J));
-%x = 15*(x - x.^2).*exp(-50 .*((x - 0.5).^2));
-%N(1,:) = x(1,:) + abs(0.01*randn(1,length(x(1,:))));
+x = 15*(x - x.^2).*exp(-50 .*((x - 0.5).^2));
+N(1,:) = x(1,:) + abs(0.01*randn(1,length(x(1,:))));
 
-N(1,(J/2-2):(J/2+2)) = 2;
+%N(1,(J/2-2):(J/2+2)) = 2;
 
 S(1,:) = 0.1;
 
-
+%% run simulation.
 for t = 1:1:steps
     
     betaP = (N(t,idx+1) .* (constK./S(t,idx+1)) + (N(t,idx) .* (constK ./ S(t,idx)))) ./ 2;
@@ -56,5 +57,24 @@ for t = 1:1:steps
 
 end
 
-figure(1);clf;surf(N);shading('flat');
-figure(2);clf;surf(S);shading('flat');
+%figure(1);clf;surf(N);shading('flat');xlabel('x');ylabel('time');
+%figure(2);clf;surf(S);shading('flat');xlabel('x');ylabel('time');
+
+%% make movie:
+
+vidObj=VideoWriter('simulation_cont.avi');
+set(vidObj,'FrameRate',24);
+open(vidObj);
+
+for t = 1:5:steps
+    figure(1);clf;
+    plot(N(t,:));xlabel('x');ylabel('#cells and concentration*10');
+    hold on;
+    plot(S(t,:)*10);
+    ylim([0 4]);
+    writeVideo(vidObj,getframe(gcf)); 
+    t
+end
+vidObj.close();
+
+
