@@ -1,4 +1,4 @@
-classdef nutrient<handle
+classdef attractant<handle
 	properties
 		domain;
 		concentration;
@@ -8,7 +8,7 @@ classdef nutrient<handle
 	end
 
 	methods
-		function obj=nutrient(domain,concentration,boundaries)
+		function obj=attractant(domain,concentration,boundaries)
 		obj.domain=domain;
 		obj.concentration=concentration;
 		obj.calculategradient();
@@ -37,7 +37,7 @@ classdef nutrient<handle
 		end
 
 		function interpolatedValue=interpol(obj,field,xCoordinate)
-		%interpolate nutrient concentration at bacterium position
+		%interpolate attractant concentration at bacterium position
 
 		%xCoordinate
 		%xmin=min(obj.domain)
@@ -99,9 +99,9 @@ classdef nutrient<handle
 		interpolatedGradient=obj.interpol(field,xCoordinate);
 		end
 
-		function update(obj,bacteriaDensity,Ds,beta,dt)
-		%Update concentration based on bacteria density, diffusion constant of nutrient,
-		%consumption rate and timestep
+		function update(obj,bacteriaDensity,Da,eta,alpha,dt)
+		%Update concentration based on bacteria density, production rate (eta),
+		%diffusion constant of attractant, degradation rate (alpha) and timestep
 		n=length(obj.domain);
 		dx=obj.domain(2)-obj.domain(1);
 		r=dt/dx^2;
@@ -114,20 +114,20 @@ classdef nutrient<handle
 
 		%matrix
 		%Zero flux boundary condition
-		A=diag(ones(n,1)*(1+2*Ds*r));
-		A=A+diag([-2*Ds*r;ones(n-2,1)*(-Ds*r)],1);
-		A=A+diag([ones(n-2,1)*(-Ds*r);-2*Ds*r],-1);
+		A=diag(ones(n,1)*(1+2*Da*r+alpha*dt));
+		A=A+diag([-2*Da*r;ones(n-2,1)*(-Da*r)],1);
+		A=A+diag([ones(n-2,1)*(-Da*r);-2*Da*r],-1);
 		b=obj.concentration;
 
 		%fixed concentration boundary condition
-		%A=diag(ones(n-2,1)*(1+2*Ds*r));
-		%A=A+diag(ones(n-3,1)*(-Ds*r),1);
-		%A=A+diag(ones(n-3,1)*(-Ds*r),-1);
+		%A=diag(ones(n-2,1)*(1+2*Da*r+alpha*dt));
+		%A=A+diag(ones(n-3,1)*(-Da*r),1);
+		%A=A+diag(ones(n-3,1)*(-Da*r),-1);
 		%b=obj.concentration(2:end-1);
-		%b(1)=b(1)+Ds*r*obj.leftBoundary;
-		%b(end)=b(end)+Ds*r*obj.rightBoundary;
+		%b(1)=b(1)+Da*r*obj.leftBoundary;
+		%b(end)=b(end)+Da*r*obj.rightBoundary;
 
-		b=b-rho*beta*dt;
+		b=b+rho*eta*dt;
 
 		%Calculate new concentration field
 		%zero flux
