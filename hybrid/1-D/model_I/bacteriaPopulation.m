@@ -46,9 +46,11 @@ classdef bacteriaPopulation < handle
 			xNew=x+currentMu*kappa/S*dS+sqrt(2*currentMu)*normrnd(0,1);
 			%correct for going out of boundary
 			if xNew < obj.domain(1);
-				xNew=obj.domain(1);
+				%xNew=obj.domain(1);
+				xNew=xNew+obj.domain(end);
 			elseif xNew > obj.domain(end)
-				xNew=obj.domain(end);
+				%xNew=obj.domain(end);
+				xNew=xNew-obj.domain(end);
 			end
 
 			%set new position

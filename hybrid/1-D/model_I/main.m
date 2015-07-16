@@ -1,20 +1,20 @@
 %Model I
 close all;clear all;clc;
-filename='simulation_differential_diffusion3.avi';
+filename='simulation_periodic.avi';
 framerate=10;
 
 N=200;			%time steps
-nBacteria=100;	%number of bacteria
+nBacteria=1;	%number of bacteria
 %nBacteria=1;	%number of bacteria
 %k=20;			%plot kth iteration
-L=20;			%Length of domain
+L=1;			%Length of domain
 dx=0.1;			%grid spacing
 domain=[0:dx:L];%domain
 %domain=[0:5];%domain
 
 %define constants
 muHigh=1/30;	%high diffusion constant of bacteria
-muLow=1/3000;	%low diffusion constant of bacteria
+muLow=1/300;	%low diffusion constant of bacteria
 mu=[muLow muHigh];
 Vth=1.2;		%threshold concentration of attractant
 kappa=2;		%chemotactic sensitivity constant
@@ -36,11 +36,11 @@ for i=1:nBacteria
 	%x=rand*L-L/2;
 
 	%uniform distribution
-	x=L/(nBacteria+1)*i;
+	%x=L/(nBacteria+1)*i;
 
 	%single peak
 	%x=5;
-	%x=0;
+	x=1;
 
 	b=bacterium(x);
 	bacteria=[bacteria b];
@@ -108,7 +108,7 @@ end
 %plot kth iteration
 %fig=figure(1);
 %model.plot(k,fig);
-
+%% 
 %vidObj=VideoWriter('simulation2.avi');
 vidObj=VideoWriter(filename);
 set(vidObj,'FrameRate',framerate);

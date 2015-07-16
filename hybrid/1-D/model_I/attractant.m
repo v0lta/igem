@@ -108,16 +108,40 @@ classdef attractant<handle
 
 		%bacteria density
 		%zero flux
-		rho=bacteriaDensity(obj.domain(1:end));
+		%rho=bacteriaDensity(obj.domain(1:end));
 		%fixed concentration
 		%rho=bacteriaDensity(obj.domain(2:end-1));
+		%periodic
+		rho=bacteriaDensity(obj.domain(1:end));
+
+		%Add right tail to left side
+		rightx=obj.domain(end);
+		i=1;
+		foo=bacteriaDensity(rightx+i*dx);
+
+		while foo~=0
+			rho(i)=rho(i)+foo;
+			i=i+1;
+			foo=bacteriaDensity(rightx+i*dx);
+		end
+
+		%Add left tail to right side
+		leftx=obj.domain(1);
+		i=1;
+		foo=bacteriaDensity(leftx-i*dx);
+
+		while foo~=0
+			rho(n+1-i)=rho(n+1-i)+foo;
+			i=i+1;
+			foo=bacteriaDensity(leftx-i*dx);
+		end
 
 		%matrix
 		%Zero flux boundary condition
-		A=diag(ones(n,1)*(1+2*Da*r+alpha*dt));
-		A=A+diag([-2*Da*r;ones(n-2,1)*(-Da*r)],1);
-		A=A+diag([ones(n-2,1)*(-Da*r);-2*Da*r],-1);
-		b=obj.concentration;
+		%A=diag(ones(n,1)*(1+2*Da*r+alpha*dt));
+		%A=A+diag([-2*Da*r;ones(n-2,1)*(-Da*r)],1);
+		%A=A+diag([ones(n-2,1)*(-Da*r);-2*Da*r],-1);
+		%b=obj.concentration;
 
 		%fixed concentration boundary condition
 		%A=diag(ones(n-2,1)*(1+2*Da*r+alpha*dt));
@@ -126,6 +150,14 @@ classdef attractant<handle
 		%b=obj.concentration(2:end-1);
 		%b(1)=b(1)+Da*r*obj.leftBoundary;
 		%b(end)=b(end)+Da*r*obj.rightBoundary;
+
+		%periodic boundary condition
+		A=diag(ones(n,1)*(1+2*Da*r+alpha*dt))...
+		+diag(ones(n-1,1)*(-Da*r),1)...
+		+diag(ones(n-1,1)*(-Da*r),-1);
+		A(end,1)=-Da*r;
+		A(1,end)=-Da*r;
+		b=obj.concentration;
 
 		b=b+rho*eta*dt;
 

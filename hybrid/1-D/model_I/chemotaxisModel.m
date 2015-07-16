@@ -94,6 +94,8 @@ classdef chemotaxisModel<handle
 			domain=obj.attractantField.getdomain();
 			rho=obj.rhoArray(k,:);
 			plot(domain,rho);
+			%double plot
+			plot(domain+domain(end),rho);
 
 			%pause(5);
 			hold off;
@@ -108,6 +110,8 @@ classdef chemotaxisModel<handle
 			%plot(domain,attractant);
 			%multiply for scaling
 			plot(domain,attractant*obj.scaling);
+			%%double plot
+			plot(domain+domain(end),attractant*obj.scaling);
 
 			hold off;
 		end
@@ -121,6 +125,8 @@ classdef chemotaxisModel<handle
 			%plot(domain,nutrient);
 			%multiply for scaling
 			plot(domain,nutrient*obj.scaling);
+			%double plot
+			plot(domain+domain(end),nutrient*obj.scaling);
 
 			hold off;
 		end
@@ -133,6 +139,8 @@ classdef chemotaxisModel<handle
 			y=coordinateArray*0;
 
 			plot(coordinateArray,y,'*');
+			%double plot
+			plot(coordinateArray+1,y,'*');
 
 			hold off;
 		end
@@ -146,6 +154,9 @@ classdef chemotaxisModel<handle
 			%disp('test');
 			plot(domain,0*ones(n,1));
 			plot(domain,obj.Vth*obj.scaling*ones(n,1));
+			%double plot
+			plot(domain+domain(end),0*ones(n,1));
+			plot(domain+domain(end),obj.Vth*obj.scaling*ones(n,1));
 			
 			hold off;
 		end
