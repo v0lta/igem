@@ -66,8 +66,8 @@ for t = 1:1:steps
                  2*R(t,idx))./(dx^2) - kr.*A(t,idx)); 
              
     %% Compute the AHL    
-    H(t+1,idx) = R(t,idx) + dt*( Dh .* (R(t,idx+1) + R(t,idx-1) -  ...
-                 2*R(t,idx))./(dx^2) - kh.*A(t,idx)); 
+    H(t+1,idx) = H(t,idx) + dt*( Dh .* (H(t,idx+1) + H(t,idx-1) -  ...
+                 2*H(t,idx))./(dx^2) - kh.*A(t,idx)); 
               
              
     
@@ -116,27 +116,30 @@ for t = 1:1:steps
 
 end
 
-figure(1);clf;surf(A);shading('flat');xlabel('x');ylabel('time');title('cell A');
-figure(2);clf;surf(B);shading('flat');xlabel('x');ylabel('time');title('cell B');
-figure(3);clf;surf(R);shading('flat');xlabel('x');ylabel('time');title('repellant');
-figure(4);clf;surf(H);shading('flat');xlabel('x');ylabel('time');title('AHL');
+%figure(1);clf;surf(A);shading('flat');xlabel('x');ylabel('time');title('cell A');
+%figure(2);clf;surf(B);shading('flat');xlabel('x');ylabel('time');title('cell B');
+%figure(3);clf;surf(R);shading('flat');xlabel('x');ylabel('time');title('repellant');
+%figure(4);clf;surf(H);shading('flat');xlabel('x');ylabel('time');title('AHL');
 %figure(5);clf;surf(R-H);shading('flat');xlabel('x');ylabel('time');title('repellant-AHL');
 
-% %% make movie:
+%% make movie:
 % 
-% vidObj=VideoWriter('simulation_cont2.avi');
-% set(vidObj,'FrameRate',24);
-% open(vidObj);
+ vidObj=VideoWriter('simulation_contAHL2.avi');
+ set(vidObj,'FrameRate',24);
+ open(vidObj);
 % 
-% for t = 1:5:steps
-%     figure(1);clf;
-%     plot(N(t,:));xlabel('x');ylabel('#cells and concentration*10');
-%     hold on;
-%     plot(S(t,:)*10);
-%     ylim([0 4]);
-%     writeVideo(vidObj,getframe(gcf)); 
-%     t
-% end
-% vidObj.close();
+ for t = 1:10:steps
+     figure(1);clf;
+     plot(A(t,:));xlabel('x');ylabel('#cells and concentration*100');
+     hold on;
+     plot(B(t,:))
+     plot(R(t,:)*100);
+     plot(H(t,:)*100);
+     ylim([0 4]);
+     legend('A','B','rep','AHL')
+     writeVideo(vidObj,getframe(gcf)); 
+     t
+ end
+ vidObj.close();
 
 

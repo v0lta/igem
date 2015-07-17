@@ -62,7 +62,7 @@ end
 
 %% make movie:
 
-vidObj=VideoWriter('simulation_cont.avi');
+vidObj=VideoWriter('simulation_cont2.avi');
 set(vidObj,'FrameRate',24);
 open(vidObj);
 
