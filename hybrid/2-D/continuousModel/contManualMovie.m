@@ -33,7 +33,7 @@ Sstep = 0.1.*ones(size(S));
 
 
 %%set up movie obj.
-vidObj=VideoWriter('simulation_cont2.avi');
+vidObj=VideoWriter('simulation_cont.avi');
 set(vidObj,'FrameRate',24);
 open(vidObj);
 
@@ -196,10 +196,10 @@ for t = 1:1:steps
     figure(1);clf;
     subplot(1,2,1)
     surf(N);shading('flat');xlabel('x');ylabel('y');title('cell density');
-    %ylim([0 1]);
+    zlim([0 1]);
     subplot(1,2,2)
     surf(S);shading('flat');xlabel('x');ylabel('y');title('nutrient');
-    %ylim([0.075 0.1]);
+    zlim([0.075 0.1]);
     writeVideo(vidObj,getframe(gcf)); 
 
     (steps/t*100)
