@@ -2,15 +2,15 @@
 %Model.
 
 %% Load constants.
-Da = 5*10^(-6)*3600; %(cm)^2/h;
+Da = 1*10^(-6)*3600; %(cm)^2/h;
 Db = 5*10^(-6)*3600; %(cm)^2/h;
 Dr = 7.3*10^(-6)*3600; %(cm)^2/h;
 Dh = 4.9*10^(-6)*3600; %(cm)^2/h;
 
-dt = 0.03; %h
-tend = 48; %h
+dt = 0.015; %h
+tend = 45; %h
 Xlen = 8.0; %cm
-J = 30; %#
+J = 40; %#
 
 dx = Xlen/J; %cm
 steps = tend/dt %#
@@ -23,18 +23,18 @@ H = zeros(int32(steps),J);
 
 preDif = zeros(1,J);
 
-Kc1 = 0.1;
+Kc1 = 0.01;
 Kc2 = 0.5;
-gamma = 10^(-4);
+gamma = 10^(-5);
 As = 1.0 * 10^2; % (cl)^(-1);
 Bs = 1.0 * 10^2; % (cl)^(-1);
-kr = 10^(-2);
-kh = 10^(-3);
+kr = 1*10^(-3);
+kh = 2*10^(-3);
 idx = 2:1:(J-1);
 
 %% Set intial condition.
 x = meshgrid(linspace(0,Xlen,J));
-x = -10*(x - x.^2).*exp(-1 .*((x - 4).^2));
+x = -100*(x - x.^2).*exp(-1 .*((x - 4).^2));
 %Cell density of celly type A.
 A(1,:) = x(1,:) + abs(0.01*randn(1,length(x(1,:))));
 %A(1,(J/2-2):(J/2+2)) = 2;
@@ -122,23 +122,33 @@ figure(4);clf;surf(H);shading('flat');xlabel('x');ylabel('time');title('AHL');zl
 %figure(5);clf;surf(R-H);shading('flat');xlabel('x');ylabel('time');title('repellant-AHL');
 
 %% make movie:
-% % 
-%  vidObj=VideoWriter('simulation_contAHL2.avi');
-%  set(vidObj,'FrameRate',24);
-%  open(vidObj);
-% % 
-%  for t = 1:10:steps
-%      figure(1);clf;
-%      plot(A(t,:));xlabel('x');ylabel('#cells and concentration*100');
-%      hold on;
-%      plot(B(t,:))
-%      plot(R(t,:)*100);
-%      plot(H(t,:)*100);
-%      ylim([0 4]);
-%      legend('A','B','rep','AHL')
-%      writeVideo(vidObj,getframe(gcf)); 
-%      t
-%  end
-%  vidObj.close();
+ vidObj=VideoWriter('simulation_Hours.avi');
+ set(vidObj,'FrameRate',16);
+ open(vidObj);
+ 
+ for t = 1:10:steps
+     figure(1);clf;
+     plot(A(t,:));xlabel('x');ylabel('#cells and concentration*10');
+     hold on;
+     plot(B(t,:))
+     plot(R(t,:).*10);
+     plot(H(t,:).*10);
+     ylim([0 1300]);
+     legend('A','B','rep','AHL')
+     
+    % Display the time.
+    hours = dt*t;
+    mFigure = gcf;
+    % Create a uicontrol of type "text"
+    mTextBox = uicontrol('style','text')
+    string = [num2str(hours) ' h'];
+    set(mTextBox,'string',string);
+    mTextBox.Position = [85 360 80 20];
+    mTextBox.BackgroundColor = [1 1 1];
+    mTextBox.FontWeight = 'bold';
+    writeVideo(vidObj,getframe(gcf)); 
+    hours
+ end
+ vidObj.close();
 
 
