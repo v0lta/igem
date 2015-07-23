@@ -2,13 +2,13 @@
 %Model.
 
 %% Load constants.
-Da = 1*10^(-6)*3600; %(cm)^2/h;
-Db = 5*10^(-6)*3600; %(cm)^2/h;
-Dr = 7.3*10^(-6)*3600; %(cm)^2/h;
-Dh = 4.9*10^(-6)*3600; %(cm)^2/h;
+Da = 0.072*10^(-3);     %1*10^(-6)*3600; %(cm)^2/h;
+Db = 2.376*10^(-3);     %5*10^(-6)*3600; %(cm)^2/h;
+Dr = 60*10^(-3);        %(cm)^2/h;
+Dh = 50*10^(-3);        %(cm)^2/h;
 
 dt = 0.015; %h
-tend = 45; %h
+tend = 121; %h
 Xlen = 8.0; %cm
 J = 40; %#
 
@@ -23,13 +23,15 @@ H = zeros(int32(steps),J);
 
 preDif = zeros(1,J);
 
-Kc1 = 0.01;
-Kc2 = 0.5;
+Kc1 = 0.0025;
+Kc2 = 3;
 gamma = 10^(-5);
 As = 1.0 * 10^2; % (cl)^(-1);
 Bs = 1.0 * 10^2; % (cl)^(-1);
-kr = 1*10^(-3);
-kh = 2*10^(-3);
+kr = 1.584*10^(-4);     %nmol/h
+kh = 1.5*1.584*10^(-4); %nmol/h
+KAbsorbR = 10^(-5);
+KAbsorbH = 10^(-5);
 idx = 2:1:(J-1);
 
 %% Set intial condition.
@@ -57,7 +59,7 @@ for t = 1:1:steps
     %% Compute the next time step of the B-Type cells:
     
     %Xn =  -B(t,:) .* (Db.*Kc1./(Kc2 + Kc3.*H(t,:).*R(t,:)));
-    Xn = -B(t,:) .* Kc1 .* (Kc2.*H(t,:)./R(t,:));
+    Xn = -B(t,:) .* Kc1 .* (H(t,:)./Kc2.*R(t,:));
    
     betaP = (Xn(idx+1) + Xn(idx))./2; 
     betaN = (Xn(idx-1) + Xn(idx)) ./ 2;
@@ -70,11 +72,11 @@ for t = 1:1:steps
     
     %% Compute the repellant:
     R(t+1,idx) = R(t,idx) + dt*( Dr .* (R(t,idx+1) + R(t,idx-1) -  ...
-                 2*R(t,idx))./(dx^2) + kr.*A(t,idx)); 
+                 2*R(t,idx))./(dx^2) + kr.*A(t,idx) - KAbsorbR * R(t,idx)); 
              
     %% Compute the AHL    
     H(t+1,idx) = H(t,idx) + dt*( Dh .* (H(t,idx+1) + H(t,idx-1) -  ...
-                 2*H(t,idx))./(dx^2) + kh.*A(t,idx)); 
+                 2*H(t,idx))./(dx^2) + kh.*A(t,idx) - KAbsorbH * H(t,idx)); 
               
              
        
@@ -104,13 +106,15 @@ for t = 1:1:steps
     R(t+1,1) = R(t,1) + dt*( Dr .* (R(t,2) + R(t,end)...
                  - 2*R(t,1))./(dx^2) - kr.*A(t,1));
     R(t+1,end) = R(t,end) + dt*( Dr .* (R(t,1) ...
-                 + R(t,end-1) - 2*R(t,end))./(dx^2) + kr.*A(t,end));
+                 + R(t,end-1) - 2*R(t,end))./(dx^2) ...
+                 + kr.*A(t,end) - KAbsorbR * R(t,end));
              
     %AHL
     H(t+1,1) = H(t,1) + dt*( Dh .* (H(t,2) + H(t,end)...
                  - 2*H(t,1))./(dx^2) - kh.*A(t,1));
     H(t+1,end) = H(t,end) + dt*( Dh .* (H(t,1) ...
-                 + H(t,end-1) - 2*H(t,end))./(dx^2) + kh.*A(t,end));
+                 + H(t,end-1) - 2*H(t,end))./(dx^2) ...
+                 + kh.*A(t,end) - KAbsorbH * H(t,end));
     
 
 end
@@ -122,7 +126,7 @@ figure(4);clf;surf(H);shading('flat');xlabel('x');ylabel('time');title('AHL');zl
 %figure(5);clf;surf(R-H);shading('flat');xlabel('x');ylabel('time');title('repellant-AHL');
 
 %% make movie:
- vidObj=VideoWriter('simulation_Hours.avi');
+ vidObj=VideoWriter('simulation_Hours2.avi');
  set(vidObj,'FrameRate',16);
  open(vidObj);
  
