@@ -8,7 +8,7 @@ classdef nutrient<handle
 	end
 
 	methods
-		function obj=nutrient(domain,concentration,boundaries=[0 0])
+		function obj=nutrient(domain,concentration,boundaries)
 		obj.domain=domain;
 		obj.concentration=concentration;
 		obj.calculategradient();
@@ -99,23 +99,48 @@ classdef nutrient<handle
 		interpolatedGradient=obj.interpol(field,xCoordinate);
 		end
 
-		function update(obj,bacteriaDensity,consumptionRate,Ds,dt)
-		%Update concentration based on bacteria density, consumption rate diffusion constant of nutrient and timestep
+		function update(obj,bacteriaDensity,Ds,beta,dt)
+		%Update concentration based on bacteria density, diffusion constant of nutrient,
+		%consumption rate and timestep
 		n=length(obj.domain);
 		dx=obj.domain(2)-obj.domain(1);
 		r=dt/dx^2;
 
 		%bacteria density
 		%zero flux
-		rho=bacteriaDensity(obj.domain(1:end));
+		%rho=bacteriaDensity(obj.domain(1:end));
 		%fixed concentration
 		%rho=bacteriaDensity(obj.domain(2:end-1));
+		%periodic
+		rho=bacteriaDensity(obj.domain(1:end));
+
+		%Add right tail to left side
+		rightx=obj.domain(end);
+		i=1;
+		foo=bacteriaDensity(rightx+i*dx);
+
+		while foo~=0
+			rho(i)=rho(i)+foo;
+			i=i+1;
+			foo=bacteriaDensity(rightx+i*dx);
+		end
+
+		%Add left tail to right side
+		leftx=obj.domain(1);
+		i=1;
+		foo=bacteriaDensity(leftx-i*dx);
+
+		while foo~=0
+			rho(n+1-i)=rho(n+1-i)+foo;
+			i=i+1;
+			foo=bacteriaDensity(leftx-i*dx);
+		end
 
 		%matrix
 		%Zero flux boundary condition
-		A=diag(ones(n,1)*(1+2*Ds*r));
-		A=A+diag([-2*Ds*r;ones(n-2,1)*(-Ds*r)],1);
-		A=A+diag([ones(n-2,1)*(-Ds*r);-2*Ds*r],-1);
+		%A=diag(ones(n,1)*(1+2*Ds*r));
+		%A=A+diag([-2*Ds*r;ones(n-2,1)*(-Ds*r)],1);
+		%A=A+diag([ones(n-2,1)*(-Ds*r);-2*Ds*r],-1);
 		b=obj.concentration;
 
 		%fixed concentration boundary condition
@@ -126,7 +151,15 @@ classdef nutrient<handle
 		%b(1)=b(1)+Ds*r*obj.leftBoundary;
 		%b(end)=b(end)+Ds*r*obj.rightBoundary;
 
-		b=b-rho*consumptionRate*dt;
+		%periodic boundary condition
+		A=diag(ones(n,1)*(1+2*Ds*r))...
+		+diag(ones(n-1,1)*(-Ds*r),1)...
+		+diag(ones(n-1,1)*(-Ds*r),-1);
+		A(end,1)=-Ds*r;
+		A(1,end)=-Ds*r;
+		b=obj.concentration;
+
+		b=b-rho*beta*dt;
 
 		%Calculate new concentration field
 		%zero flux
