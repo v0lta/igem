@@ -11,6 +11,8 @@ classdef chemotaxisModel<handle
 		lambda0;	%base turning frequency
 		speed;		%constant speed
 		Ds;			%Diffusion constant of nutrients
+		ta;			%adaptation time
+		g;			%sensing function
 
 		%kernel function and bandwidth
 		kernelfun;
@@ -26,14 +28,15 @@ classdef chemotaxisModel<handle
 	end
 
 	methods
-		function obj=chemotaxisModel(bacteriaPop,nutrientField,kappa,d,lambda0,speed,Ds,kernelfun,bandwidth,timestep)
+		function obj=chemotaxisModel(bacteriaPop,nutrientField,d,lambda0,speed,Ds,ta,g,kernelfun,bandwidth,timestep)
 			obj.bacteriaPop=bacteriaPop;
 			obj.nutrientField=nutrientField;
-			obj.kappa=kappa;
 			obj.d=d;
 			obj.lambda0=lambda0;
 			obj.speed=speed;
 			obj.Ds=Ds;
+			obj.ta=ta;
+			obj.g=g;
 			obj.kernelfun=kernelfun;
 			obj.bandwidth=bandwidth;
 			obj.timestep=timestep;
@@ -55,7 +58,7 @@ classdef chemotaxisModel<handle
 			obj.nutrientArray(end+1,:)=obj.nutrientField.getconcentration();
 
 			%update bacteria positions
-			obj.bacteriaPop.update(obj.nutrientField,obj.lambda0,obj.kappa,obj.speed,obj.timestep);
+			obj.bacteriaPop.update(obj.nutrientField,obj.g,obj.ta,obj.lambda0,obj.speed,obj.timestep);
 			%record rho
 			domain=obj.nutrientField.getdomain();
 			rho=obj.bacteriaPop.bacteriadensity(obj.kernelfun,obj.bandwidth);
@@ -82,8 +85,8 @@ classdef chemotaxisModel<handle
 
 			domain=obj.nutrientField.getdomain();
 			nutrient=obj.nutrientArray(k,:);
-			%plot(domain,nutrient);
-			plot(domain,nutrient*50);
+			plot(domain,nutrient);
+			%plot(domain,nutrient*50);
 
 			hold off;
 		end

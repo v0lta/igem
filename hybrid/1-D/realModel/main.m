@@ -7,7 +7,7 @@ N=100;			%time steps
 nBacteriaA=100;	%number of bacteria A
 nBacteriaB=100;	%number of bacteria B
 %k=20;			%plot kth iteration
-L=10;			%Length of domain
+L=15;			%Length of domain
 dx=0.1;			%grid spacing
 domain=[0:dx:L];%domain
 %domain=[0:5];%domain
@@ -61,13 +61,13 @@ bacteriaB=[];
 
 for i=1:nBacteriaB
 	%normal distribution
-	%x=normrnd(0,1);
+	x=normrnd(L/2,1);
 
 	%uniform random distribution
 	%x=rand*L-L/2;
 
 	%uniform distribution
-	x=L/(nBacteriaB+1)*i;
+	%x=L/(nBacteriaB+1)*i;
 
 	%single peak
 	%x=5;

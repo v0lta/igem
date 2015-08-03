@@ -4,10 +4,10 @@ filename='simulation_periodic.avi';
 framerate=10;
 
 N=200;			%time steps
-nBacteria=1;	%number of bacteria
+nBacteria=100;	%number of bacteria
 %nBacteria=1;	%number of bacteria
 %k=20;			%plot kth iteration
-L=1;			%Length of domain
+L=20;			%Length of domain
 dx=0.1;			%grid spacing
 domain=[0:dx:L];%domain
 %domain=[0:5];%domain

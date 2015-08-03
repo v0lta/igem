@@ -4,6 +4,7 @@ classdef bacterium < handle
 		xCoordinate;
 		%path;
 		direction;	%0 for moving to left, 1 for moving to right
+		memory;
 	end
 
 	methods
@@ -16,6 +17,9 @@ classdef bacterium < handle
 		else
 			obj.direction=1;
 		end
+		%initialize without memory
+		%obj.memory=0;
+		obj.memory=0.1;
 		end
 
 		function xCoordinate=getxcoordinate(obj)
@@ -32,6 +36,14 @@ classdef bacterium < handle
 
 		function setdirection(obj,direction)
 		obj.direction=direction;
+		end
+
+		function memory=getmemory(obj)
+		memory=obj.memory;
+		end
+
+		function setmemory(obj,memory)
+		obj.memory=memory;
 		end
 
 	end
