@@ -46,6 +46,10 @@ classdef AHL<handle
 		x=obj.domain;
 		dx=x(2)-x(1);
 		C=field;
+		%periodic
+		C(end+1)=C(end);
+		x(end+1)=x(end)+dx;
+		%periodic end
 		%length(C)
 		%C(1001)
 

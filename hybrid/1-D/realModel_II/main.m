@@ -1,9 +1,9 @@
-%Model I
+%Model II
 close all;clear all;clc;
-filename='test.avi';
+filename='fixed_periodic.avi';
 framerate=10;
 
-N=100;			%time steps
+N=300;			%time steps
 nBacteriaA=100;	%number of bacteria A
 nBacteriaB=100;	%number of bacteria B
 %k=20;			%plot kth iteration
@@ -19,14 +19,14 @@ k1=5e-3;		%degradation rate of AHL
 k2=5e-3;		%degradation rate of leucine
 DAHL=1/300;	%Diffusion constant of AHL
 Dleucine=2/300;%Diffusion constant of leucine
-%muHighA=1/30;	%high diffusion constant of bacteria A
-%muLowA=1/3000;	%low diffusion constant of bacteria A
-muHighA=1e-5;	%high diffusion constant of bacteria A
-muLowA=1e-5;	%low diffusion constant of bacteria A
-muHighB=1/30;	%high diffusion constant of bacteria B
-muLowB=1/300;	%low diffusion constant of bacteria B
-muA=[muLowA muHighA];
-muB=[muLowB muHighB];
+speedHighA=1e-3;	%high constant speed of bacteria A
+speedLowA=1e-3;		%low constant speed of bacteria A
+speedHighB=1e-2;	%high constant speed of bacteria B
+speedLowB=0.7e-2;		%low constant speed of bacteria B
+speedA=[speedLowA speedHighA];
+speedB=[speedLowB speedHighB];
+lambda0A=1.5e-3;	%turning frequency bacteria A
+lambda0B=1.5e-3;	%turning frequency bacteria A
 kappaA=2;		%chemotactic sensitivity constant bacteria A
 kappaB=2;		%chemotactic sensitivity constant bacteria B
 VthA=1.2;		%threshold concentration of AHL for bacteria A
@@ -46,8 +46,17 @@ for i=1:nBacteriaA
 	%x=L/(nBacteriaA+1)*i;
 
 	%single peak
-	%x=5;
+	%x=L*0.01;
 	%x=10;
+
+	%two peaks
+	if i<nBacteriaA/2
+		%x=0.25*L;
+		x=normrnd(0.25*L,1);
+	else
+		%x=0.75*L;
+		x=normrnd(0.75*L,1);
+	end
 
 	b=bacterium(x);
 	bacteriaA=[bacteriaA b];
@@ -72,6 +81,16 @@ for i=1:nBacteriaB
 	%single peak
 	%x=5;
 	%x=10;
+	%x=L*(.99);
+
+	%two peaks
+	if i<nBacteriaB/2
+		%x=.35*L;
+		x=normrnd(0.35*L,1);
+	else
+		%x=.65*L;
+		x=normrnd(0.65*L,1);
+	end
 
 	b=bacterium(x);
 	bacteriaB=[bacteriaB b];
@@ -110,16 +129,17 @@ addpath ..\..\..\kernel;
 %kernelfun=@(x) normpdf(x,0,1);
 kernelfun=@epanechnikov;
 bandwidth=0.25;
+%bandwidth=1;
 
 %define timestep
 timestep=1;
 
 %define scaling for plotting concentrations
-scaling=50;
+scaling=30;
 
 %initialize model
-model=realModel(bacteriaPopA,bacteriaPopB,AHLField,leucineField,...
-		alpha,beta,k1,k2,DAHL,Dleucine,muA,muB,kappaA,kappaB,VthA,VthB,...
+model=realModel_II(bacteriaPopA,bacteriaPopB,AHLField,leucineField,...
+		alpha,beta,k1,k2,DAHL,Dleucine,lambda0A,lambda0B,speedA,speedB,kappaA,kappaB,VthA,VthB,...
 		kernelfun,bandwidth,timestep,scaling);
 
 runSimulation;

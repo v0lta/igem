@@ -1,3 +1,4 @@
+%Model II
 classdef bacteriaPopulationB < handle
 	properties
 		domain;
@@ -29,46 +30,76 @@ classdef bacteriaPopulationB < handle
 		densityfun=KDE(coordinateArray,kernelfun,bandwidth);
 		end
 
-		function update(obj,AHLField,leucineField,muB,VthB,kappaB)
-		%Update bacteria position based on AHL field, leucine field, diffusion constant,
+		function newDirection=turn(obj,direction,lambda0B,kappaB,currentSpeedB,leucine,dLeucine,timestep)
+		foo=kappaB*currentSpeedB*dLeucine/(2*leucine);
+		%disp('dS');
+		%dS
+
+		%if direction==0 && dS >0
+		%	disp('against the gradient!');
+		%end
+
+		%Repelled by leucine
+		if direction==0	%moving to the left
+			lambda=lambda0B-foo;
+		else			%moving to the right
+			lambda=lambda0B+foo;
+		end
+
+		%disp('lambda');
+		%lambda
+
+		f=rand;
+		if f<lambda*timestep	%turn
+			newDirection=~direction;
+		else		%don't turn
+			newDirection=direction;
+		end
+		end
+
+		function update(obj,AHLField,leucineField,lambda0B,speedB,kappaB,VthB,timestep)
+		%Update bacteria position based on AHL field, leucine field, base turning frequency, constant speed,
 		%threshold AHL concentration and chemotactic sensitivity constant
 		for bacterium=obj.bacteria
 			x=bacterium.getxcoordinate();%x coordinate
+			direction=bacterium.getdirection();%direction
 			AHL=AHLField.interpolconc(x);%local AHL concentration
 			%dAHL=AHLField.interpolgrad(x);%local AHL gradient
-
 			leucine=leucineField.interpolconc(x);%local leucine concentration
 			dLeucine=leucineField.interpolgrad(x);%local leucine gradient
 
 			if AHL>VthB	%AHL is above threshold => high diffusion
-				currentMuB=muB(2);
+				currentSpeedB=speedB(2);
 			else		%AHL is below threshold => low diffusion
-				currentMuB=muB(1);
+				currentSpeedB=speedB(1);
 			end
 
+			newDirection=obj.turn(direction,lambda0B,kappaB,currentSpeedB,leucine,dLeucine,timestep);%new direction
+
 			%calculate new position
-			%repelled by leucine
-			%x
-			%currentMuB
-			%kappaB
-			%leucine
-			%dLeucine
-			xNew=x-currentMuB*kappaB/leucine*dLeucine+sqrt(2*currentMuB)*normrnd(0,1);
+			if newDirection==0
+				xNew=x-currentSpeedB*timestep;
+			else
+				xNew=x+currentSpeedB*timestep;
+			end
+
+			dx=obj.domain(2)-obj.domain(1);
 			%correct for going out of boundary
 			if xNew < obj.domain(1);
 				%wall boundary condition
 				%xNew=obj.domain(1);
 				%periodic boundary condition
-				xNew=xNew+obj.domain(end);
-			elseif xNew > obj.domain(end)
+				xNew=xNew+(obj.domain(end)-obj.domain(1));
+			elseif xNew > obj.domain(end)+dx
 				%wall boundary condition
 				%xNew=obj.domain(end);
 				%periodic boundary condition
-				xNew=xNew-obj.domain(end);
+				xNew=xNew-(obj.domain(end)-obj.domain(1)+dx);
 			end
 
 			%set new position
 			bacterium.setxcoordinate(xNew);
+			bacterium.setdirection(newDirection);
 		end
 		end
 	end
