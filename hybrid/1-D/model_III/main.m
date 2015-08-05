@@ -1,7 +1,7 @@
 %Model II
 close all;clear all;clc;
 
-N=200;			%time steps
+N=2000;			%time steps
 nBacteria=100;	%number of bacteria
 %nBacteria=1;	%number of bacteria
 %k=20;			%plot kth iteration
@@ -17,14 +17,15 @@ bacteria=[];
 for i=1:nBacteria
 	%x=normrnd(0,1);
 	%b=bacterium(5);
-	b=bacterium(0);
+	b=bacterium(2);
 	bacteria=[bacteria b];
 end
 bacteriaPop=bacteriaPopulation(bacteria,domain);
 
 %initialize nutrient field
 n=length(domain);
-concentration=zeros(1,n)+1;
+concentration=zeros(1,n)+100;
+%concentration=1/2*cos(domain*4);
 %concentration=zeros(1,n);
 %concentration(8:12)=1;
 %concentration=domain;
@@ -39,9 +40,14 @@ lambda0=1.5e-3;	%base turning frequency
 speed=1e-2;		%constant speed
 %Ds=1;		%diffusion constant of nutrient
 Ds=0;		%diffusion constant of nutrient
+ta=1/lambda0;	%adaptation time
+
+%define sensing function
+g=@(S) 4.5e-3*log10(S);
+
 
 %define kernel function and bandwidth
-addpath ..\..\..\kernel;
+addpath ../../../kernel;
 %kernelfun=@uni;
 %kernelfun=@tri;
 %kernelfun=@(x) normpdf(x,0,1);
@@ -49,7 +55,7 @@ kernelfun=@epanechnikov;
 bandwidth=0.25;
 
 %initialize model
-model=chemotaxisModel(bacteriaPop,nutrientField,kappa,d,lambda0,speed,Ds,kernelfun,bandwidth,timestep);
+model=chemotaxisModel(bacteriaPop,nutrientField,d,lambda0,speed,Ds,ta,g,kernelfun,bandwidth,timestep);
 
 %run for N time steps
 for i=1:N
@@ -60,7 +66,7 @@ end
 %fig=figure(1);
 %model.plot(k,fig);
 
-vidObj=VideoWriter('test5.avi');
+vidObj=VideoWriter('test.avi');
 set(vidObj,'FrameRate',30);
 open(vidObj);
 

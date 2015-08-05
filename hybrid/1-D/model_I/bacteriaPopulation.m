@@ -29,20 +29,28 @@ classdef bacteriaPopulation < handle
 		densityfun=KDE(coordinateArray,kernelfun,bandwidth);
 		end
 
-		function update(obj,nutrientField,mu,kappa)
-		%Update bacteria position based on nutrient field, diffusion constant and chemotactic sensitivity constant
+		function update(obj,attractantField,mu,Vth,kappa)
+		%Update bacteria position based on attractant field, diffusion constant and chemotactic sensitivity constant
 		for bacterium=obj.bacteria
 			x=bacterium.getxcoordinate();%x coordinate
-			S=nutrientField.interpolconc(x);%local nutrient concentration
-			dS=nutrientField.interpolgrad(x);%local nutrient gradient
+			S=attractantField.interpolconc(x);%local attractant concentration
+			dS=attractantField.interpolgrad(x);%local attractant gradient
+
+			if S>Vth %low diffusion
+				currentMu=mu(1);
+			else	%high diffusion
+				currentMu=mu(2);
+			end
 
 			%calculate new position
-			xNew=x+mu*kappa/S*dS+sqrt(2*mu)*normrnd(0,1);
+			xNew=x+currentMu*kappa/S*dS+sqrt(2*currentMu)*normrnd(0,1);
 			%correct for going out of boundary
 			if xNew < obj.domain(1);
-				xNew=obj.domain(1);
+				%xNew=obj.domain(1);
+				xNew=xNew+obj.domain(end);
 			elseif xNew > obj.domain(end)
-				xNew=obj.domain(end);
+				%xNew=obj.domain(end);
+				xNew=xNew-obj.domain(end);
 			end
 
 			%set new position
