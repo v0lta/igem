@@ -1,14 +1,14 @@
-%A continuous model of the Keller-Segel system used within the hybrid 
-%Model.
+% The matlab source code used to compute the 1d simulation at the top of
+% the page. The 2015 Ku Leuven Igem team.
 
 %% Load constants.
 Da = 0.072*10^(-3);     %1*10^(-6)*3600; %(cm)^2/h;
 Db = 2.376*10^(-3);     %5*10^(-6)*3600; %(cm)^2/h;
-Dr = 60*10^(-3);        %(cm)^2/h;
-Dh = 50*10^(-3);        %(cm)^2/h;
+Dr = 26.46*10^(-3);     %(cm)^2/h; 0.02628 = 0.2628*10^(-1) = 2.628*10^(-2)
+Dh = 50*10^(-3);        %(cm)^2/h; 
 
-dt = 0.015; %h
-tend = 121; %h
+dt = 0.15; %h
+tend = 80; %h
 Xlen = 8.0; %cm
 J = 40; %#
 
@@ -23,15 +23,14 @@ H = zeros(int32(steps),J);
 
 preDif = zeros(1,J);
 
-Kc1 = 0.0025;
-Kc2 = 3;
+Kc = 0.00095;
 gamma = 10^(-5);
 As = 1.0 * 10^2; % (cl)^(-1);
 Bs = 1.0 * 10^2; % (cl)^(-1);
-kr = 1.584*10^(-4);     %nmol/h
-kh = 1.5*1.584*10^(-4); %nmol/h
-KAbsorbR = 10^(-5);
-KAbsorbH = 10^(-5);
+kr = 5.4199*10^(-4); %fmol/h
+kh = 17.9*10^(-4);   %fnmol/h
+KAbsorbR = 1/80;
+KAbsorbH = 1/48;
 idx = 2:1:(J-1);
 
 %% Set intial condition.
@@ -53,22 +52,22 @@ for t = 1:1:steps
     
     %% Compute the next time step of the A-Type cells:
     %A(t+1,:) = A(t,:);
-    A(t+1,idx) = A(t,idx) + (dt.* Da)/dx^2  .* ( A(t,idx-1) + A(t,idx+1) - 2.*A(t,idx)) ...
-                 +gamma.* A(t,idx) .* (1 - A(t,idx)./As);
+    A(t+1,idx) = A(t,idx) + (dt.* (Da/dx^2  .* ( A(t,idx-1) + A(t,idx+1) - 2.*A(t,idx))) ...
+                 +gamma.* A(t,idx) .* (1 - A(t,idx)./As));
     
     %% Compute the next time step of the B-Type cells:
     
     %Xn =  -B(t,:) .* (Db.*Kc1./(Kc2 + Kc3.*H(t,:).*R(t,:)));
-    Xn = -B(t,:) .* Kc1 .* (H(t,:)./Kc2.*R(t,:));
+    Xn = -B(t,:) .* Kc .* H(t,:)./(R(t,:));
    
     betaP = (Xn(idx+1) + Xn(idx))./2; 
     betaN = (Xn(idx-1) + Xn(idx)) ./ 2;
         
     B(t+1,idx) = B(t,idx) +  ...
-                 dt/dx^2 .* (Db .* ( B(t,idx-1) + B(t,idx+1) - 2.*B(t,idx)) ...
+                 dt .* (1/dx^2  .* (Db.*( B(t,idx-1) + B(t,idx+1) - 2.*B(t,idx)) ...
                      - (betaP .* (R(t,idx+1) - R(t,idx)) ...
                      -  betaN .* (R(t,idx)- R(t,idx-1))))...
-                     + gamma .* B(t,idx) .* (1 - B(t,idx)./Bs);
+                     + gamma .* B(t,idx) .* (1 - B(t,idx)./Bs));
     
     %% Compute the repellant:
     R(t+1,idx) = R(t,idx) + dt*( Dr .* (R(t,idx+1) + R(t,idx-1) -  ...
@@ -91,16 +90,16 @@ for t = 1:1:steps
     betaP    = (Xn(2) + Xn(1))./2;
     betaBeam = (Xn(end) + Xn(1))./ 2;
     B(t+1,1)   = B(t,1) + ...
-                     dt/dx^2 .* (Db .* ( B(t,end) + B(t,2) - 2.*B(t,1)) ...
+                     dt .* (Db/dx^2 .* ( B(t,end) + B(t,2) - 2.*B(t,1)) ...
                      - (betaP .* (R(t,2) - R(t,1)) ...
                      -  betaBeam .* (R(t,1)- R(t,end)))) ...
                     + gamma .* B(t,1) .* (1 - B(t,1)./Bs);
     betaN   = (Xn(end-1) + Xn(end))./2;
     B(t+1,end) = B(t,end) + ...
-                     dt/dx^2 .* (Db .* ( B(t,end-1) + B(t,1) - 2.*B(t,end)) ...
+                     dt .* (Db/dx^2 .* ( B(t,end-1) + B(t,1) - 2.*B(t,end)) ...
                      - (betaBeam .* (R(t,1) - R(t,end)) ...
-                     -  betaN .* (R(t,end)- R(t,end-1)))) ...
-                     + gamma .* B(t,end) .* (1 - B(t,end)./Bs);
+                     -  betaN .* (R(t,end)- R(t,end-1))) ...
+                     + gamma .* B(t,end) .* (1 - B(t,end)./Bs));
                  
     %Repellant             
     R(t+1,1) = R(t,1) + dt*( Dr .* (R(t,2) + R(t,end)...
@@ -127,10 +126,10 @@ figure(4);clf;surf(H);shading('flat');xlabel('x');ylabel('time');title('AHL');zl
 
 %% make movie:
  vidObj=VideoWriter('simulation_Hours2.avi');
- set(vidObj,'FrameRate',16);
+ set(vidObj,'FrameRate',10);
  open(vidObj);
  
- for t = 1:10:steps
+ for t = 1:2:steps
      figure(1);clf;
      plot(A(t,:));xlabel('x');ylabel('#cells and concentration*10');
      hold on;
