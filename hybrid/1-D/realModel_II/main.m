@@ -1,6 +1,6 @@
 %Model II
 close all;clear all;clc;
-filename='fixed_periodic.avi';
+filename='turning_frequency_modulated_diffusion_abrupt_spot.avi';
 framerate=10;
 
 N=300;			%time steps
@@ -15,21 +15,41 @@ domain=[0:dx:L];%domain
 %define constants
 alpha=1e-3;		%bacterial production rate of AHL
 beta=1e-3;		%bacterial production rate of leucine
+%alpha=0;		%bacterial production rate of AHL
+%beta=0;		%bacterial production rate of leucine
 k1=5e-3;		%degradation rate of AHL
 k2=5e-3;		%degradation rate of leucine
 DAHL=1/300;	%Diffusion constant of AHL
 Dleucine=2/300;%Diffusion constant of leucine
-speedHighA=1e-3;	%high constant speed of bacteria A
-speedLowA=1e-3;		%low constant speed of bacteria A
-speedHighB=1e-2;	%high constant speed of bacteria B
-speedLowB=0.7e-2;		%low constant speed of bacteria B
-speedA=[speedLowA speedHighA];
-speedB=[speedLowB speedHighB];
-lambda0A=1.5e-3;	%turning frequency bacteria A
-lambda0B=1.5e-3;	%turning frequency bacteria A
+
+%variable speed
+%speedHighA=1e-2;	%high constant speed of bacteria A
+%speedLowA=.5e-2;		%low constant speed of bacteria A
+%speedHighB=1e-2;	%high constant speed of bacteria B
+%speedLowB=0.7e-2;		%low constant speed of bacteria B
+%%speedLowB=5e-2;		%low constant speed of bacteria B
+%speedA=[speedLowA speedHighA];
+%speedB=[speedLowB speedHighB];
+
+%fixed speed
+speedA=1e-2;
+speedB=1e-2;
+
+%variable turning frequency
+lambda0HighA=10e-3;	%high base turning frequency of bacteria A
+lambda0LowA=10e-3;		%low base turning frequency of bacteria A
+lambda0HighB=1.5e-3;	%high base turning frequency of bacteria B
+lambda0LowB=5e-3;		%low base turning frequency of bacteria B
+lambda0A=[lambda0LowA lambda0HighA];
+lambda0B=[lambda0LowB lambda0HighB];
+
+%fixed turning frequency
+%lambda0A=1.5e-3;
+%lambda0B=1.5e-3;
+
 kappaA=2;		%chemotactic sensitivity constant bacteria A
 kappaB=2;		%chemotactic sensitivity constant bacteria B
-VthA=1.2;		%threshold concentration of AHL for bacteria A
+VthA=1.5;		%threshold concentration of AHL for bacteria A
 VthB=1.0;		%threshold concentration of AHL for bacteria B
 
 %initialize bacteria A
@@ -37,26 +57,26 @@ bacteriaA=[];
 
 for i=1:nBacteriaA
 	%normal distribution
-	x=normrnd(L/2,1);
+	%x=normrnd(L/2,1);
 
 	%uniform random distribution
 	%x=rand*L-L/2;
 
 	%uniform distribution
-	%x=L/(nBacteriaA+1)*i;
+	%x=L/(nBacteriaA)*(i-1);
 
 	%single peak
 	%x=L*0.01;
-	%x=10;
+	x=L/2;
 
 	%two peaks
-	if i<nBacteriaA/2
-		%x=0.25*L;
-		x=normrnd(0.25*L,1);
-	else
-		%x=0.75*L;
-		x=normrnd(0.75*L,1);
-	end
+	%if i<nBacteriaA/2
+	%	%x=0.25*L;
+	%	x=normrnd(0.25*L,1);
+	%else
+	%	%x=0.75*L;
+	%	x=normrnd(0.75*L,1);
+	%end
 
 	b=bacterium(x);
 	bacteriaA=[bacteriaA b];
@@ -70,27 +90,28 @@ bacteriaB=[];
 
 for i=1:nBacteriaB
 	%normal distribution
-	x=normrnd(L/2,1);
+	%x=normrnd(L/2,1);
 
 	%uniform random distribution
 	%x=rand*L-L/2;
 
 	%uniform distribution
-	%x=L/(nBacteriaB+1)*i;
+	%x=L/(nBacteriaB)*(i-1);
 
 	%single peak
 	%x=5;
 	%x=10;
 	%x=L*(.99);
+	x=L/2;
 
 	%two peaks
-	if i<nBacteriaB/2
-		%x=.35*L;
-		x=normrnd(0.35*L,1);
-	else
-		%x=.65*L;
-		x=normrnd(0.65*L,1);
-	end
+	%if i<nBacteriaB/2
+	%	%x=.35*L;
+	%	x=normrnd(0.35*L,1);
+	%else
+	%	%x=.65*L;
+	%	x=normrnd(0.65*L,1);
+	%end
 
 	b=bacterium(x);
 	bacteriaB=[bacteriaB b];
@@ -142,8 +163,10 @@ model=realModel_II(bacteriaPopA,bacteriaPopB,AHLField,leucineField,...
 		alpha,beta,k1,k2,DAHL,Dleucine,lambda0A,lambda0B,speedA,speedB,kappaA,kappaB,VthA,VthB,...
 		kernelfun,bandwidth,timestep,scaling);
 
+%%
 runSimulation;
 makeVideo;
+%%
 
 beep on;
 beep;

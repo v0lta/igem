@@ -66,12 +66,22 @@ classdef bacteriaPopulationA < handle
 			dAHL=AHLField.interpolgrad(x);%local AHL gradient
 
 			if AHL>VthA	%AHL below threshold => low diffusion
-				currentSpeedA=speedA(1);
+				%variable speed, fixed turning frequency
+				%currentSpeedA=speedA(1);
+				%currentLambda0A=lambda0A;
+				%variable turning frequency, fixed speed
+				currentSpeedA=speedA;
+				currentLambda0A=lambda0A(2);
 			else		%AHL above threshold => high diffusion
-				currentSpeedA=speedA(2);
+				%variable speed, fixed turning frequency
+				%currentSpeedA=speedA(2);
+				%currentLambda0A=lambda0A;
+				%variable turning frequency, fixed speed
+				currentSpeedA=speedA;
+				currentLambda0A=lambda0A(1);
 			end
 
-			newDirection=obj.turn(direction,lambda0A,kappaA,currentSpeedA,AHL,dAHL,timestep);%new direction
+			newDirection=obj.turn(direction,currentLambda0A,kappaA,currentSpeedA,AHL,dAHL,timestep);%new direction
 
 			%calculate new position
 			if newDirection==0
@@ -87,16 +97,24 @@ classdef bacteriaPopulationA < handle
 				%xNew=obj.domain(1);
 				%periodic boundary condition
 				%xNew=xNew+obj.domain(end);
-				xNew=xNew+(obj.domain(end)-obj.domain(1));
-			elseif xNew > obj.domain(end)+dx
+				xOld=xNew;
+				xNew=xNew+(obj.domain(end)-obj.domain(1)+dx);
+				a='lower';
+			elseif xNew >= obj.domain(end)+dx
 				%wall boundary condition
 				%xNew=obj.domain(end);
 				%periodic boundary condition
 				%xNew=xNew-obj.domain(end);
 				xNew=xNew-(obj.domain(end)-obj.domain(1)+dx);
+				a='higher';
 			end
 
 			%set new position
+			if xNew==15.1
+				disp('ALARM');
+				disp(a);
+				disp(xOld);
+			end
 			bacterium.setxcoordinate(xNew);
 			bacterium.setdirection(newDirection);
 		end

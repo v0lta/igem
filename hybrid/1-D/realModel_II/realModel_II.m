@@ -278,6 +278,7 @@ classdef realModel_II<handle
 			dx=domain(2)-domain(1);
 			domain(end+1)=domain(end)+dx;
 			xlim([domain(1) domain(end)]);
+			grid on;
 			%periodic end
 			%'Threshold bacteria A','Threshold bacteria B','Bacteria A','Bacteria B');
 		end

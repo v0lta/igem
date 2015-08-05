@@ -43,11 +43,14 @@ classdef leucine<handle
 		%xmin=min(obj.domain)
 		%xmax=max(obj.domain)
 
+		%xCoordinate
 		x=obj.domain;
 		dx=x(2)-x(1);
 		C=field;
 		%periodic
-		C(end+1)=C(end);
+		C(end+1)=C(1);
+		C(end+1)=C(2);
+		x(end+1)=x(end)+dx;
 		x(end+1)=x(end)+dx;
 		%periodic end
 		%length(C)

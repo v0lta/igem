@@ -69,12 +69,22 @@ classdef bacteriaPopulationB < handle
 			dLeucine=leucineField.interpolgrad(x);%local leucine gradient
 
 			if AHL>VthB	%AHL is above threshold => high diffusion
-				currentSpeedB=speedB(2);
+				%variable speed, fixed turning frequency
+				%currentSpeedB=speedB(2);
+				%currentLambda0B=lambda0B;
+				%variable turning frequency, fixed speed
+				currentSpeedB=speedB;
+				currentLambda0B=lambda0B(1);
 			else		%AHL is below threshold => low diffusion
-				currentSpeedB=speedB(1);
+				%variable speed, fixed turning frequency
+				%currentSpeedB=speedB(1);
+				%currentLambda0B=lambda0B;
+				%variable turning frequency, fixed speed
+				currentSpeedB=speedB;
+				currentLambda0B=lambda0B(2);
 			end
 
-			newDirection=obj.turn(direction,lambda0B,kappaB,currentSpeedB,leucine,dLeucine,timestep);%new direction
+			newDirection=obj.turn(direction,currentLambda0B,kappaB,currentSpeedB,leucine,dLeucine,timestep);%new direction
 
 			%calculate new position
 			if newDirection==0
@@ -84,20 +94,29 @@ classdef bacteriaPopulationB < handle
 			end
 
 			dx=obj.domain(2)-obj.domain(1);
+			%a=obj.domain(end)+dx
 			%correct for going out of boundary
 			if xNew < obj.domain(1);
 				%wall boundary condition
 				%xNew=obj.domain(1);
 				%periodic boundary condition
-				xNew=xNew+(obj.domain(end)-obj.domain(1));
-			elseif xNew > obj.domain(end)+dx
+				xOld=xNew;
+				xNew=xNew+(obj.domain(end)-obj.domain(1)+dx);
+				a='lower';
+			elseif xNew >= obj.domain(end)+dx
 				%wall boundary condition
 				%xNew=obj.domain(end);
 				%periodic boundary condition
 				xNew=xNew-(obj.domain(end)-obj.domain(1)+dx);
+				a='higher';
 			end
 
 			%set new position
+			if xNew==15.1
+				disp('ALARM');
+				disp(a);
+				disp(xOld);
+			end
 			bacterium.setxcoordinate(xNew);
 			bacterium.setdirection(newDirection);
 		end

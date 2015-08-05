@@ -1,3 +1,3 @@
 for i=1:N
-	model.update()
+	model.update();
 end
