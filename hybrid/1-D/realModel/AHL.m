@@ -44,40 +44,46 @@ classdef AHL<handle
 		%xmax=max(obj.domain)
 
 		x=obj.domain;
+		dx=x(2)-x(1);
 		C=field;
 		%length(C)
 		%C(1001)
 
 		n=length(x);
 
-		%binary search for adjacent grid points
-		kMin=1;
-		kMax=n;
-		k=floor((kMin+kMax)/2);
+		%%binary search for adjacent grid points
+		%kMin=1;
+		%kMax=n;
+		%k=floor((kMin+kMax)/2);
 
-		while ~(x(k)<=xCoordinate && xCoordinate<=x(k+1))
-			%disp('New iteration');
-			%disp('xCoordinate');
-			%xCoordinate
-			%disp('x(k)');
-			%x(k)
-			%disp('x(kMin)');
-			%x(kMin)
-			%disp('x(kMax)');
-			%x(kMax)
-			%%disp('x(1)');
-			%%x(1)
-			%pause(1);
-			%coordinate smaller than x(k)
-			if xCoordinate<x(k)
-				kMax=k;
-				k=floor((kMin+kMax)/2);
-			%coordinate larger than x(k)
-			else
-				kMin=k+1;
-				k=floor((kMin+kMax)/2);
-			end
-		end
+		%while ~(x(k)<=xCoordinate && xCoordinate<=x(k+1))
+		%	%disp('New iteration');
+		%	%disp('xCoordinate');
+		%	%xCoordinate
+		%	%disp('x(k)');
+		%	%x(k)
+		%	%disp('x(kMin)');
+		%	%x(kMin)
+		%	%disp('x(kMax)');
+		%	%x(kMax)
+		%	%%disp('x(1)');
+		%	%%x(1)
+		%	%pause(1);
+		%	%coordinate smaller than x(k)
+		%	if xCoordinate<x(k)
+		%		kMax=k;
+		%		k=floor((kMin+kMax)/2);
+		%	%coordinate larger than x(k)
+		%	else
+		%		kMin=k+1;
+		%		k=floor((kMin+kMax)/2);
+		%	end
+		%end
+
+		%Search adjacent grid points
+		xDiff=xCoordinate-x(1);
+		kDiff=xDiff/dx;
+		k=floor(kDiff)+1;
 
 		%xCoordinate found between x(k) and x(k+1)
 		CLeft=C(k);
