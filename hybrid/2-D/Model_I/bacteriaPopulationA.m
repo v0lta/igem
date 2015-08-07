@@ -11,10 +11,12 @@ classdef bacteriaPopulationA < handle
 		obj.bacteria=bacteria;
 		obj.domain=domain;
 
-		[X,Y]=meshgrid(domain(:,1),domain(:,2));
-		domainGrid=[];
-		domainGrid(:,:,1)=X;
-		domainGrid(:,:,2)=Y;
+		%domainx=domain(:,1);
+		%domainy=domain(:,2);
+		[X,Y]=meshgrid(domain.x,domain.y);
+		%domainGrid=[];
+		domainGrid.X=X;
+		domainGrid.Y=Y;
 		obj.domainGrid=domainGrid;
 		end
 
@@ -33,44 +35,50 @@ classdef bacteriaPopulationA < handle
 	
 		function rho=bacteriadensity(obj,kernelfun,bandwidth)
 		%return bacteria density array evaluated on grid points of domain
-		X=obj.domainGrid(:,:,1);
-		Y=obj.domainGrid(:,:,2);
+		X=obj.domainGrid.X;
+		Y=obj.domainGrid.Y;
 		coordinateArray=obj.coordinates();
 		rho=KDE2D(coordinateArray,kernelfun,X,Y,bandwidth);
 		end
 
-		function update(obj,muA,dt)
+		function update(obj,AHLField,muA,dt,kappaA)
 		%only random diffusion based on diffusion constant
-		domainx=obj.domain(:,1);
-		domainy=obj.domain(:,2);
+		%domainx=obj.domain(:,1);
+		%domainy=obj.domain(:,2);
+		domain=obj.domain;
 		
 		for bacterium=obj.bacteria
 			x=bacterium.getxcoordinate();
 			y=bacterium.getycoordinate();
+			
+			AHL=AHLField.interpolconc([x y]);
+			dAHL=AHLField.interpolgrad([x y]);
+			dAHLx=dAHL(1);
+			dAHLy=dAHL(2);
 
 			%calculate new position
 			%new x
-			xNew=x+sqrt(2*muA*dt)*normrnd(0,1);
+			xNew=x+muA*kappaA/AHL*dAHLx+sqrt(2*muA*dt)*normrnd(0,1);
+			%new y
+			yNew=y+muA*kappaA/AHL*dAHLy+sqrt(2*muA)*normrnd(0,1);
 
 			%correct for going out of boundary
-			if xNew < domainx(1);
+			%x
+			if xNew < domain.x(1);
 				%wall boundary condition
-				xNew=domainx(1);
-			elseif xNew > domainx(end)
+				xNew=domain.x(1);
+			elseif xNew > domain.x(end)
 				%wall boundary condition
-				xNew=domainx(end);
+				xNew=domain.x(end);
 			end
 
-			%new y
-			yNew=y+sqrt(2*muA)*normrnd(0,1);
-
-			%correct for going out of boundary
-			if yNew < domainy(1);
+			%y
+			if yNew < domain.y(1);
 				%wall boundary condition
-				yNew=domainy(1);
-			elseif yNew > domainy(end)
+				yNew=domain.y(1);
+			elseif yNew > domain.y(end)
 				%wall boundary condition
-				yNew=domainy(end);
+				yNew=domain.y(end);
 			end
 
 			%set new position
