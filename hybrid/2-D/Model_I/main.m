@@ -1,12 +1,12 @@
 %Model I
 close all;clear all;clc;
-filename='diffusion_test_slash_operator';
+filename='diffusion_consumption_of_AHL';
 framerate=10;
 
 %Simulation parameters
 N=100;			%time steps
-%nBacteriaA=300;	%number of bacteria A
-nBacteriaA=1;	%number of bacteria A
+nBacteriaA=300;	%number of bacteria A
+%nBacteriaA=1;	%number of bacteria A
 XLength=30;		%Length of domain
 YLength=30;		%Length of domain
 J=100;			%# of subdivisions
@@ -26,10 +26,10 @@ dt=1;
 %define constants
 %muA=1/30;
 muA=1/50;		%diffusion constant of bacteria A
-%alpha=3e-3;		%consumption rate of AHL
-alpha=0;		%consumption rate of AHL
+alpha=-3e-3;	%production rate of AHL
+%alpha=0;		%production rate of AHL
 kappaA=2;		%chemotactic sensitivity constant
-DAHL=1/30;		%Diffusion constant of AHL
+DAHL=1/300;		%Diffusion constant of AHL
 
 %Initialize bacteria A
 bacteriaA=[];
@@ -52,11 +52,11 @@ bacteriaPopA=bacteriaPopulationA(bacteriaA,domain);
 m=length(domain.y);
 n=length(domain.x);
 [X,Y]=meshgrid(domain.x,domain.y);
-concentration=zeros(m,n);
-a=floor(J/4);
-idy=a:J-a;
-idx=a:J-a;
-concentration(idy,idx)=ones(length(idy),length(idx));
+concentration=zeros(m,n)+1;
+%a=floor(J/3);
+%idy=a:J-a;
+%idx=a:J-a;
+%concentration(idy,idx)=ones(length(idy),length(idx));
 
 %boundary conditions
 west=concentration(:,1);
@@ -75,6 +75,9 @@ model=model1(bacteriaPopA,AHLField,alpha,muA,DAHL,kappaA,kernelfun,bandwidth,dt,
 for i=1:N
 	model.update();
 end
+
+%% save workspace
+save(filename);
 
 %% Make videos
 vidObj3D=VideoWriter([filename '_3D.avi']);

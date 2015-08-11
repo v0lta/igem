@@ -106,9 +106,11 @@ classdef model1 < handle
 		X=obj.domainGrid.X;
 		Y=obj.domainGrid.Y;
 
+		AHLMax=max(max(max(obj.AHLArray)));
+
 		AHL=obj.AHLArray(:,:,k);
 		%multiply for scaling
-		mesh(X,Y,AHL*scaling,'facecolor','none');
+		mesh(X,Y,(AHL-AHLMax)*scaling,'facecolor','none');
 		%surf(X,Y,AHL*scaling);
 		view(3);
 
@@ -140,7 +142,7 @@ classdef model1 < handle
 		currentMaxRho=max(max(obj.rhoAArray(:,:,k)));
 		maxAHL=max(max(max(obj.AHLArray)));
 		currentMaxAHL=max(max(obj.AHLArray(:,:,k)));
-		zlim([0 max([maxRho maxAHL*scaling])]);
+		zlim([-maxAHL*scaling max([maxRho maxAHL*scaling])]);
 
 		%if maxRho>maxAHL*obj.scaling
 		%	if currentMaxRho>maxRho/2

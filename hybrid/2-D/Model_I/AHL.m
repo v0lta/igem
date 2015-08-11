@@ -162,6 +162,11 @@ classdef AHL<handle
 			1/2*muY*A(idy+1,idx)+...
 			dt/2*alpha*rhoAOld(idy,idx);
 
+		%disp('RHS1');
+		%pause(1);
+		%RHS1
+		%pause(1);
+
 		RHS1=RHS1';
 		RHS1(1,:)=RHS1(1,:)+1/2*muX*west(idy);
 		RHS1(end,:)=RHS1(end,:)+1/2*muX*east(idy);
@@ -170,10 +175,14 @@ classdef AHL<handle
 		M=toeplitz([1+muX -1/2*muX zeros(1,Jx-4)],[1+muX -1/2*muX zeros(1,Jx-4)]);
 
 		%calculate concentration at half timestep
-		%B=RHS1\M;
 		B=M\RHS1;
 		%B=inv(M)*RHS1;
 		A(idy,idx)=B;
+
+		%disp('B');
+		%pause(1);
+		%B
+		%pause(1);
 
 		%First half step
 		%Calculate RHS 2
@@ -182,8 +191,8 @@ classdef AHL<handle
 			1/2*muX*A(idy,idx+1)+...
 			dt/2*alpha*rhoANew(idy,idx);
 
-		RHS1(1,:)=RHS1(1,:)+1/2*muY*south(idx);
-		RHS1(end,:)=RHS1(end,:)+1/2*muY*north(idx);
+		RHS2(1,:)=RHS2(1,:)+1/2*muY*south(idx);
+		RHS2(end,:)=RHS2(end,:)+1/2*muY*north(idx);
 
 		%coefficient matrix
 		M=toeplitz([1+muY -1/2*muY zeros(1,Jy-4)],[1+muX -1/2*muX zeros(1,Jy-4)]);
