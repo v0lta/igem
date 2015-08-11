@@ -1,11 +1,12 @@
 %Model I
 close all;clear all;clc;
-filename='chemotaxis_and_nutrient_consumption';
+filename='diffusion_test_slash_operator';
 framerate=10;
 
 %Simulation parameters
 N=100;			%time steps
-nBacteriaA=300;	%number of bacteria A
+%nBacteriaA=300;	%number of bacteria A
+nBacteriaA=1;	%number of bacteria A
 XLength=30;		%Length of domain
 YLength=30;		%Length of domain
 J=100;			%# of subdivisions
@@ -25,8 +26,10 @@ dt=1;
 %define constants
 %muA=1/30;
 muA=1/50;		%diffusion constant of bacteria A
-alpha=3e-3;		%consumption rate of AHL
+%alpha=3e-3;		%consumption rate of AHL
+alpha=0;		%consumption rate of AHL
 kappaA=2;		%chemotactic sensitivity constant
+DAHL=1/30;		%Diffusion constant of AHL
 
 %Initialize bacteria A
 bacteriaA=[];
@@ -48,16 +51,25 @@ bacteriaPopA=bacteriaPopulationA(bacteriaA,domain);
 %uniform
 m=length(domain.y);
 n=length(domain.x);
-concentration=zeros(m,n)+1;
+[X,Y]=meshgrid(domain.x,domain.y);
+concentration=zeros(m,n);
+a=floor(J/4);
+idy=a:J-a;
+idx=a:J-a;
+concentration(idy,idx)=ones(length(idy),length(idx));
 
 %boundary conditions
-boundaries=magic(4);
+west=concentration(:,1);
+east=concentration(:,end);
+south=concentration(1,:);
+north=concentration(end,:);
+boundaries=[west,east,south',north'];
 AHLField=AHL(domain,concentration,boundaries);
 
 %define scaling for plotting concentrations
 scaling=20;
 
-model=model1(bacteriaPopA,AHLField,alpha,muA,kappaA,kernelfun,bandwidth,dt,scaling);
+model=model1(bacteriaPopA,AHLField,alpha,muA,DAHL,kappaA,kernelfun,bandwidth,dt,scaling);
 
 %% run simulation
 for i=1:N

@@ -1,4 +1,4 @@
-
+clear all;close all;clc;
 %implicit adi method to solve the heat equation part for both equations.
 %this method is brocken!!
 
@@ -20,6 +20,8 @@ steps = floor(tend/dt)
 %there are only cells at the center.
 [x,y] = meshgrid(linspace(0,1,J));
 N = 15*(x - x.^2).*(y-y.^2).*exp(-50 .*((x - 0.5).^2 + (y - 0.5).^2 ));
+figure(1);
+surf(N);shading('flat');
 
 %N = 0.*x + 0.*y;
 %N((J/2-10):(J/2+10),(J/2-10):(J/2+10)) = 1;
@@ -41,4 +43,5 @@ for t = 1:200
   end
     
 end 
+figure(2);
 surf(N);shading('flat');

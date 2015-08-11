@@ -7,6 +7,7 @@ classdef model1 < handle
 		%constants
 		alpha;	%consumption rate of AHL
 		muA;	%diffusion constant of bacteria A
+		DAHL;	%diffusion constant of AHL
 		kappaA;	%chemotactic sensitivity of bacteria A
 
 		%kernel function and bandwidth
@@ -30,12 +31,13 @@ classdef model1 < handle
 	end
 
 	methods
-		function obj=model1(bacteriaPopA,AHLField,alpha,muA,kappaA,kernelfun,bandwidth,dt,scaling)
+		function obj=model1(bacteriaPopA,AHLField,alpha,muA,DAHL,kappaA,kernelfun,bandwidth,dt,scaling)
 		%process arguments
 		obj.bacteriaPopA=bacteriaPopA;
 		obj.AHLField=AHLField;
 		obj.alpha=alpha;
 		obj.muA=muA;
+		obj.DAHL=DAHL;
 		obj.kappaA=kappaA;
 		obj.kernelfun=kernelfun;
 		obj.bandwidth=bandwidth;
@@ -58,18 +60,19 @@ classdef model1 < handle
 
 		function update(obj)
 		%Current rho
-		rhoA=obj.rhoAArray(:,:,end);
-		%update AHL field
-		obj.AHLField.update(rhoA,obj.alpha,obj.dt);
+		rhoAOld=obj.rhoAArray(:,:,end);
 
 		%bacteria A
 		%update bacteria positions
 		obj.bacteriaPopA.update(obj.AHLField,obj.muA,obj.dt,obj.kappaA);
 		%calculate bacteria density
-		rhoA=obj.bacteriaPopA.bacteriadensity(obj.kernelfun,obj.bandwidth);
+		rhoANew=obj.bacteriaPopA.bacteriadensity(obj.kernelfun,obj.bandwidth);
+
+		%update AHL field
+		obj.AHLField.update(rhoAOld,rhoANew,obj.DAHL,obj.alpha,obj.dt);
 
 		%record rho
-		obj.rhoAArray(:,:,end+1)=rhoA;
+		obj.rhoAArray(:,:,end+1)=rhoANew;
 		%record coordinates
 		obj.coordinateAMatrix(:,:,end+1)=obj.bacteriaPopA.coordinates();
 		%record AHL field

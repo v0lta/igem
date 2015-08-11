@@ -131,20 +131,74 @@ classdef AHL<handle
 		interpolatedGradient=[interpolatedXDeriv interpolatedYDeriv];
 		end
 
-		function update(obj,rhoA,alpha,dt)
-		%Update concentration based on bacterial density and consumption rate
-		%(no diffusion implemented yet)
+		function update(obj,rhoAOld,rhoANew,DAHL,alpha,dt)
+		%Update concentration based on bacterial density, diffusion constant,
+	   	%and consumption rate and timestep
 
-		[m,n]=size(obj.concentration);
+		domain=obj.domain;
+		Jx=length(domain.x);
+		Jy=length(domain.y);
 
-		%explicit finite difference
-		obj.concentration=obj.concentration-dt*alpha*rhoA;
+		dx=domain.x(2)-domain.x(1);
+		dy=domain.y(2)-domain.y(1);
+
+		idx=2:Jx-1;
+		idy=2:Jy-1;
+
+		muX=DAHL*dt/dx^2;
+		muY=DAHL*dt/dy^2;
+
+		west=obj.westBoundary';
+		east=obj.eastBoundary';
+		north=obj.northBoundary';
+		south=obj.southBoundary';
+
+		%ADI fixed boundary conditions, assuming initial conditions and boundary conditions are compatible
+		%First half step
+		%Calculate RHS 1
+		A=obj.concentration;
+		RHS1=(1-muY)*A(idy,idx)+...
+			1/2*muY*A(idy-1,idx)+...
+			1/2*muY*A(idy+1,idx)+...
+			dt/2*alpha*rhoAOld(idy,idx);
+
+		RHS1=RHS1';
+		RHS1(1,:)=RHS1(1,:)+1/2*muX*west(idy);
+		RHS1(end,:)=RHS1(end,:)+1/2*muX*east(idy);
+
+		%coefficient matrix
+		M=toeplitz([1+muX -1/2*muX zeros(1,Jx-4)],[1+muX -1/2*muX zeros(1,Jx-4)]);
+
+		%calculate concentration at half timestep
+		%B=RHS1\M;
+		B=M\RHS1;
+		%B=inv(M)*RHS1;
+		A(idy,idx)=B;
+
+		%First half step
+		%Calculate RHS 2
+		RHS2=(1-muX)*A(idy,idx)+...
+			1/2*muX*A(idy,idx-1)+...
+			1/2*muX*A(idy,idx+1)+...
+			dt/2*alpha*rhoANew(idy,idx);
+
+		RHS1(1,:)=RHS1(1,:)+1/2*muY*south(idx);
+		RHS1(end,:)=RHS1(end,:)+1/2*muY*north(idx);
+
+		%coefficient matrix
+		M=toeplitz([1+muY -1/2*muY zeros(1,Jy-4)],[1+muX -1/2*muX zeros(1,Jy-4)]);
+
+		%calculate concentration at full timestep
+		B=M\RHS2;
+		%B=inv(M)*RHS2;
+
+		obj.concentration(idy,idx)=B;
 
 		%Correct for negative concentration
-		for j=1:n
-			for i=1:m
-				if obj.concentration(i)<1e-5
-					obj.concentration(i)=1e-5;
+		for j=1:Jx
+			for i=1:Jy
+				if obj.concentration(i,j)<1e-5
+					obj.concentration(i,j)=1e-5;
 				end
 			end
 		end
