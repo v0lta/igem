@@ -96,6 +96,9 @@ classdef AHL<handle
 			i=m-1;
 		end
 
+		%i
+		%yCoordinate
+
 		%search for j
 		xDiff=xCoordinate-domain.x(1);
 		jDiff=xDiff/dx;
@@ -113,6 +116,10 @@ classdef AHL<handle
 		%error checking
 		if deltaY>dy || deltaX>dx
 			disp('ALARM in interpolation');
+			disp('i');
+			i
+			disp('j');
+			j
 		end
 		
 		interpolatedValue=1/(dx*dy)*(sigmaX*sigmaY*field(i,j)+...
@@ -131,10 +138,9 @@ classdef AHL<handle
 		interpolatedGradient=[interpolatedXDeriv interpolatedYDeriv];
 		end
 
-		function update(obj,rhoAOld,rhoANew,DAHL,alpha,dt)
+		function updatedirichlet(obj,rhoAOld,rhoANew,DAHL,alpha,dt)
 		%Update concentration based on bacterial density, diffusion constant,
 	   	%and consumption rate and timestep
-
 		domain=obj.domain;
 		Jx=length(domain.x);
 		Jy=length(domain.y);
@@ -202,6 +208,18 @@ classdef AHL<handle
 		%B=inv(M)*RHS2;
 
 		obj.concentration(idy,idx)=B;
+		end
+
+		function update(obj,rhoAOld,rhoANew,DAHL,alpha,dt)
+		%Update concentration based on bacterial density, diffusion constant,
+	   	%and consumption rate and timestep
+
+		domain=obj.domain;
+		Jx=length(domain.x);
+		Jy=length(domain.y);
+
+		%Dirichlet boundary conditions
+		obj.updatedirichlet(rhoAOld,rhoANew,DAHL,alpha,dt);
 
 		%Correct for negative concentration
 		for j=1:Jx

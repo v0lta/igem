@@ -41,7 +41,7 @@ classdef bacteriaPopulationA < handle
 		rho=KDE2D(coordinateArray,kernelfun,X,Y,bandwidth);
 		end
 
-		function update(obj,AHLField,muA,dt,kappaA)
+		function update(obj,AHLField,muA,VthA,kappaA,dt)
 		%only random diffusion based on diffusion constant
 		%domainx=obj.domain(:,1);
 		%domainy=obj.domain(:,2);
@@ -56,11 +56,23 @@ classdef bacteriaPopulationA < handle
 			dAHLx=dAHL(1);
 			dAHLy=dAHL(2);
 
+			if AHL>VthA	%AHL above threshold => low diffusion
+				currentMuA=muA.low;
+			else		%AHL below threshold => high diffusion
+				currentMuA=muA.high;
+			end
+
 			%calculate new position
 			%new x
-			xNew=x+muA*kappaA/AHL*dAHLx+sqrt(2*muA*dt)*normrnd(0,1);
+			xNew=x+currentMuA*kappaA/AHL*dAHLx+sqrt(2*currentMuA*dt)*normrnd(0,1);
 			%new y
-			yNew=y+muA*kappaA/AHL*dAHLy+sqrt(2*muA)*normrnd(0,1);
+			yNew=y+currentMuA*kappaA/AHL*dAHLy+sqrt(2*currentMuA*dt)*normrnd(0,1);
+
+			if AHL==0
+				disp('ALARM');
+				xNew
+				yNew
+			end
 
 			%correct for going out of boundary
 			%x

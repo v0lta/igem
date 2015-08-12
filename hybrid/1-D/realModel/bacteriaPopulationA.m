@@ -37,9 +37,9 @@ classdef bacteriaPopulationA < handle
 			AHL=AHLField.interpolconc(x);%local AHL concentration
 			dAHL=AHLField.interpolgrad(x);%local AHL gradient
 
-			if AHL>VthA	%AHL below threshold => low diffusion
+			if AHL>VthA	%AHL above threshold => low diffusion
 				currentMuA=muA(1);
-			else		%AHL above threshold => high diffusion
+			else		%AHL below threshold => high diffusion
 				currentMuA=muA(2);
 			end
 

@@ -65,14 +65,14 @@ classdef bacteriaPopulationA < handle
 			AHL=AHLField.interpolconc(x);%local AHL concentration
 			dAHL=AHLField.interpolgrad(x);%local AHL gradient
 
-			if AHL>VthA	%AHL below threshold => low diffusion
+			if AHL>VthA	%AHL below threshold => high diffusion
 				%variable speed, fixed turning frequency
 				%currentSpeedA=speedA(1);
 				%currentLambda0A=lambda0A;
 				%variable turning frequency, fixed speed
 				currentSpeedA=speedA;
 				currentLambda0A=lambda0A(2);
-			else		%AHL above threshold => high diffusion
+			else		%AHL above threshold => low diffusion
 				%variable speed, fixed turning frequency
 				%currentSpeedA=speedA(2);
 				%currentLambda0A=lambda0A;
