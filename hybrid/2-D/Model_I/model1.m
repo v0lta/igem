@@ -122,6 +122,8 @@ classdef model1 < handle
 		rhoA=obj.rhoAArray(:,:,k);
 		%surf(X,Y,rhoA);
 		mesh(X,Y,rhoA,'facecolor','none');
+		%m=meshc(X,Y,rhoA);
+		%set(m,'facecolor','none');
 		%surf(X,Y,rhoA);
 		view(3);
 		%view(-37.5,0);
@@ -139,6 +141,8 @@ classdef model1 < handle
 		rhoB=obj.rhoBArray(:,:,k);
 		%surf(X,Y,rhoA);
 		mesh(X,Y,rhoB,'facecolor','none');
+		%m=meshc(X,Y,rhoB);
+		%set(m,'facecolor','none');
 		%surf(X,Y,rhoA);
 		view(3);
 		%view(-37.5,0);
@@ -159,6 +163,8 @@ classdef model1 < handle
 		%multiply for scaling
 		%mesh(X,Y,(AHL-AHLMax)*scaling,'facecolor','none');
 		mesh(X,Y,AHL*scaling,'facecolor','none');
+		%m=meshc(X,Y,AHL*scaling);
+		%set(m,'facecolor','none');
 		%surf(X,Y,AHL*scaling);
 		view(3);
 		%view(-37.5,10);
@@ -244,6 +250,9 @@ classdef model1 < handle
 		zlim([0 rhoALimit]);
 		%foo = get(gca,'dataaspectratio');
 		%set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
+		xlabel('x');
+		ylabel('y');
+		zlabel('Density');
 
 		subplot(1,3,2);
 		obj.plotrhoB3D(k,fig);
@@ -253,6 +262,9 @@ classdef model1 < handle
 		zlim([0 rhoBLimit]);
 		%foo = get(gca,'dataaspectratio');
 		%set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
+		xlabel('x');
+		ylabel('y');
+		zlabel('Density');
 
 		subplot(1,3,3);
 		obj.plotAHL3D(k,fig,scaling);
@@ -261,6 +273,9 @@ classdef model1 < handle
 		zlim([0 AHLLimit*scaling]);
 		%foo = get(gca,'dataaspectratio');
 		%set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
+		xlabel('x');
+		ylabel('y');
+		zlabel('Concentration');
 		end
 
 		function plotrhoA2D(obj,k,fig)
@@ -374,17 +389,26 @@ classdef model1 < handle
 		%obj.plotbacteriaA2D(k,fig);
 		title('Bacteria A');
 		axis equal;
+		xlabel('x');
+		ylabel('y');
+		zlabel('Density');
 
 		subplot(1,3,2);
 		obj.plotrhoB2D(k,fig);
 		%obj.plotbacteriaB2D(k,fig);
 		title('Bacteria B');
 		axis equal;
+		xlabel('x');
+		ylabel('y');
+		zlabel('Density');
 
 		subplot(1,3,3);
 		obj.plotAHL2D(k,fig,scaling);
 		title('AHL');
 		axis equal;
+		xlabel('x');
+		ylabel('y');
+		zlabel('Concentration');
 
 		end
 	end

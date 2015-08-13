@@ -1,4 +1,7 @@
 %% Make videos
+
+save(filename);
+disp('Saving workspace and videos');
 vidObj3D=VideoWriter([filename '_3D.avi']);
 set(vidObj3D,'FrameRate',framerate);
 open(vidObj3D);

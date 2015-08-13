@@ -1,17 +1,22 @@
 %Model I
 close all;clear all;clc;
-filename='dirichlet';
+filename=['zero_flux_',...
+	'zero_initial_concentration_',...
+	'high_degradation_',...
+	'uniform_A_',...
+	'uniform_B_',...
+	'large_simulation'];
 framerate=10;
 
 %Simulation parameters
-N=100;			%time steps
-nBacteriaA=300;	%number of bacteria A
+N=1000;			%time steps
+nBacteriaA=1000;	%number of bacteria A
 %nBacteriaA=1;	%number of bacteria A
-%nBacteriaB=300;	%number of bacteria B
-nBacteriaB=1;	%number of bacteria B
-XLength=30;		%Length of domain
-YLength=30;		%Length of domain
-J=100;			%# of subdivisions
+nBacteriaB=1000;	%number of bacteria B
+%nBacteriaB=1;	%number of bacteria B
+XLength=25;		%Length of domain
+YLength=25;		%Length of domain
+J=101;			%# of subdivisions
 
 %define domain
 domain.x=linspace(0,XLength,J);
@@ -28,7 +33,9 @@ dt=1;
 %define constants
 alpha=3e-3;	%production rate of AHL
 %alpha=-3e-3;	%production rate of AHL
-k1=5e-3;		%degradation rate of AHL
+%k1=5e-3;		%degradation rate of AHL
+%k1=0;		%degradation rate of AHL
+k1=5e-1;		%degradation rate of AHL
 %DAHL=1/300;		%Diffusion constant of AHL
 DAHL=1/30;		%Diffusion constant of AHL
 %muA=1/30;
@@ -53,8 +60,15 @@ for i=1:nBacteriaA
 	%x=XLength/2;
 	%y=YLength/2;
 
-	x=normrnd(9/10*XLength,1);
-	y=normrnd(9/10*YLength,1);
+	%gaussian
+	%x=normrnd(1/2*XLength,1);
+	%y=normrnd(1/2*YLength,1);
+	%x=normrnd(9/10*XLength,1);
+	%y=normrnd(9/10*YLength,1);
+
+	%uniform random
+	x=rand*XLength;
+	y=rand*YLength;
 
 	if x>XLength
 		x=XLength;
@@ -77,8 +91,21 @@ for i=1:nBacteriaB
 	%x=XLength/2;
 	%y=YLength/2;
 
+	%gaussian
 	x=normrnd(XLength/2,1);
 	y=normrnd(YLength/2,1);
+
+	%uniform random
+	x=rand*XLength;
+	y=rand*YLength;
+
+	if x>XLength
+		x=XLength;
+	end
+
+	if y>YLength
+		y=YLength;
+	end
 
 	b=bacterium(x,y);
 	bacteriaB=[bacteriaB b];
@@ -92,8 +119,8 @@ n=length(domain.x);
 [X,Y]=meshgrid(domain.x,domain.y);
 
 %uniform
-concentration=zeros(m,n)+1;
-%concentration=zeros(m,n)+1e-5;
+%concentration=zeros(m,n)+1;
+concentration=zeros(m,n)+1e-5;
 
 %block
 %a=floor(J/3);
@@ -134,6 +161,6 @@ disp('Preview of simulation');
 preview;
 
 %% save workspace and make videos
-
-save(filename);
 makevideo;
+
+disp('End!');

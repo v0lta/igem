@@ -335,10 +335,10 @@ classdef AHL<handle
 		Jy=length(domain.y);
 
 		%Dirichlet boundary conditions
-		obj.updatedirichlet(rhoAOld,rhoANew,DAHL,alpha,dt);
+		%obj.updatedirichlet(rhoAOld,rhoANew,DAHL,alpha,dt);
 
 		%Zero flux boundary conditions
-		%obj.updatezeroflux(rhoAOld,rhoANew,DAHL,alpha,k1,dt);
+		obj.updatezeroflux(rhoAOld,rhoANew,DAHL,alpha,k1,dt);
 
 		%Correct for negative concentration
 		for j=1:Jx

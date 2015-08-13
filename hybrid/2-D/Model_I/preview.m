@@ -1,4 +1,5 @@
 close all;
+
 nFrames=model.getlength();
 fig=figure();
 set(fig,'units','normalized','outerposition',[0 0 1 1]);
