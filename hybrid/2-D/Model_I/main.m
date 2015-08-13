@@ -1,13 +1,14 @@
 %Model I
 close all;clear all;clc;
-filename='two_bacteria_types_AHL_modulated_diffusion';
+filename='dirichlet';
 framerate=10;
 
 %Simulation parameters
-N=300;			%time steps
+N=100;			%time steps
 nBacteriaA=300;	%number of bacteria A
 %nBacteriaA=1;	%number of bacteria A
-nBacteriaB=300;	%number of bacteria B
+%nBacteriaB=300;	%number of bacteria B
+nBacteriaB=1;	%number of bacteria B
 XLength=30;		%Length of domain
 YLength=30;		%Length of domain
 J=100;			%# of subdivisions
@@ -19,14 +20,17 @@ domain.y=linspace(0,YLength,J);
 
 %define kernel functions and bandwidth
 kernelfun=@epanechnikov2DNorm;
-bandwidth=.5;
+bandwidth=.8;
 
 %define timestep
 dt=1;
 
 %define constants
 alpha=3e-3;	%production rate of AHL
-DAHL=1/300;		%Diffusion constant of AHL
+%alpha=-3e-3;	%production rate of AHL
+k1=5e-3;		%degradation rate of AHL
+%DAHL=1/300;		%Diffusion constant of AHL
+DAHL=1/30;		%Diffusion constant of AHL
 %muA=1/30;
 muHighA=1/30;	%high diffusion constant of bacteria A
 muLowA=1/300;	%low diffusion constant of bacteria A
@@ -49,8 +53,16 @@ for i=1:nBacteriaA
 	%x=XLength/2;
 	%y=YLength/2;
 
-	x=normrnd(XLength/2,1);
-	y=normrnd(YLength/2,1);
+	x=normrnd(9/10*XLength,1);
+	y=normrnd(9/10*YLength,1);
+
+	if x>XLength
+		x=XLength;
+	end
+
+	if y>YLength
+		y=YLength;
+	end
 
 	b=bacterium(x,y);
 	bacteriaA=[bacteriaA b];
@@ -81,7 +93,7 @@ n=length(domain.x);
 
 %uniform
 concentration=zeros(m,n)+1;
-concentration=zeros(m,n)+1e-5;
+%concentration=zeros(m,n)+1e-5;
 
 %block
 %a=floor(J/3);
@@ -102,10 +114,11 @@ AHLField=AHL(domain,concentration,boundaries);
 scaling=20;
 
 model=model1(bacteriaPopA,bacteriaPopB,AHLField,...
-	alpha,muA,muB,DAHL,kappaA,kappaB,VthA,VthB,...
+	alpha,k1,muA,muB,DAHL,kappaA,kappaB,VthA,VthB,...
 	kernelfun,bandwidth,dt,scaling);
 
 %% run simulation
+disp('Running simulation');
 for i=1:N
 	model.update();
 end
@@ -114,11 +127,13 @@ beep on;
 beep;
 beep off;
 
-%% save workspace
-save(filename);
+disp('Simulation finished');
 
 %% preview
+disp('Preview of simulation');
 preview;
 
-%% make videos
-%makevideo;
+%% save workspace and make videos
+
+save(filename);
+makevideo;

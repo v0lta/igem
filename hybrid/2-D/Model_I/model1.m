@@ -6,7 +6,8 @@ classdef model1 < handle
 		AHLField;
 
 		%constants
-		alpha;	%consumption rate of AHL
+		alpha;	%production rate of AHL
+		k1;		%degradation rate of AHL
 		muA;	%diffusion constant of bacteria A
 		muB;	%diffusion constant of bacteria B
 		DAHL;	%diffusion constant of AHL
@@ -39,13 +40,14 @@ classdef model1 < handle
 
 	methods
 		function obj=model1(bacteriaPopA,bacteriaPopB,AHLField,...
-		alpha,muA,muB,DAHL,kappaA,kappaB,VthA,VthB,...
+		alpha,k1,muA,muB,DAHL,kappaA,kappaB,VthA,VthB,...
 		kernelfun,bandwidth,dt,scaling)
 		%process arguments
 		obj.bacteriaPopA=bacteriaPopA;
 		obj.bacteriaPopB=bacteriaPopB;
 		obj.AHLField=AHLField;
 		obj.alpha=alpha;
+		obj.k1=k1;
 		obj.muA=muA;
 		obj.muB=muB;
 		obj.DAHL=DAHL;
@@ -94,7 +96,7 @@ classdef model1 < handle
 		rhoB=obj.bacteriaPopB.bacteriadensity(obj.kernelfun,obj.bandwidth);
 
 		%update AHL field
-		obj.AHLField.update(rhoAOld,rhoA,obj.DAHL,obj.alpha,obj.dt);
+		obj.AHLField.update(rhoAOld,rhoA,obj.DAHL,obj.alpha,obj.k1,obj.dt);
 
 		%record rho
 		obj.rhoAArray(:,:,end+1)=rhoA;
@@ -219,9 +221,13 @@ classdef model1 < handle
 		maxAHL=max(max(max(obj.AHLArray)));
 		currentMaxAHL=max(max(obj.AHLArray(:,:,k)));
 
-		rhoALimit=obj.calculatelimit(maxRhoA,currentMaxRhoA);
-		rhoBLimit=obj.calculatelimit(maxRhoB,currentMaxRhoB);
-		AHLLimit=obj.calculatelimit(maxAHL,currentMaxAHL);
+		%rhoALimit=obj.calculatelimit(maxRhoA,currentMaxRhoA);
+		%rhoBLimit=obj.calculatelimit(maxRhoB,currentMaxRhoB);
+		%AHLLimit=obj.calculatelimit(maxAHL,currentMaxAHL);
+
+		rhoALimit=maxRhoA;
+		rhoBLimit=maxRhoB;
+		AHLLimit=maxAHL;
 
 		end
 
@@ -268,6 +274,7 @@ classdef model1 < handle
 		%surf(X,Y,rhoA);
 		%mesh(X,Y,rhoA,'facecolor','none');
 		surf(X,Y,rhoA);
+		shading('flat');
 		view(2);
 		
 		hold off;
@@ -284,6 +291,7 @@ classdef model1 < handle
 		%surf(X,Y,rhoB);
 		%mesh(X,Y,rhoB,'facecolor','none');
 		surf(X,Y,rhoB);
+		shading('flat');
 		view(2);
 		
 		hold off;
@@ -300,6 +308,7 @@ classdef model1 < handle
 		%multiply for scaling
 		%mesh(X,Y,AHL*scaling,'facecolor','none');
 		surf(X,Y,AHL*scaling);
+		shading('flat');
 		view(2);
 
 		%%double plot
