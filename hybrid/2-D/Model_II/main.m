@@ -6,21 +6,21 @@ filename=['zero_flux_',...
 	'uniform_A_',...
 	'uniform_B_',...
 	'rectangular_domain_',...
-	'large_simulation'];
+	'small_simulation'];
 framerate=10;
 
 %Simulation parameters
-N=1000;				%time steps
-nBacteriaA=1000;	%number of bacteria A
-%nBacteriaA=300;		%number of bacteria A
+N=100;				%time steps
+%nBacteriaA=1000;	%number of bacteria A
+nBacteriaA=300;		%number of bacteria A
 %nBacteriaA=1;		%number of bacteria A
-nBacteriaB=1000;	%number of bacteria B
-%nBacteriaB=300;		%number of bacteria B
+%nBacteriaB=1000;	%number of bacteria B
+nBacteriaB=300;		%number of bacteria B
 %nBacteriaB=1;		%number of bacteria B
-XLength=40;			%Length of domain
+XLength=25;			%Length of domain
 YLength=1;			%Length of domain
-Jx=401;				%# of subdivisions
-Jy=21;				%# of subdivisions
+Jx=101;				%# of subdivisions
+Jy=5;				%# of subdivisions
 
 %define domain
 domain.x=linspace(0,XLength,Jx);
@@ -35,9 +35,9 @@ bandwidth=.8;
 dt=1;
 
 %define constants
-alpha=1e-3;		%production rate of AHL
+alpha=3e-3;		%production rate of AHL
 %alpha=-3e-3;	%production rate of AHL
-beta=2e-3;		%production rate of leucine
+beta=4e-3;		%production rate of leucine
 %k1=5e-3;		%degradation rate of AHL
 %k1=0;			%degradation rate of AHL
 k1=5e-1;		%degradation rate of AHL
