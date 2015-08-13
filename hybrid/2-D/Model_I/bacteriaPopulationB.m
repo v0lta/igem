@@ -41,8 +41,9 @@ classdef bacteriaPopulationB < handle
 		rho=KDE2D(coordinateArray,kernelfun,X,Y,bandwidth);
 		end
 
-		function update(obj,AHLField,muB,VthB,kappaB,dt)
-		%only random diffusion based on diffusion constant
+		function update(obj,AHLField,leucineField,muB,VthB,kappaB,dt)
+		%update bacterie position based on AHL and leucine fields, diffusion constant,
+		%threshold concentration, chemotactic sensitivity and timestep
 		%domainx=obj.domain(:,1);
 		%domainy=obj.domain(:,2);
 		domain=obj.domain;
@@ -52,9 +53,15 @@ classdef bacteriaPopulationB < handle
 			y=bacterium.getycoordinate();
 			
 			AHL=AHLField.interpolconc([x y]);
-			dAHL=AHLField.interpolgrad([x y]);
-			dAHLx=dAHL(1);
-			dAHLy=dAHL(2);
+
+			%disp('class of leucineField');
+			%class(leucineField)
+			%disp('leucineField');
+			%leucineField
+			leucine=leucineField.interpolconc([x y]);
+			dleucine=leucineField.interpolgrad([x y]);
+			dleucinex=dleucine(1);
+			dleuciney=dleucine(2);
 
 			if AHL>VthB	%AHL above threshold => high diffusion
 				currentMuB=muB.high;
@@ -65,9 +72,9 @@ classdef bacteriaPopulationB < handle
 			%calculate new position
 			%repelled by AHL
 			%new x
-			xNew=x-currentMuB*kappaB/AHL*dAHLx+sqrt(2*currentMuB*dt)*normrnd(0,1);
+			xNew=x-currentMuB*kappaB/leucine*dleucinex+sqrt(2*currentMuB*dt)*normrnd(0,1);
 			%new y
-			yNew=y-currentMuB*kappaB/AHL*dAHLy+sqrt(2*currentMuB*dt)*normrnd(0,1);
+			yNew=y-currentMuB*kappaB/leucine*dleuciney+sqrt(2*currentMuB*dt)*normrnd(0,1);
 
 			%correct for going out of boundary
 			%x

@@ -4,15 +4,19 @@ classdef model1 < handle
 		bacteriaPopA;
 		bacteriaPopB;
 		AHLField;
+		leucineField;
 
 		%constants
-		alpha;	%production rate of AHL
-		k1;		%degradation rate of AHL
-		muA;	%diffusion constant of bacteria A
-		muB;	%diffusion constant of bacteria B
-		DAHL;	%diffusion constant of AHL
-		kappaA;	%chemotactic sensitivity of bacteria A
-		kappaB;	%chemotactic sensitivity of bacteria B
+		alpha;		%production rate of AHL
+		beta;		%production rate of leucine
+		k1;			%degradation rate of AHL
+		k2;			%degradation rate of leucine
+		muA;		%diffusion constant of bacteria A
+		muB;		%diffusion constant of bacteria B
+		DAHL;		%diffusion constant of AHL
+		Dleucine;	%diffusion constant of leucine
+		kappaA;		%chemotactic sensitivity of bacteria A
+		kappaB;		%chemotactic sensitivity of bacteria B
 		VthA;		%threshold concentration of AHL of bacteria A
 		VthB;		%threshold concentration of AHL of bacteria B
 
@@ -29,6 +33,7 @@ classdef model1 < handle
 
 		%array of density arrays & coordinate arrays
 		AHLArray;
+		leucineArray;
 		rhoAArray;
 		rhoBArray;
 		coordinateAMatrix;
@@ -39,18 +44,22 @@ classdef model1 < handle
 	end
 
 	methods
-		function obj=model1(bacteriaPopA,bacteriaPopB,AHLField,...
-		alpha,k1,muA,muB,DAHL,kappaA,kappaB,VthA,VthB,...
+		function obj=model1(bacteriaPopA,bacteriaPopB,AHLField,leucineField,...
+		alpha,beta,k1,k2,muA,muB,DAHL,Dleucine,kappaA,kappaB,VthA,VthB,...
 		kernelfun,bandwidth,dt,scaling)
 		%process arguments
 		obj.bacteriaPopA=bacteriaPopA;
 		obj.bacteriaPopB=bacteriaPopB;
 		obj.AHLField=AHLField;
+		obj.leucineField=leucineField;
 		obj.alpha=alpha;
+		obj.beta=beta;
 		obj.k1=k1;
+		obj.k2=k2;
 		obj.muA=muA;
 		obj.muB=muB;
 		obj.DAHL=DAHL;
+		obj.Dleucine=Dleucine;
 		obj.kappaA=kappaA;
 		obj.kappaB=kappaB;
 		obj.VthA=VthA;
@@ -77,6 +86,9 @@ classdef model1 < handle
 
 		%AHL field
 		obj.AHLArray=AHLField.getconcentration();			%AHL Field
+
+		%leucine field
+		obj.leucineArray=leucineField.getconcentration();	%leucine Field
 		end
 
 		function update(obj)
@@ -91,12 +103,15 @@ classdef model1 < handle
 
 		%bacteria B
 		%update bacteria positions
-		obj.bacteriaPopB.update(obj.AHLField,obj.muB,obj.VthB,obj.kappaB,obj.dt);
+		obj.bacteriaPopB.update(obj.AHLField,obj.leucineField,obj.muB,obj.VthB,obj.kappaB,obj.dt);
 		%calculate bacteria density
 		rhoB=obj.bacteriaPopB.bacteriadensity(obj.kernelfun,obj.bandwidth);
 
 		%update AHL field
 		obj.AHLField.update(rhoAOld,rhoA,obj.DAHL,obj.alpha,obj.k1,obj.dt);
+
+		%update leucine field
+		obj.leucineField.update(rhoAOld,rhoA,obj.Dleucine,obj.beta,obj.k2,obj.dt);
 
 		%record rho
 		obj.rhoAArray(:,:,end+1)=rhoA;
@@ -106,6 +121,8 @@ classdef model1 < handle
 		obj.coordinateBMatrix(:,:,end+1)=obj.bacteriaPopB.coordinates();
 		%record AHL field
 		obj.AHLArray(:,:,end+1)=obj.AHLField.getconcentration();
+		%record leucine field
+		obj.leucineArray(:,:,end+1)=obj.leucineField.getconcentration();
 		end
 
 		function k=getlength(obj)
@@ -176,6 +193,32 @@ classdef model1 < handle
 		hold off;
 		end
 
+		function plotleucine3D(obj,k,fig,scaling)
+		figure(fig);
+		hold on;
+
+		X=obj.domainGrid.X;
+		Y=obj.domainGrid.Y;
+
+		leucineMax=max(max(max(obj.leucineArray)));
+
+		leucine=obj.leucineArray(:,:,k);
+		%multiply for scaling
+		%mesh(X,Y,(leucine-leucineMax)*scaling,'facecolor','none');
+		mesh(X,Y,leucine*scaling,'facecolor','none');
+		%m=meshc(X,Y,leucine*scaling);
+		%set(m,'facecolor','none');
+		%surf(X,Y,leucine*scaling);
+		view(3);
+		%view(-37.5,10);
+		%view(-40,0);
+
+		%%double plot
+		%plot(domain+domain(end),leucine*obj.scaling);
+
+		hold off;
+		end
+
 		function plotbacteriaA3D(obj,k,fig)
 		figure(fig);
 		hold on;
@@ -217,7 +260,7 @@ classdef model1 < handle
 		end
 
 
-		function [rhoALimit,rhoBLimit,AHLLimit]=limitoptimizer(obj,k)
+		function [rhoALimit,rhoBLimit,AHLLimit,leucineLimit]=limitoptimizer(obj,k)
 		maxRhoA=max(max(max(obj.rhoAArray)));
 		currentMaxRhoA=max(max(obj.rhoAArray(:,:,k)));
 
@@ -227,52 +270,71 @@ classdef model1 < handle
 		maxAHL=max(max(max(obj.AHLArray)));
 		currentMaxAHL=max(max(obj.AHLArray(:,:,k)));
 
+		maxleucine=max(max(max(obj.leucineArray)));
+		currentMaxleucine=max(max(obj.leucineArray(:,:,k)));
+
 		%rhoALimit=obj.calculatelimit(maxRhoA,currentMaxRhoA);
 		%rhoBLimit=obj.calculatelimit(maxRhoB,currentMaxRhoB);
 		%AHLLimit=obj.calculatelimit(maxAHL,currentMaxAHL);
+		%leucineLimit=obj.calculatelimit(maxleucine,currentMaxleucine);
 
 		rhoALimit=maxRhoA;
 		rhoBLimit=maxRhoB;
 		AHLLimit=maxAHL;
-
+		leucineLimit=maxleucine;
 		end
 
 		function plot3D(obj,k,fig)
 
 		scaling=obj.scaling;
-		[rhoALimit,rhoBLimit,AHLLimit]=obj.limitoptimizer(k);
+		[rhoALimit,rhoBLimit,AHLLimit,leucineLimit]=obj.limitoptimizer(k);
 
-		subplot(1,3,1);
+		%Bacteria A
+		subplot(2,2,1);
 		obj.plotrhoA3D(k,fig);
 		obj.plotbacteriaA3D(k,fig);
 		title('Bacteria A');
 		%legend('Density','Bacterium');
 		zlim([0 rhoALimit]);
-		%foo = get(gca,'dataaspectratio');
-		%set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
+		foo = get(gca,'dataaspectratio');
+		set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
 		xlabel('x');
 		ylabel('y');
 		zlabel('Density');
 
-		subplot(1,3,2);
+		%Bacteria B
+		subplot(2,2,2);
 		obj.plotrhoB3D(k,fig);
 		obj.plotbacteriaB3D(k,fig);
 		title('Bacteria B');
 		%legend('Density','Bacterium');
 		zlim([0 rhoBLimit]);
-		%foo = get(gca,'dataaspectratio');
-		%set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
+		foo = get(gca,'dataaspectratio');
+		set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
 		xlabel('x');
 		ylabel('y');
 		zlabel('Density');
 
-		subplot(1,3,3);
+		%AHL
+		subplot(2,2,3);
 		obj.plotAHL3D(k,fig,scaling);
 		title('AHL');
 		%legend('Concentration');
 		zlim([0 AHLLimit*scaling]);
-		%foo = get(gca,'dataaspectratio');
-		%set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
+		foo = get(gca,'dataaspectratio');
+		set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
+		xlabel('x');
+		ylabel('y');
+		zlabel('Concentration');
+
+		%leucine
+		subplot(2,2,4);
+		obj.plotleucine3D(k,fig,scaling);
+		title('Leucine');
+		%legend('Concentration');
+		zlim([0 leucineLimit*scaling]);
+		foo = get(gca,'dataaspectratio');
+		set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
 		xlabel('x');
 		ylabel('y');
 		zlabel('Concentration');
@@ -332,6 +394,26 @@ classdef model1 < handle
 		hold off;
 		end
 
+		function plotleucine2D(obj,k,fig,scaling)
+		figure(fig);
+		hold on;
+
+		X=obj.domainGrid.X;
+		Y=obj.domainGrid.Y;
+
+		leucine=obj.leucineArray(:,:,k);
+		%multiply for scaling
+		%mesh(X,Y,leucine*scaling,'facecolor','none');
+		surf(X,Y,leucine*scaling);
+		shading('flat');
+		view(2);
+
+		%%double plot
+		%plot(domain+domain(end),leucine*obj.scaling);
+
+		hold off;
+		end
+
 		function plotbacteriaA2D(obj,k,fig)
 		figure(fig);
 		hold on;
@@ -384,7 +466,7 @@ classdef model1 < handle
 		%	scaling=obj.scaling/4;
 		%end
 
-		subplot(1,3,1);
+		subplot(2,2,1);
 		obj.plotrhoA2D(k,fig);
 		%obj.plotbacteriaA2D(k,fig);
 		title('Bacteria A');
@@ -393,7 +475,7 @@ classdef model1 < handle
 		ylabel('y');
 		zlabel('Density');
 
-		subplot(1,3,2);
+		subplot(2,2,2);
 		obj.plotrhoB2D(k,fig);
 		%obj.plotbacteriaB2D(k,fig);
 		title('Bacteria B');
@@ -402,9 +484,17 @@ classdef model1 < handle
 		ylabel('y');
 		zlabel('Density');
 
-		subplot(1,3,3);
+		subplot(2,2,3);
 		obj.plotAHL2D(k,fig,scaling);
 		title('AHL');
+		axis equal;
+		xlabel('x');
+		ylabel('y');
+		zlabel('Concentration');
+
+		subplot(2,2,4);
+		obj.plotleucine2D(k,fig,scaling);
+		title('Leucine');
 		axis equal;
 		xlabel('x');
 		ylabel('y');
