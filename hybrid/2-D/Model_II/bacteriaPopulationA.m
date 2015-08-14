@@ -41,7 +41,34 @@ classdef bacteriaPopulationA < handle
 		rho=KDE2D(coordinateArray,kernelfun,X,Y,bandwidth);
 		end
 
-		function update(obj,AHLField,muA,VthA,kappaA,dt)
+		function newDirection=turn(obj,direction,lambda0A,kappaA,speedA,AHL,dAHL,timestep)
+		dAHLx=dAHL(1);
+		dAHLy=dAHL(2);
+
+		%lambda0A
+		%kappaA
+		%AHL
+		%currentSpeedA
+		%direction
+		%dAHLx
+		%dAHLy
+		lambda=lambda0A-kappaA/(2*AHL)*speedA*(cos(direction)*dAHLx+sin(direction)*dAHLy);
+
+		%disp('dS');
+		%dS
+
+		%disp('lambda');
+		%lambda
+
+		f=rand;
+		if f<lambda*timestep	%turn
+			newDirection=rand*2*pi;
+		else		%don't turn
+			newDirection=direction;
+		end
+		end
+
+		function update(obj,AHLField,lambda0A,speedA,kappaA,VthA,dt)
 		%only random diffusion based on diffusion constant
 		%domainx=obj.domain(:,1);
 		%domainy=obj.domain(:,2);
@@ -50,23 +77,33 @@ classdef bacteriaPopulationA < handle
 		for bacterium=obj.bacteria
 			x=bacterium.getxcoordinate();
 			y=bacterium.getycoordinate();
+			direction=bacterium.getdirection();
 			
 			AHL=AHLField.interpolconc([x y]);
 			dAHL=AHLField.interpolgrad([x y]);
-			dAHLx=dAHL(1);
-			dAHLy=dAHL(2);
 
 			if AHL>VthA	%AHL above threshold => low diffusion
-				currentMuA=muA.low;
+				%variable speed, fixed turning frequency
+				%currentSpeedA=speedA(1);
+				%currentLambda0A=lambda0A;
+				%variable turning frequency, fixed speed
+				currentSpeedA=speedA;
+				currentLambda0A=lambda0A.high;
 			else		%AHL below threshold => high diffusion
-				currentMuA=muA.high;
+				%variable speed, fixed turning frequency
+				%currentSpeedA=speedA(2);
+				%currentLambda0A=lambda0A;
+				%variable turning frequency, fixed speed
+				currentSpeedA=speedA;
+				currentLambda0A=lambda0A.high;
 			end
 
+			newDirection=obj.turn(direction,currentLambda0A,kappaA,currentSpeedA,AHL,dAHL,dt);%new direction
 			%calculate new position
 			%new x
-			xNew=x+currentMuA*kappaA/AHL*dAHLx+sqrt(2*currentMuA*dt)*normrnd(0,1);
+			xNew=x+currentSpeedA*cos(newDirection)*dt;
 			%new y
-			yNew=y+currentMuA*kappaA/AHL*dAHLy+sqrt(2*currentMuA*dt)*normrnd(0,1);
+			yNew=y+currentSpeedA*sin(newDirection)*dt;
 
 			if AHL==0
 				disp('ALARM');
@@ -92,6 +129,9 @@ classdef bacteriaPopulationA < handle
 				%wall boundary condition
 				yNew=domain.y(end);
 			end
+
+			%set new direction
+			bacterium.setdirection(newDirection);
 
 			%set new position
 			bacterium.setxcoordinate(xNew);

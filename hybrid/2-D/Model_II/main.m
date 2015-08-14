@@ -3,14 +3,14 @@ close all;clear all;clc;
 filename=['zero_flux_',...
 	'zero_initial_concentration_',...
 	'high_degradation_',...
-	'uniform_A_',...
-	'uniform_B_',...
-	'rectangular_domain_',...
+	'spot_A_',...
+	'spot_B_',...
+	'square_domain_',...
 	'small_simulation'];
 framerate=10;
 
 %Simulation parameters
-N=100;				%time steps
+N=600;				%time steps
 %nBacteriaA=1000;	%number of bacteria A
 nBacteriaA=300;		%number of bacteria A
 %nBacteriaA=1;		%number of bacteria A
@@ -18,9 +18,9 @@ nBacteriaA=300;		%number of bacteria A
 nBacteriaB=300;		%number of bacteria B
 %nBacteriaB=1;		%number of bacteria B
 XLength=25;			%Length of domain
-YLength=1;			%Length of domain
+YLength=25;			%Length of domain
 Jx=101;				%# of subdivisions
-Jy=5;				%# of subdivisions
+Jy=101;				%# of subdivisions
 
 %define domain
 domain.x=linspace(0,XLength,Jx);
@@ -45,18 +45,39 @@ k2=3e-1;		%degradation rate of leucine
 %DAHL=1/300;	%Diffusion constant of AHL
 DAHL=1/30;		%Diffusion constant of AHL
 Dleucine=1/20;	%Diffusion constant of leucine
-%muA=1/30;
-muHighA=1/30;	%high diffusion constant of bacteria A
-muLowA=1/300;	%low diffusion constant of bacteria A
-muHighB=1/30;	%high diffusion constant of bacteria B
-muLowB=1/300;	%low diffusion constant of bacteria B
-muA.low=muLowA;
-muA.high=muHighA;
-muB.low=muLowB;
-muB.high=muHighB;
+
+%variable speed
+%speedHighA=1e-2;	%high constant speed of bacteria A
+%speedLowA=.5e-2;		%low constant speed of bacteria A
+%speedHighB=1e-2;	%high constant speed of bacteria B
+%speedLowB=0.7e-2;		%low constant speed of bacteria B
+%%speedLowB=5e-2;		%low constant speed of bacteria B
+%speedA=[speedLowA speedHighA];
+%speedB=[speedLowB speedHighB];
+
+%fixed speed
+speedA=1.2e-2;
+speedB=1.2e-2;
+
+%variable turning frequency
+lambda0HighA=1.5e-2;	%high base turning frequency of bacteria A
+lambda0LowA=1.5e-3;		%low base turning frequency of bacteria A
+lambda0HighB=1.5e-2;	%high base turning frequency of bacteria B
+lambda0LowB=1.5e-3;		%low base turning frequency of bacteria B
+lambda0A.low=lambda0LowA;
+lambda0A.high=lambda0HighA;
+lambda0B.low=lambda0LowB;
+lambda0B.high=lambda0HighB;
+
+%fixed turning frequency
+%lambda0A=1.5e-3;
+%lambda0B=1.5e-3;
+
 %alpha=0;		%production rate of AHL
 kappaA=2;		%chemotactic sensitivity constant of bacteria A
 kappaB=2;		%chemotactic sensitivity constant of bacteria B
+%kappaA=0;		%chemotactic sensitivity constant of bacteria A
+%kappaB=0;		%chemotactic sensitivity constant of bacteria B
 VthA=1.2;		%threshold concentration of AHL for bacteria A
 VthB=1.0;		%threshold concentration of AHL for bacteria B
 
@@ -68,14 +89,14 @@ for i=1:nBacteriaA
 	%y=YLength/2;
 
 	%gaussian
-	%x=normrnd(1/2*XLength,1);
-	%y=normrnd(1/2*YLength,1);
+	x=normrnd(1/2*XLength,1);
+	y=normrnd(1/2*YLength,1);
 	%x=normrnd(9/10*XLength,1);
 	%y=normrnd(9/10*YLength,1);
 
 	%uniform random
-	x=rand*XLength;
-	y=rand*YLength;
+	%x=rand*XLength;
+	%y=rand*YLength;
 
 	if x>XLength
 		x=XLength;
@@ -89,7 +110,8 @@ for i=1:nBacteriaA
 		y=0;
 	end
 
-	b=bacterium(x,y);
+	direction=rand*2*pi;
+	b=bacterium(x,y,direction);
 	bacteriaA=[bacteriaA b];
 end
 
@@ -103,12 +125,12 @@ for i=1:nBacteriaB
 	%y=YLength/2;
 
 	%gaussian
-	%x=normrnd(XLength/2,1);
-	%y=normrnd(YLength/2,1);
+	x=normrnd(XLength/2,1);
+	y=normrnd(YLength/2,1);
 
 	%uniform random
-	x=rand*XLength;
-	y=rand*YLength;
+	%x=rand*XLength;
+	%y=rand*YLength;
 
 	if x>XLength
 		x=XLength;
@@ -122,7 +144,8 @@ for i=1:nBacteriaB
 		y=0
 	end
 
-	b=bacterium(x,y);
+	direction=rand*2*pi;
+	b=bacterium(x,y,direction);
 	bacteriaB=[bacteriaB b];
 end
 
@@ -193,8 +216,8 @@ leucineField=leucine(domain,concentration,boundaries);
 %define scaling for plotting concentrations
 scaling=20;
 
-model=model1(bacteriaPopA,bacteriaPopB,AHLField,leucineField,...
-	alpha,beta,k1,k2,muA,muB,DAHL,Dleucine,kappaA,kappaB,VthA,VthB,...
+model=model2(bacteriaPopA,bacteriaPopB,AHLField,leucineField,...
+	alpha,beta,k1,k2,lambda0A,lambda0B,speedA,speedB,DAHL,Dleucine,kappaA,kappaB,VthA,VthB,...
 	kernelfun,bandwidth,dt,scaling);
 
 %% run simulation
@@ -210,10 +233,10 @@ beep off;
 disp('Simulation finished');
 
 %% preview
-disp('Preview of simulation');
-preview;
+%disp('Preview of simulation');
+%preview;
 
 %% save workspace and make videos
-%makevideo;
+makevideo;
 
 disp('End!');

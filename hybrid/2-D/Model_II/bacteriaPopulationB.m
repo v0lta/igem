@@ -41,7 +41,27 @@ classdef bacteriaPopulationB < handle
 		rho=KDE2D(coordinateArray,kernelfun,X,Y,bandwidth);
 		end
 
-		function update(obj,AHLField,leucineField,muB,VthB,kappaB,dt)
+		function newDirection=turn(obj,direction,lambda0B,kappaB,speedB,leucine,dleucine,timestep)
+		dleucinex=dleucine(1);
+		dleuciney=dleucine(2);
+
+		lambda=lambda0B+kappaB/(2*leucine)*speedB*(cos(direction)*dleucinex+sin(direction)*dleuciney);
+
+		%disp('dS');
+		%dS
+
+		%disp('lambda');
+		%lambda
+
+		f=rand;
+		if f<lambda*timestep	%turn
+			newDirection=rand*2*pi;
+		else		%don't turn
+			newDirection=direction;
+		end
+		end
+
+		function update(obj,AHLField,leucineField,lambda0B,speedB,kappaB,VthB,dt)
 		%update bacterie position based on AHL and leucine fields, diffusion constant,
 		%threshold concentration, chemotactic sensitivity and timestep
 		%domainx=obj.domain(:,1);
@@ -51,6 +71,7 @@ classdef bacteriaPopulationB < handle
 		for bacterium=obj.bacteria
 			x=bacterium.getxcoordinate();
 			y=bacterium.getycoordinate();
+			direction=bacterium.getdirection();%direction
 			
 			AHL=AHLField.interpolconc([x y]);
 
@@ -63,18 +84,30 @@ classdef bacteriaPopulationB < handle
 			dleucinex=dleucine(1);
 			dleuciney=dleucine(2);
 
-			if AHL>VthB	%AHL above threshold => high diffusion
-				currentMuB=muB.high;
-			else		%AHL below threshold => low diffusion
-				currentMuB=muB.low;
+			if AHL>VthB	%AHL is above threshold => high diffusion
+				%variable speed, fixed turning frequency
+				%currentSpeedB=speedB(2);
+				%currentLambda0B=lambda0B;
+				%variable turning frequency, fixed speed
+				currentSpeedB=speedB;
+				currentLambda0B=lambda0B.low;
+			else		%AHL is below threshold => low diffusion
+				%variable speed, fixed turning frequency
+				%currentSpeedB=speedB(1);
+				%currentLambda0B=lambda0B;
+				%variable turning frequency, fixed speed
+				currentSpeedB=speedB;
+				currentLambda0B=lambda0B.high;
 			end
 
+			newDirection=obj.turn(direction,currentLambda0B,kappaB,currentSpeedB,leucine,dleucine,dt);%new direction
+
 			%calculate new position
-			%repelled by AHL
+			%repelled by leucine
 			%new x
-			xNew=x-currentMuB*kappaB/leucine*dleucinex+sqrt(2*currentMuB*dt)*normrnd(0,1);
+			xNew=x+currentSpeedB*cos(newDirection)*dt;
 			%new y
-			yNew=y-currentMuB*kappaB/leucine*dleuciney+sqrt(2*currentMuB*dt)*normrnd(0,1);
+			yNew=y+currentSpeedB*sin(newDirection)*dt;
 
 			%correct for going out of boundary
 			%x
@@ -94,6 +127,9 @@ classdef bacteriaPopulationB < handle
 				%wall boundary condition
 				yNew=domain.y(end);
 			end
+
+			%set new direction
+			bacterium.setdirection(newDirection);
 
 			%set new position
 			bacterium.setxcoordinate(xNew);
