@@ -1,22 +1,28 @@
 classdef bacteriaPopulationA < handle
 	properties
+		kernelfun;
+		bandwidth;
+		muA;
+		VthA;
+		kappaA;
+
+		bacteria;
 		domain;
 		domainGrid;
-		bacteria;
 	end
 
 	methods
-		function obj=bacteriaPopulationA(bacteria,domain)
-		%initialize bacteria list
-		obj.bacteria=bacteria;
-		obj.domain=domain;
+		function obj=bacteriaPopulationA(paramA,bacteriaA,domain,domainGrid)
+		%parameters
+		obj.kernelfun=paramA.kernelfun;
+		obj.bandwidth=paramA.bandwidth;
+		obj.muA=paramA.muA;
+		obj.VthA=paramA.VthA;
+		obj.kappaA=paramA.kappaA;
 
-		%domainx=domain(:,1);
-		%domainy=domain(:,2);
-		[X,Y]=meshgrid(domain.x,domain.y);
-		%domainGrid=[];
-		domainGrid.X=X;
-		domainGrid.Y=Y;
+		%bacteria list and domain
+		obj.bacteria=bacteriaA;
+		obj.domain=domain;
 		obj.domainGrid=domainGrid;
 		end
 
@@ -33,18 +39,22 @@ classdef bacteriaPopulationA < handle
 		end
 		end
 	
-		function rho=bacteriadensity(obj,kernelfun,bandwidth)
+		function rho=bacteriadensity(obj)
 		%return bacteria density array evaluated on grid points of domain
+		kernelfun=obj.kernelfun;
+		bandwidth=obj.bandwidth;
 		X=obj.domainGrid.X;
 		Y=obj.domainGrid.Y;
 		coordinateArray=obj.coordinates();
 		rho=KDE2D(coordinateArray,kernelfun,X,Y,bandwidth);
 		end
 
-		function update(obj,AHLField,muA,VthA,kappaA,dt)
-		%only random diffusion based on diffusion constant
-		%domainx=obj.domain(:,1);
-		%domainy=obj.domain(:,2);
+		function update(obj,AHLField,dt)
+		%update bacteria position based on AHL, AHL gradient, diffusion constant,
+		%Threshold concentration, chemotactic sensitivity constant and timestep
+		muA=obj.muA;
+		VthA=obj.VthA;
+		kappaA=obj.kappaA;
 		domain=obj.domain;
 		
 		for bacterium=obj.bacteria

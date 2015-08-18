@@ -1,5 +1,9 @@
 classdef AHL<handle
 	properties
+		DAHL;
+		alpha;
+		k1;
+
 		domain;
 		domainGrid;
 		concentration;
@@ -8,22 +12,29 @@ classdef AHL<handle
 		eastBoundary;
 		northBoundary;
 		southBoundary;
+
+		Jx;
+		Jy;
 	end
 
 	methods
-		function obj=AHL(domain,concentration,boundaryArray)
+		function obj=AHL(paramAHL,concentration,boundaryArray,domain,domainGrid)
+		%parameters
+		obj.DAHL=paramAHL.DAHL;
+		obj.alpha=paramAHL.alpha;
+		obj.k1=paramAHL.k1;
+
+		%domain, gradient, concentration and boundaries
 		obj.domain=domain;
+		obj.domainGrid=domainGrid;
+		obj.Jx=length(domain.x);
+		obj.Jy=length(domain.y);
 		obj.concentration=concentration;
 		obj.calculategradient();
 		obj.westBoundary=boundaryArray(:,1);
 		obj.eastBoundary=boundaryArray(:,2);
 		obj.northBoundary=boundaryArray(:,3);
 		obj.southBoundary=boundaryArray(:,4);
-
-		[X,Y]=meshgrid(domain.x,domain.y);
-		domainGrid.X=X;
-		domainGrid.Y=Y;
-		obj.domainGrid=domainGrid;
 		end
 
 		function domain=getdomain(obj)
@@ -150,12 +161,14 @@ classdef AHL<handle
 		interpolatedGradient=[interpolatedXDeriv interpolatedYDeriv];
 		end
 
-		function updatedirichlet(obj,rhoAOld,rhoANew,DAHL,alpha,dt)
+		function updatedirichlet(obj,rhoAOld,rhoANew,dt)
 		%Update concentration based on bacterial density, diffusion constant,
 	   	%and consumption rate and timestep
+		DAHL=obj.DAHL;
+		alpha=obj.alpha;
 		domain=obj.domain;
-		Jx=length(domain.x);
-		Jy=length(domain.y);
+		Jx=obj.Jx;
+		Jy=obj.Jy;
 
 		dx=domain.x(2)-domain.x(1);
 		dy=domain.y(2)-domain.y(1);
@@ -180,11 +193,6 @@ classdef AHL<handle
 			1/2*muY*A(idy+1,idx)+...
 			dt/2*alpha*rhoAOld(idy,idx);
 
-		%disp('RHS1');
-		%pause(1);
-		%RHS1
-		%pause(1);
-
 		%add known boundary conditions at t+1/2
 		RHS1=RHS1';
 		RHS1(1,:)=RHS1(1,:)+1/2*muX*west(idy);
@@ -197,11 +205,6 @@ classdef AHL<handle
 		B=M\RHS1;
 		%B=inv(M)*RHS1;
 		A(idy,idx)=B';
-
-		%disp('B');
-		%pause(1);
-		%B
-		%pause(1);
 
 		%Second half step
 		%Calculate RHS 2
@@ -224,12 +227,15 @@ classdef AHL<handle
 		obj.concentration(idy,idx)=B;
 		end
 
-		function updatezeroflux(obj,rhoAOld,rhoANew,DAHL,alpha,k1,dt)
+		function updatezeroflux(obj,rhoAOld,rhoANew,dt)
 		%Update concentration based on bacterial density, diffusion constant,
-	   	%and consumption rate and timestep
+	   	%and production rate, linear degradation constant and timestep
+		DAHL=obj.DAHL;
+		alpha=obj.alpha;
+		k1=obj.k1;
 		domain=obj.domain;
-		Jx=length(domain.x);
-		Jy=length(domain.y);
+		Jx=obj.Jx;
+		Jy=obj.Jy;
 
 		dx=domain.x(2)-domain.x(1);
 		dy=domain.y(2)-domain.y(1);
@@ -239,11 +245,6 @@ classdef AHL<handle
 
 		muX=DAHL*dt/dx^2;
 		muY=DAHL*dt/dy^2;
-
-		%west=obj.westBoundary';
-		%east=obj.eastBoundary';
-		%north=obj.northBoundary';
-		%south=obj.southBoundary';
 
 		%ADI zero flux boundary conditions
 		%Define matrices
@@ -265,80 +266,36 @@ classdef AHL<handle
 
 		%First half step
 		%Calculate RHS 1
-
 		A=obj.concentration;
 		RHS1=MRHSy*A;
 		RHS1=RHS1+dt/2*alpha*rhoAOld;
 
-		%A=obj.concentration;
-		%RHS1alt=zeros(size(A));
-		%RHS1alt(idy,:)=(1-muY)*A(idy,:)+...
-		%			1/2*muY*A(idy-1,:)+...
-		%			1/2*muY*A(idy+1,:);
-
-		%RHS1alt(1,:)=(1-muY)*A(1,:)+muY*A(2,:);
-		%RHS1alt(end,:)=(1-muY)*A(end,:)+muY*A(end-1,:);
-		%RHS1alt=RHS1alt+dt/2*alpha*rhoAOld;
-
-		%RHS1;
-		%pause(1);
-		%RHS1alt;
-		%pause(1);
-		%if sum(sum(RHS1==RHS1alt))~=Jx*Jy
-		%	disp('RHS matrices do not match!!');
-		%end
-
-		%disp('RHS1');
-		%pause(1);
-		%RHS1
-		%pause(1);
-
-
 		%calculate concentration at half timestep
-
-		%RHS1=RHS1';
-		%B=MLHSx\RHS1;
-		%A=B';
-
 		A=(MLHSx\RHS1')';
-		%B=inv(M)*RHS1;
-
-		%disp('B');
-		%pause(1);
-		%B
-		%pause(1);
 
 		%Second half step
 		%Calculate RHS 2
-
-		%RHS2=(1-muX)*A(idy,idx)+...
-		%	1/2*muX*A(idy,idx-1)+...
-		%	1/2*muX*A(idy,idx+1)+...
-		%	dt/2*alpha*rhoANew(idy,idx);
-
 		RHS2=(MRHSx*A')';
 		RHS2=RHS2+dt/2*alpha*rhoANew;
 
 		%calculate concentration at full timestep
 		A=MLHSy\RHS2;
-		%B=inv(M)*RHS2;
 
 		obj.concentration=A;
 		end
 
-		function update(obj,rhoAOld,rhoANew,DAHL,alpha,k1,dt)
+		function update(obj,rhoAOld,rhoANew,dt)
 		%Update concentration based on bacterial density, diffusion constant,
 	   	%and consumption rate and timestep
 
-		domain=obj.domain;
-		Jx=length(domain.x);
-		Jy=length(domain.y);
+		Jx=obj.Jx;
+		Jy=obj.Jy;
 
 		%Dirichlet boundary conditions
-		%obj.updatedirichlet(rhoAOld,rhoANew,DAHL,alpha,dt);
+		%obj.updatedirichlet(rhoAOld,rhoANew,dt);
 
 		%Zero flux boundary conditions
-		obj.updatezeroflux(rhoAOld,rhoANew,DAHL,alpha,k1,dt);
+		obj.updatezeroflux(rhoAOld,rhoANew,dt);
 
 		%Correct for negative concentration
 		for j=1:Jx

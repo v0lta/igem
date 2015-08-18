@@ -1,23 +1,30 @@
 classdef bacteriaPopulationB < handle
 	properties
+		kernelfun;
+		bandwidth;
+		muB;
+		VthB;
+		kappaB;
+
+		bacteria;
 		domain;
 		domainGrid;
-		bacteria;
 	end
 
 	methods
-		function obj=bacteriaPopulationB(bacteria,domain)
-		%initialize bacteria list
-		obj.bacteria=bacteria;
-		obj.domain=domain;
+		function obj=bacteriaPopulationB(paramB,bacteriaB,domain,domainGrid)
+		%parameters
+		obj.kernelfun=paramB.kernelfun;
+		obj.bandwidth=paramB.bandwidth;
+		obj.muB=paramB.muB;
+		obj.VthB=paramB.VthB;
+		obj.kappaB=paramB.kappaB;
 
-		%domainx=domain(:,1);
-		%domainy=domain(:,2);
-		[X,Y]=meshgrid(domain.x,domain.y);
-		%domainGrid=[];
-		domainGrid.X=X;
-		domainGrid.Y=Y;
+		%bacteria list and domain
+		obj.bacteria=bacteriaB;
+		obj.domain=domain;
 		obj.domainGrid=domainGrid;
+
 		end
 
 		function addBacterium(obj,bacterium)
@@ -33,19 +40,22 @@ classdef bacteriaPopulationB < handle
 		end
 		end
 	
-		function rho=bacteriadensity(obj,kernelfun,bandwidth)
+		function rho=bacteriadensity(obj)
 		%return bacteria density array evaluated on grid points of domain
+		kernelfun=obj.kernelfun;
+		bandwidth=obj.bandwidth;
 		X=obj.domainGrid.X;
 		Y=obj.domainGrid.Y;
 		coordinateArray=obj.coordinates();
 		rho=KDE2D(coordinateArray,kernelfun,X,Y,bandwidth);
 		end
 
-		function update(obj,AHLField,leucineField,muB,VthB,kappaB,dt)
-		%update bacterie position based on AHL and leucine fields, diffusion constant,
+		function update(obj,AHLField,leucineField,dt)
+		%update bacteria position based on AHL and leucine fields, diffusion constant,
 		%threshold concentration, chemotactic sensitivity and timestep
-		%domainx=obj.domain(:,1);
-		%domainy=obj.domain(:,2);
+		muB=obj.muB;
+		VthB=obj.VthB;
+		kappaB=obj.kappaB;
 		domain=obj.domain;
 		
 		for bacterium=obj.bacteria
