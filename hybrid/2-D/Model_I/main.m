@@ -4,8 +4,8 @@ close all;clear all;clc;
 filename=['zero_flux_',...
 	'zero_initial_concentration_',...
 	'high_degradation_',...
-	'line_A_',...
-	'line_B_',...
+	'uniform_A_',...
+	'uniform_B_',...
 	'rectangular_domain_',...
 	'small_simulation'];
 framerate=10;
@@ -23,9 +23,9 @@ nBacteriaB=400;	%number of bacteria B
 %nBacteriaB=1;		%number of bacteria B
 
 %% define domain
-XLength=20;			%Length of domain
+XLength=10;			%Length of domain
 YLength=10;			%Length of domain
-Jx=401;				%# of subdivisions
+Jx=101;				%# of subdivisions
 Jy=101;				%# of subdivisions
 domain.x=linspace(0,XLength,Jx);
 domain.y=linspace(0,YLength,Jy);
@@ -77,13 +77,13 @@ for i=1:nBacteriaA
 	%y=YLength/2;
 
 	%gaussian
-	%x=normrnd(1/2*XLength,1);
+	x=normrnd(1/2*XLength,1);
 	y=normrnd(1/2*YLength,1);
 	%x=normrnd(9/10*XLength,1);
 	%y=normrnd(9/10*YLength,1);
 
 	%uniform random
-	x=rand*XLength;
+	%x=rand*XLength;
 	%y=rand*YLength;
 
 	if x>XLength
@@ -110,11 +110,11 @@ for i=1:nBacteriaB
 	%y=YLength/2;
 
 	%gaussian
-	%x=normrnd(XLength/2,1);
+	x=normrnd(XLength/2,1);
 	y=normrnd(YLength/2,1);
 
 	%uniform random
-	x=rand*XLength;
+	%x=rand*XLength;
 	%y=rand*YLength;
 
 	if x>XLength

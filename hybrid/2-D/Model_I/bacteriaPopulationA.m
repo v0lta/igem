@@ -57,7 +57,16 @@ classdef bacteriaPopulationA < handle
 		kappaA=obj.kappaA;
 		domain=obj.domain;
 		
-		for bacterium=obj.bacteria
+		%parallel version
+		bacteria=obj.bacteria;
+		n=length(bacteria);
+		parfor i=1:n
+		%	bacterium=bacteria(i);
+		%serial version
+		%for bacterium=obj.bacteria
+		%for i=1:n
+			bacterium=bacteria(i);
+			%disp('test');
 			x=bacterium.getxcoordinate();
 			y=bacterium.getycoordinate();
 			
@@ -104,9 +113,14 @@ classdef bacteriaPopulationA < handle
 			end
 
 			%set new position
-			bacterium.setxcoordinate(xNew);
-			bacterium.setycoordinate(yNew);
+			%bacterium.setxcoordinate(xNew);
+			%bacterium.setycoordinate(yNew);
+			bacterium.xCoordinate=xNew;
+			bacterium.yCoordinate=yNew;
+
+			bacteria(i)=bacterium;
 		end
+		obj.bacteria=bacteria;
 		end
 	end
 end
