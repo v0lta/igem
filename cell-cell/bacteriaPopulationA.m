@@ -7,7 +7,7 @@ classdef bacteriaPopulationA < handle
 		kappaA;
 		r0;	%cell radius
 		k;	%spring constant
-		f;	%friction parameter
+		gamma;	%friction parameter
 
 		bacteria;
 		domain;
@@ -28,7 +28,7 @@ classdef bacteriaPopulationA < handle
 		obj.kappaA=paramA.kappaA;
 		obj.r0=paramA.r0;
 		obj.k=paramA.k;
-		obj.f=paramA.f;
+		obj.gamma=paramA.gamma;
 		obj.modulo=paramA.modulo;
 
 		%bacteria list and domain
@@ -75,7 +75,8 @@ classdef bacteriaPopulationA < handle
 		%parallel version
 		bacteria=obj.bacteria;
 		n=length(bacteria);
-		parfor i=1:n
+		%parallel
+		for i=1:n
 		%	bacterium=bacteria(i);
 		%serial version
 		%for bacterium=obj.bacteria
@@ -164,7 +165,8 @@ classdef bacteriaPopulationA < handle
 			newNbRArray=[];
 
 			l=i+1;
-			parfor j=l:n
+			%parallel
+			for j=l:n
 				otherBacterium=obj.bacteria(j);
 				r=obj.calculater(bacterium,otherBacterium);
 
@@ -188,7 +190,8 @@ classdef bacteriaPopulationA < handle
 		bacteria=obj.bacteria;
 		n=length(bacteria);
 
-		parfor i=1:n
+		%parallel
+		for i=1:n
 			bacterium=bacteria(i);
 
 			nbArray=bacterium.getneighborarray();
@@ -236,8 +239,8 @@ classdef bacteriaPopulationA < handle
 
 		Fr=obj.k*(obj.r0-r);
 
-		vx=1/obj.f*Fr*ex;
-		vy=1/obj.f*Fr*ey;
+		vx=obj.gamma*Fr*ex;
+		vy=obj.gamma*Fr*ey;
 
 		end
 
@@ -252,7 +255,8 @@ classdef bacteriaPopulationA < handle
 		%parallel version
 		bacteria=obj.bacteria;
 		n=length(bacteria);
-		parfor i=1:n
+		%parallel
+		for i=1:n
 		%	bacterium=bacteria(i);
 		%serial version
 		%for bacterium=obj.bacteria
@@ -309,16 +313,18 @@ classdef bacteriaPopulationA < handle
 		obj.counter=obj.counter+1;
 
 		%update neighbors
-		if mod(obj.counter,obj.modulo)
+		if mod(obj.counter-1,obj.modulo)==0
 			obj.refreshneighbors();
 		else
 			obj.updateneighbors();
+			%obj.refreshneighbors();
 		end
 		
 		%parallel version
 		bacteria=obj.bacteria;
 		n=length(bacteria);
-		parfor i=1:n
+		%parallel
+		for i=1:n
 		%	bacterium=bacteria(i);
 		%serial version
 		%for bacterium=obj.bacteria
@@ -339,19 +345,24 @@ classdef bacteriaPopulationA < handle
 				y2=nbYArray(k);
 				r=nbRArray(k);
 
-				[vx,vy]=obj.cellforce(x,y,x2,y2,r)
+				[vx,vy]=obj.cellforce(x,y,x2,y2,r);
 				cellvxArray=[cellvxArray vx];
 				cellvyArray=[cellvyArray vy];
 			end
 
-			celldx=sum(cellvxArray*dt);
-			celldy=sum(cellvyArray*dt);
+			%disp('test');
+			celldx=sum(cellvxArray*dt*currentMuA);
+			celldy=sum(cellvyArray*dt*currentMuA);
 			
 			%calculate new position
 			%new x
-			xNew=x+sqrt(2*currentMuA*dt)*normrnd(0,1)+celldx;
+			xNew=x;
+			xNew=xNew+sqrt(2*currentMuA*dt)*normrnd(0,1);
+			xNew=xNew+celldx;
 			%new y
-			yNew=y+sqrt(2*currentMuA*dt)*normrnd(0,1)+celldy;
+			yNew=y;
+			yNew=y+sqrt(2*currentMuA*dt)*normrnd(0,1);
+			yNew=y+celldy;
 
 			%correct for going out of boundary
 			%x

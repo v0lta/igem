@@ -7,6 +7,7 @@ classdef analyzer < handle
 		%analyzer parameters
 		framerate;
 		nFrames;
+		tPause;
 
 		%domain
 		domain;
@@ -17,6 +18,7 @@ classdef analyzer < handle
 		function obj=analyzer(paramAnal,model)
 		%parameters
 		obj.framerate=paramAnal.framerate;
+		obj.tPause=paramAnal.tPause;
 
 		%extract history of model
 		obj.rhoAArray=model.getrhoAArray();
@@ -38,14 +40,14 @@ classdef analyzer < handle
 			%3D
 			obj.plot3D(i,fig);
 			%ylim([-5 75]);
-			pause(0.1);
+			pause(obj.tPause);
 			clf;
 		end
 
 		for i=1:nFrames
 			%2D
 			obj.plot2D(i,fig);
-			pause(0.1);
+			pause(obj.tPause);
 			%ylim([-5 75]);
 			clf;
 		end

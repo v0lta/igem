@@ -1,13 +1,14 @@
 close all;clear all;clc;
-filename=['gaussian_no_interaction_large_radius'];
-framerate=10;
+filename=['gaussian_no_interaction_large_simulation'];
+paramAnal.framerate=10;
+paramAnal.tPause=0.1;
 
 %% Simulation parameters
 dt=1;				%time step
 tend=50;			%end time of simulation
 N=tend/dt;			%time steps
 %N=200;				%time steps
-nBacteriaA=10;	%number of bacteria A
+nBacteriaA=400;	%number of bacteria A
 
 %% define domain
 XLength=10;			%Length of domain
@@ -32,10 +33,10 @@ muHighA=1/300;	%high diffusion constant of bacteria A
 paramA.muA=muHighA;
 paramA.kappaA=2;		%chemotactic sensitivity constant of bacteria A
 paramA.VthA=1.2;		%threshold concentration of AHL for bacteria A
-paramA.r0=2;			%cell radius
-paramA.k=1;			%cell radius
-paramA.f=1;			%cell radius
-paramA.modulo=5;		%cell radius
+paramA.r0=1;			%cell radius
+paramA.k=5;			%spring constant
+paramA.gamma=2;			%cell sensitivity
+paramA.modulo=5;		%number of iterations between refreshes
 
 %% Initialize bacteria A
 bacteriaA=[];
@@ -70,20 +71,23 @@ for i=1:nBacteriaA
 	bacteriaA=[bacteriaA b];
 end
 
-%% Analytic parameters
-paramAnal.framerate=framerate;	%framerate
-
 model=cellmodel(paramA,bacteriaA,domain);
 
 %% run simulation
 disp('Running simulation');
+tic;
 for i=1:N
+	%if mod(i,N/10)==0
+	if mod(i,1)==0
+		disp(['iteration ' num2str(i)]);
+	end
 	model.update(dt);
 end
 
 beep on;beep;beep off;
 
 disp('Simulation finished');
+toc;
 
 analObject=analyzer(paramAnal,model);
 

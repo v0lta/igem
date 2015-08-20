@@ -48,8 +48,8 @@ classdef cellmodel < handle
 		%bacteria A
 		%update bacteria positions
 		%obj.bacteriaPopA.updateraw(obj.AHLField,dt);
-		%obj.bacteriaPopA.updateraw(dt);
-		obj.bacteriaPopA.updateinteraction(dt);
+		obj.bacteriaPopA.updateraw(dt);
+		%obj.bacteriaPopA.updateinteraction(dt);
 		%calculate bacteria density
 		rhoA=obj.bacteriaPopA.bacteriadensity();
 
