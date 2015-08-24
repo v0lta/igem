@@ -22,6 +22,8 @@ for i=1:nFrames
 	clf;
 end
 
+vidObj3D.close();
+
 for i=1:nFrames
 	%2D
 	model.plot2D(i,fig);
@@ -31,7 +33,6 @@ for i=1:nFrames
 end
 
 close(fig);
-vidObj3D.close();
 vidObj2D.close();
 
 beep on;

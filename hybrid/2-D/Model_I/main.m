@@ -12,13 +12,13 @@ framerate=10;
 
 %% Simulation parameters
 dt=1;				%time step
-tend=100;			%end time of simulation
+tend=10;			%end time of simulation
 N=tend/dt;			%time steps
 %N=200;				%time steps
-nBacteriaA=400;	%number of bacteria A
+nBacteriaA=40;	%number of bacteria A
 %nBacteriaA=300;		%number of bacteria A
 %nBacteriaA=1;		%number of bacteria A
-nBacteriaB=400;	%number of bacteria B
+nBacteriaB=40;	%number of bacteria B
 %nBacteriaB=300;		%number of bacteria B
 %nBacteriaB=1;		%number of bacteria B
 

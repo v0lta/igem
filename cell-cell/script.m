@@ -1,14 +1,14 @@
 close all;clear all;clc;
-filename=['gaussian_no_interaction_large_simulation'];
+filename=['gaussian_with_interaction_large_simulation'];
 paramAnal.framerate=10;
 paramAnal.tPause=0.1;
 
 %% Simulation parameters
 dt=1;				%time step
-tend=50;			%end time of simulation
+tend=20;			%end time of simulation
 N=tend/dt;			%time steps
 %N=200;				%time steps
-nBacteriaA=400;	%number of bacteria A
+nBacteriaA=300;	%number of bacteria A
 
 %% define domain
 XLength=10;			%Length of domain
@@ -21,7 +21,7 @@ domainGrid=meshgrid(domain.x,domain.y);
 
 %% define kernel functions and bandwidth
 kernelfun=@epanechnikov2DNorm;
-bandwidth=.8;
+bandwidth=.5;
 
 paramA.kernelfun=kernelfun;
 paramA.bandwidth=bandwidth;
@@ -33,8 +33,8 @@ muHighA=1/300;	%high diffusion constant of bacteria A
 paramA.muA=muHighA;
 paramA.kappaA=2;		%chemotactic sensitivity constant of bacteria A
 paramA.VthA=1.2;		%threshold concentration of AHL for bacteria A
-paramA.r0=1;			%cell radius
-paramA.k=5;			%spring constant
+paramA.r0=2;			%cell radius
+paramA.k=2;			%spring constant
 paramA.gamma=2;			%cell sensitivity
 paramA.modulo=5;		%number of iterations between refreshes
 
@@ -100,3 +100,21 @@ analObject.makevideo(filename);
 
 %% end!
 disp('End!');
+
+%With function
+%161.85s
+%159.34s
+%152.58s
+%149.87s
+
+%Embedded
+%143.03s
+%140.56s
+%143.10s
+%
+
+%parallel
+%231.17s
+
+%serial
+%229.07s

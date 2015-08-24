@@ -295,8 +295,8 @@ classdef model2 < handle
 		[rhoALimit,rhoBLimit,AHLLimit,leucineLimit]=obj.limitoptimizer(k);
 
 		%Bacteria A
-		%subplot(2,2,1);
-		subplot(1,2,1);
+		subplot(2,2,1);
+		%subplot(1,2,1);
 		obj.plotrhoA3D(k,fig);
 		obj.plotbacteriaA3D(k,fig);
 		title('Bacteria A');
@@ -309,8 +309,8 @@ classdef model2 < handle
 		zlabel('Density');
 
 		%Bacteria B
-		%subplot(2,2,2);
-		subplot(1,2,2);
+		subplot(2,2,2);
+		%subplot(1,2,2);
 		obj.plotrhoB3D(k,fig);
 		obj.plotbacteriaB3D(k,fig);
 		title('Bacteria B');
@@ -323,28 +323,28 @@ classdef model2 < handle
 		zlabel('Density');
 
 		%AHL
-		%subplot(2,2,3);
-		%obj.plotAHL3D(k,fig,scaling);
-		%title('AHL');
-		%%legend('Concentration');
-		%zlim([0 AHLLimit*scaling]);
-		%foo = get(gca,'dataaspectratio');
-		%set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
-		%xlabel('x');
-		%ylabel('y');
-		%zlabel('Concentration');
+		subplot(2,2,3);
+		obj.plotAHL3D(k,fig,scaling);
+		title('AHL');
+		%legend('Concentration');
+		zlim([0 AHLLimit*scaling]);
+		foo = get(gca,'dataaspectratio');
+		set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
+		xlabel('x');
+		ylabel('y');
+		zlabel('Concentration');
 
 		%leucine
-		%subplot(2,2,4);
-		%obj.plotleucine3D(k,fig,scaling);
-		%title('Leucine');
-		%%legend('Concentration');
-		%zlim([0 leucineLimit*scaling]);
-		%foo = get(gca,'dataaspectratio');
-		%set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
-		%xlabel('x');
-		%ylabel('y');
-		%zlabel('Concentration');
+		subplot(2,2,4);
+		obj.plotleucine3D(k,fig,scaling);
+		title('Leucine');
+		%legend('Concentration');
+		zlim([0 leucineLimit*scaling]);
+		foo = get(gca,'dataaspectratio');
+		set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
+		xlabel('x');
+		ylabel('y');
+		zlabel('Concentration');
 		end
 
 		function plotrhoA2D(obj,k,fig)

@@ -113,10 +113,10 @@ classdef bacteriaPopulationA < handle
 			end
 
 			%set new position
-			%bacterium.setxcoordinate(xNew);
-			%bacterium.setycoordinate(yNew);
-			bacterium.xCoordinate=xNew;
-			bacterium.yCoordinate=yNew;
+			bacterium.setxcoordinate(xNew);
+			bacterium.setycoordinate(yNew);
+			%bacterium.xCoordinate=xNew;
+			%bacterium.yCoordinate=yNew;
 
 			bacteria(i)=bacterium;
 		end

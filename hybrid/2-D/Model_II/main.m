@@ -3,19 +3,20 @@ close all;clear all;clc;
 filename=['zero_flux_',...
 	'zero_initial_concentration_',...
 	'high_degradation_',...
-	'spot_A_',...
-	'spot_B_',...
+	'uniform_random_A_',...
+	'uniform_random_B_',...
 	'square_domain_',...
-	'small_simulation'];
+	'large_simulation'];
 framerate=10;
 
 %Simulation parameters
-N=600;				%time steps
-%nBacteriaA=1000;	%number of bacteria A
-nBacteriaA=300;		%number of bacteria A
+%N=600;				%time steps
+N=100;				%time steps
+nBacteriaA=1000;	%number of bacteria A
+%nBacteriaA=300;	%number of bacteria A
 %nBacteriaA=1;		%number of bacteria A
-%nBacteriaB=1000;	%number of bacteria B
-nBacteriaB=300;		%number of bacteria B
+nBacteriaB=1000;	%number of bacteria B
+%nBacteriaB=300;	%number of bacteria B
 %nBacteriaB=1;		%number of bacteria B
 XLength=25;			%Length of domain
 YLength=25;			%Length of domain
@@ -40,8 +41,10 @@ alpha=3e-3;		%production rate of AHL
 beta=4e-3;		%production rate of leucine
 %k1=5e-3;		%degradation rate of AHL
 %k1=0;			%degradation rate of AHL
-k1=5e-1;		%degradation rate of AHL
-k2=3e-1;		%degradation rate of leucine
+k1=5e-2;		%degradation rate of AHL
+k2=3e-2;		%degradation rate of leucine
+%k1=5e-1;		%degradation rate of AHL
+%k2=3e-1;		%degradation rate of leucine
 %DAHL=1/300;	%Diffusion constant of AHL
 DAHL=1/30;		%Diffusion constant of AHL
 Dleucine=1/20;	%Diffusion constant of leucine
@@ -56,8 +59,8 @@ Dleucine=1/20;	%Diffusion constant of leucine
 %speedB=[speedLowB speedHighB];
 
 %fixed speed
-speedA=1.2e-2;
-speedB=1.2e-2;
+speedA=1.5e-2;
+speedB=1.5e-2;
 
 %variable turning frequency
 lambda0HighA=1.5e-2;	%high base turning frequency of bacteria A
@@ -89,14 +92,14 @@ for i=1:nBacteriaA
 	%y=YLength/2;
 
 	%gaussian
-	x=normrnd(1/2*XLength,1);
-	y=normrnd(1/2*YLength,1);
+	%x=normrnd(1/2*XLength,1);
+	%y=normrnd(1/2*YLength,1);
 	%x=normrnd(9/10*XLength,1);
 	%y=normrnd(9/10*YLength,1);
 
 	%uniform random
-	%x=rand*XLength;
-	%y=rand*YLength;
+	x=rand*XLength;
+	y=rand*YLength;
 
 	if x>XLength
 		x=XLength;
@@ -125,12 +128,12 @@ for i=1:nBacteriaB
 	%y=YLength/2;
 
 	%gaussian
-	x=normrnd(XLength/2,1);
-	y=normrnd(YLength/2,1);
+	%x=normrnd(XLength/2,1);
+	%y=normrnd(YLength/2,1);
 
 	%uniform random
-	%x=rand*XLength;
-	%y=rand*YLength;
+	x=rand*XLength;
+	y=rand*YLength;
 
 	if x>XLength
 		x=XLength;

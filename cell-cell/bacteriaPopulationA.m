@@ -171,6 +171,7 @@ classdef bacteriaPopulationA < handle
 				r=obj.calculater(bacterium,otherBacterium);
 
 				if r<=obj.r0
+				%if r<=2*obj.r0
 					newNbArray=[newNbArray otherBacterium];
 					x=otherBacterium.getxcoordinate();
 					newNbXArray=[newNbXArray x];
@@ -219,31 +220,6 @@ classdef bacteriaPopulationA < handle
 		obj.bacteria=bacteria;
 		end
 		
-		function [vx,vy]=cellforce(obj,x1,y1,x2,y2,r)
-		%Calculates displacement of bacterium 1 due to bacterium 2
-
-		if r>=obj.r0
-			vx=0;
-			vy=0;
-			return
-		end
-
-		if r==0
-			theta=rand*2*pi;
-			ex=cos(theta);
-			ey=sin(theta);
-		else
-			ex=(x1-x2)/r;
-			ey=(y1-y2)/r;
-		end
-
-		Fr=obj.k*(obj.r0-r);
-
-		vx=obj.gamma*Fr*ex;
-		vy=obj.gamma*Fr*ey;
-
-		end
-
 		function updateraw(obj,dt)
 		%update bacteria position based on AHL, AHL gradient, diffusion constant,
 		%Threshold concentration, chemotactic sensitivity constant and timestep
@@ -302,6 +278,57 @@ classdef bacteriaPopulationA < handle
 		obj.bacteria=bacteria;
 		end
 
+		function [vx,vy]=cellforce(obj,x1,y1,x2,y2,r)
+		%Calculates displacement of bacterium 1 due to bacterium 2
+
+		%if r>=2*obj.r0
+		if r>=obj.r0
+			vx=0;
+			vy=0;
+			return
+		end
+
+		if r==0
+			theta=rand*2*pi;
+			ex=cos(theta);
+			ey=sin(theta);
+		else
+			ex=(x1-x2)/r;
+			ey=(y1-y2)/r;
+		end
+
+		Fr=obj.k*(obj.r0-r);
+
+		vx=obj.gamma*Fr*ex;
+		vy=obj.gamma*Fr*ey;
+
+		end
+
+		function [cellvx,cellvy]=totalcellforce(obj,bacterium,x,y)
+		%Calculate total speed due to neighboring cells
+
+		[nbXArray,nbYArray,nbRArray]=bacterium.getneighborscoordinates();
+		numNeighbors=length(nbXArray);
+		%[cellvx,cellvy]=cellforce
+
+		cellvxArray=[];
+		cellvyArray=[];
+		for k=1:numNeighbors
+			x2=nbXArray(k);
+			y2=nbYArray(k);
+			r=nbRArray(k);
+
+			[vx,vy]=obj.cellforce(x,y,x2,y2,r);
+			cellvxArray=[cellvxArray vx];
+			cellvyArray=[cellvyArray vy];
+		end
+
+		%disp('test');
+		cellvx=sum(cellvxArray);
+		cellvy=sum(cellvyArray);
+
+		end
+
 		function updateinteraction(obj,dt)
 		%update bacteria position based on AHL, AHL gradient, diffusion constant,
 		%Threshold concentration, chemotactic sensitivity constant and timestep
@@ -310,15 +337,16 @@ classdef bacteriaPopulationA < handle
 		kappaA=obj.kappaA;
 		domain=obj.domain;
 
-		obj.counter=obj.counter+1;
 
 		%update neighbors
-		if mod(obj.counter-1,obj.modulo)==0
+		if mod(obj.counter,obj.modulo)==0
 			obj.refreshneighbors();
 		else
 			obj.updateneighbors();
 			%obj.refreshneighbors();
 		end
+
+		obj.counter=obj.counter+1;
 		
 		%parallel version
 		bacteria=obj.bacteria;
@@ -333,26 +361,10 @@ classdef bacteriaPopulationA < handle
 			%disp('test');
 			x=bacterium.getxcoordinate();
 			y=bacterium.getycoordinate();
-
-			[nbXArray,nbYArray,nbRArray]=bacterium.getneighborscoordinates();
-			numNeighbors=length(nbXArray);
-			%[cellvx,cellvy]=cellforce
-
-			cellvxArray=[];
-			cellvyArray=[];
-			for k=1:numNeighbors
-				x2=nbXArray(k);
-				y2=nbYArray(k);
-				r=nbRArray(k);
-
-				[vx,vy]=obj.cellforce(x,y,x2,y2,r);
-				cellvxArray=[cellvxArray vx];
-				cellvyArray=[cellvyArray vy];
-			end
-
-			%disp('test');
-			celldx=sum(cellvxArray*dt*currentMuA);
-			celldy=sum(cellvyArray*dt*currentMuA);
+			
+			[cellvx,cellvy]=obj.totalcellforce(bacterium,x,y);
+			celldx=cellvx*dt*currentMuA;
+			celldy=cellvy*dt*currentMuA;
 			
 			%calculate new position
 			%new x
