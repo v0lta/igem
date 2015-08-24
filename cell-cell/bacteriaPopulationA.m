@@ -6,7 +6,10 @@ classdef bacteriaPopulationA < handle
 		VthA;
 		kappaA;
 		r0;	%cell radius
-		k;	%spring constant
+		rcut;	%cell radius
+		k1;	%spring constant
+		k2;	%spring constant
+		k3;	%spring constant
 		gamma;	%friction parameter
 
 		bacteria;
@@ -27,7 +30,10 @@ classdef bacteriaPopulationA < handle
 		obj.VthA=paramA.VthA;
 		obj.kappaA=paramA.kappaA;
 		obj.r0=paramA.r0;
-		obj.k=paramA.k;
+		obj.rcut=paramA.rcut;
+		obj.k1=paramA.k1;
+		obj.k2=paramA.k2;
+		obj.k3=paramA.k3;
 		obj.gamma=paramA.gamma;
 		obj.modulo=paramA.modulo;
 
@@ -170,19 +176,34 @@ classdef bacteriaPopulationA < handle
 				otherBacterium=obj.bacteria(j);
 				r=obj.calculater(bacterium,otherBacterium);
 
-				if r<=obj.r0
+				if r<=2*obj.rcut
 				%if r<=2*obj.r0
-					newNbArray=[newNbArray otherBacterium];
-					x=otherBacterium.getxcoordinate();
-					newNbXArray=[newNbXArray x];
-					y=otherBacterium.getycoordinate();
-					newNbYArray=[newNbYArray y];
-					newNbIsBlackArray=[newNbIsBlackArray obj.currentIsBlack];
-					newNbRArray=[newNbRArray r];
+					
+					otherX=otherBacterium.getxcoordinate();
+					otherY=otherBacterium.getycoordinate();
+
+					currentX=bacterium.getxcoordinate();
+					currentY=bacterium.getycoordinate();
+
+					bacterium.addneighbor(otherBacterium,otherX,otherY,obj.currentIsBlack,r)
+					otherBacterium.addneighbor(bacterium,currentX,currentY,obj.currentIsBlack,r)
+
+					%newNbArray=[newNbArray otherBacterium];
+
+					%x=otherBacterium.getxcoordinate();
+					%newNbXArray=[newNbXArray x];
+					%
+					%y=otherBacterium.getycoordinate();
+					%newNbYArray=[newNbYArray y];
+
+					%newNbIsBlackArray=[newNbIsBlackArray obj.currentIsBlack];
+
+					%newNbRArray=[newNbRArray r];
 				end
 			end
 
-			bacterium.addneighborarray(newNbArray,newNbXArray,newNbYArray,newNbIsBlackArray,newNbRArray);
+			%bacterium.addneighborarray(newNbArray,newNbXArray,newNbYArray,newNbIsBlackArray,newNbRArray);
+			%bacterium
 		end
 
 		end
@@ -282,11 +303,20 @@ classdef bacteriaPopulationA < handle
 		%Calculates displacement of bacterium 1 due to bacterium 2
 
 		%if r>=2*obj.r0
-		if r>=obj.r0
+		r0=obj.r0;
+		rcut=obj.rcut;
+
+		k1=obj.k1;
+		k2=obj.k2;
+		k3=obj.k3;
+		%disp('HEEE??');
+		if r>=rcut*2
+			%disp('POOP');
 			vx=0;
 			vy=0;
 			return
 		end
+			%disp('PEE');
 
 		if r==0
 			theta=rand*2*pi;
@@ -297,7 +327,16 @@ classdef bacteriaPopulationA < handle
 			ey=(y1-y2)/r;
 		end
 
-		Fr=obj.k*(obj.r0-r);
+		if r>=r0*2
+			%disp('POOP');
+			Fr=k3*(2*r0-r);
+		elseif r>=r0
+			%disp('POOP');
+			Fr=k2*(2*r0-r);
+		else
+			%disp('POOP');
+			Fr=k1*(k2/k1*r0-r);
+		end
 
 		vx=obj.gamma*Fr*ex;
 		vy=obj.gamma*Fr*ey;
@@ -373,8 +412,8 @@ classdef bacteriaPopulationA < handle
 			xNew=xNew+celldx;
 			%new y
 			yNew=y;
-			yNew=y+sqrt(2*currentMuA*dt)*normrnd(0,1);
-			yNew=y+celldy;
+			yNew=yNew+sqrt(2*currentMuA*dt)*normrnd(0,1);
+			yNew=yNew+celldy;
 
 			%correct for going out of boundary
 			%x
@@ -396,10 +435,10 @@ classdef bacteriaPopulationA < handle
 			end
 
 			%set new position
-			%bacterium.setxcoordinate(xNew);
-			%bacterium.setycoordinate(yNew);
-			bacterium.xCoordinate=xNew;
-			bacterium.yCoordinate=yNew;
+			bacterium.setxcoordinate(xNew);
+			bacterium.setycoordinate(yNew);
+			%bacterium.xCoordinate=xNew;
+			%bacterium.yCoordinate=yNew;
 
 			bacteria(i)=bacterium;
 		end

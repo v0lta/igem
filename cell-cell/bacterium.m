@@ -90,8 +90,6 @@ classdef bacterium < handle
 		for i=n:-1:1
 			if obj.nbIsBlackArray(i)~=currentIsBlack
 				obj.deleteithneighbor(i);
-			else
-				disp('Saved a neighbor during purge!');
 			end
 		end
 

@@ -36,13 +36,13 @@ classdef analyzer < handle
 		fig=figure();
 		set(fig,'units','normalized','outerposition',[0 0 1 1]);
 		fig=figure(1);
-		for i=1:nFrames
-			%3D
-			obj.plot3D(i,fig);
-			%ylim([-5 75]);
-			pause(obj.tPause);
-			clf;
-		end
+		%for i=1:nFrames
+		%	%3D
+		%	obj.plot3D(i,fig);
+		%	%ylim([-5 75]);
+		%	pause(obj.tPause);
+		%	clf;
+		%end
 
 		for i=1:nFrames
 			%2D
@@ -51,6 +51,8 @@ classdef analyzer < handle
 			%ylim([-5 75]);
 			clf;
 		end
+
+		%obj.averager();
 		end
 
 		function makevideo(obj,filename)
@@ -264,9 +266,13 @@ classdef analyzer < handle
 		n=length(xCoordinateArray);
 
 		zl=zlim;
-		%marksize=20;
-		marksize=1;
-		plot3(xCoordinateArray,yCoordinateArray,ones(1,n)*zl(2),'k.','MarkerSize',marksize);
+		marksize=20;
+		%marksize=1;
+		%plot3(xCoordinateArray,yCoordinateArray,ones(1,n)*zl(2),'k.','MarkerSize',marksize);
+		plot(xCoordinateArray,yCoordinateArray,'k.','MarkerSize',marksize);
+
+		viscircles(coordinateAArray',2*ones(n,1));
+		viscircles(coordinateAArray',2.3*ones(n,1));
 
 		hold off;
 		end
@@ -282,8 +288,8 @@ classdef analyzer < handle
 		n=length(xCoordinateArray);
 
 		zl=zlim;
-		%marksize=20;
-		marksize=1;
+		marksize=20;
+		%marksize=1;
 		plot3(xCoordinateArray,yCoordinateArray,ones(1,n)*zl(2),'k.','MarkerSize',marksize);
 
 		hold off;
@@ -305,14 +311,17 @@ classdef analyzer < handle
 		%	scaling=obj.scaling/4;
 		%end
 
+
 		%subplot(2,1,1);
-		obj.plotrhoA2D(k,fig);
-		%obj.plotbacteriaA2D(k,fig);
+		%obj.plotrhoA2D(k,fig);
+		obj.plotbacteriaA2D(k,fig);
 		title('Bacteria A');
+		xlim([obj.domain.x(1) obj.domain.x(end)]);
+		ylim([obj.domain.y(1) obj.domain.y(end)]);
 		axis equal;
 		xlabel('x');
 		ylabel('y');
-		zlabel('Density');
+		%zlabel('Density');
 
 		%subplot(2,1,2);
 		%obj.plotrhoB2D(k,fig);
@@ -322,6 +331,16 @@ classdef analyzer < handle
 		%xlabel('x');
 		%ylabel('y');
 		%zlabel('Density');
+		end
+
+		function [averageR,stdevR]=rstatistics(obj)
+
+		A=obj.coordinateAMatrix;
+		r=sqrt((A(1,1,:)-A(1,2,:)).^2+(A(2,1,:)-A(2,2,:)).^2);
+
+		averageR=mean(r);
+		stdevR=std(r);
+
 		end
 
 	end
