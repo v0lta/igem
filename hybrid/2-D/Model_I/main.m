@@ -1,24 +1,25 @@
 %% Written bij KU Leuven iGEM team
 %% Model I
 close all;clear all;clc;
-filename=['zero_flux_',...
-	'zero_initial_concentration_',...
-	'high_degradation_',...
-	'uniform_A_',...
-	'uniform_B_',...
-	'rectangular_domain_',...
-	'small_simulation'];
-framerate=10;
+%filename=['zero_flux_',...
+%	'zero_initial_concentration_',...
+%	'high_degradation_',...
+%	'uniform_A_',...
+%	'uniform_B_',...
+%	'rectangular_domain_',...
+%	'small_simulation'];
+filename='cell_interaction_large_simulation_test';
+framerate=25;
 
 %% Simulation parameters
-dt=1;				%time step
-tend=10;			%end time of simulation
+dt=0.01;				%time step
+tend=300;			%end time of simulation
 N=tend/dt;			%time steps
 %N=200;				%time steps
-nBacteriaA=40;	%number of bacteria A
+nBacteriaA=1000;	%number of bacteria A
 %nBacteriaA=300;		%number of bacteria A
 %nBacteriaA=1;		%number of bacteria A
-nBacteriaB=40;	%number of bacteria B
+nBacteriaB=1000;	%number of bacteria B
 %nBacteriaB=300;		%number of bacteria B
 %nBacteriaB=1;		%number of bacteria B
 
@@ -33,7 +34,7 @@ domain.y=linspace(0,YLength,Jy);
 
 %% define kernel functions and bandwidth
 kernelfun=@epanechnikov2DNorm;
-bandwidth=.8;
+bandwidth=.2;
 
 paramA.kernelfun=kernelfun;
 paramB.kernelfun=kernelfun;
@@ -42,19 +43,40 @@ paramB.bandwidth=bandwidth;
 
 %% define constants
 %Bacteria A and B
+r0=0.05;
+k1=10;
+k2=5;
+k3=20;
+gamma=2;
+modulo=10;
 %muA=1/30;
 muHighA=1/30;	%high diffusion constant of bacteria A
 muLowA=1/300;	%low diffusion constant of bacteria A
-muHighB=1/30;	%high diffusion constant of bacteria B
-muLowB=1/300;	%low diffusion constant of bacteria B
 paramA.muA.low=muLowA;
 paramA.muA.high=muHighA;
+paramA.kappaA=2;		%chemotactic sensitivity constant of bacteria A
+%paramA.VthA=1.2;		%threshold concentration of AHL for bacteria A
+paramA.VthA=0.15;		%threshold concentration of AHL for bacteria A
+paramA.r0=r0;			%cell radius
+paramA.rcut=r0*1.25;		%cut off radius for attraction 
+paramA.k1=k1;			%spring constant
+paramA.k2=k2;			%spring constant
+paramA.k3=k3;			%spring constant
+paramA.gamma=gamma;			%cell sensitivity
+paramA.modulo=modulo;		%number of iterations between refreshes
+
+muHighB=1/30;	%high diffusion constant of bacteria B
+muLowB=1/300;	%low diffusion constant of bacteria B
 paramB.muB.low=muLowB;
 paramB.muB.high=muHighB;
-paramA.kappaA=2;		%chemotactic sensitivity constant of bacteria A
 paramB.kappaB=2;		%chemotactic sensitivity constant of bacteria B
-paramA.VthA=1.2;		%threshold concentration of AHL for bacteria A
-paramB.VthB=1.0;		%threshold concentration of AHL for bacteria B
+%paramB.VthB=1.0;		%threshold concentration of AHL for bacteria B
+paramB.VthB=0.15;		%threshold concentration of AHL for bacteria B
+paramB.r0=r0;			%cell radius
+paramB.k1=k1;			%spring constant
+paramB.k2=k2;			%spring constant
+paramB.gamma=gamma;			%cell sensitivity
+paramB.modulo=modulo;		%number of iterations between refreshes
 
 %AHL and leucine
 paramAHL.alpha=1e-3;		%production rate of AHL
@@ -77,14 +99,14 @@ for i=1:nBacteriaA
 	%y=YLength/2;
 
 	%gaussian
-	x=normrnd(1/2*XLength,1);
-	y=normrnd(1/2*YLength,1);
+	%x=normrnd(1/2*XLength,1);
+	%y=normrnd(1/2*YLength,1);
 	%x=normrnd(9/10*XLength,1);
 	%y=normrnd(9/10*YLength,1);
 
 	%uniform random
-	%x=rand*XLength;
-	%y=rand*YLength;
+	x=rand*XLength;
+	y=rand*YLength;
 
 	if x>XLength
 		x=XLength;
@@ -98,7 +120,7 @@ for i=1:nBacteriaA
 		y=0;
 	end
 
-	b=bacterium(x,y);
+	b=bacteriumA(x,y);
 	bacteriaA=[bacteriaA b];
 end
 
@@ -110,12 +132,12 @@ for i=1:nBacteriaB
 	%y=YLength/2;
 
 	%gaussian
-	x=normrnd(XLength/2,1);
-	y=normrnd(YLength/2,1);
+	%x=normrnd(XLength/2,1);
+	%y=normrnd(YLength/2,1);
 
 	%uniform random
-	%x=rand*XLength;
-	%y=rand*YLength;
+	x=rand*XLength;
+	y=rand*YLength;
 
 	if x>XLength
 		x=XLength;
@@ -129,7 +151,7 @@ for i=1:nBacteriaB
 		y=0;
 	end
 
-	b=bacterium(x,y);
+	b=bacteriumB(x,y);
 	bacteriaB=[bacteriaB b];
 end
 
@@ -202,23 +224,28 @@ model=model1(paramA,paramB,paramAHL,paramleucine,...
 
 %% run simulation
 disp('Running simulation');
+tic;
 for i=1:N
+	%if mod(i,N/10)==0
+	if mod(i,N/10)==0
+		disp(['iteration ' num2str(i)]);
+	end
 	model.update(dt);
 end
 
-beep on;
-beep;
-beep off;
+beep on;beep;beep off;
 
 disp('Simulation finished');
+toc;
+
+analObject=analyzer(paramAnal,model);
 
 %% preview
-analObject=analyzer(paramAnal,model);
-disp('Preview of simulation');
-analObject.preview();
+%disp('Preview of simulation');
+%analObject.preview();
 
 %% save workspace and make videos
-%analObject.makevideo(filename);
+analObject.makevideo(filename);
 
 %% end!
 disp('End!');

@@ -6,30 +6,9 @@ classdef model1 < handle
 		AHLField;
 		leucineField;
 
-		%constants
-		alpha;		%production rate of AHL
-		beta;		%production rate of leucine
-		k1;			%degradation rate of AHL
-		k2;			%degradation rate of leucine
-		muA;		%diffusion constant of bacteria A
-		muB;		%diffusion constant of bacteria B
-		DAHL;		%diffusion constant of AHL
-		Dleucine;	%diffusion constant of leucine
-		kappaA;		%chemotactic sensitivity of bacteria A
-		kappaB;		%chemotactic sensitivity of bacteria B
-		VthA;		%threshold concentration of AHL of bacteria A
-		VthB;		%threshold concentration of AHL of bacteria B
-
-		%kernel function and bandwidth
-		kernelfun;
-		bandwidth;
-		
 		%domain and domain grid
 		domain;
 		domainGrid;
-
-		%timestep
-		dt;
 
 		%array of density arrays & coordinate arrays
 		AHLArray;
@@ -80,15 +59,21 @@ classdef model1 < handle
 		%Current rho of bacteria A
 		rhoAOld=obj.rhoAArray(:,:,end);
 
+		%update neighbors
+		obj.bacteriaPopA.refreshorupdateneighbors(obj.bacteriaPopB);
+		obj.bacteriaPopB.refreshorupdateneighbors();
+
 		%bacteria A
 		%update bacteria positions
-		obj.bacteriaPopA.update(obj.AHLField,dt);
+		%obj.bacteriaPopA.update(obj.AHLField,dt);
+		obj.bacteriaPopA.updateinteraction(obj.AHLField,dt);
 		%calculate bacteria density
 		rhoA=obj.bacteriaPopA.bacteriadensity();
 
 		%bacteria B
 		%update bacteria positions
-		obj.bacteriaPopB.update(obj.AHLField,obj.leucineField,dt);
+		%obj.bacteriaPopB.update(obj.AHLField,obj.leucineField,dt);
+		obj.bacteriaPopB.updateinteraction(obj.AHLField,obj.leucineField,dt);
 		%calculate bacteria density
 		rhoB=obj.bacteriaPopB.bacteriadensity();
 
