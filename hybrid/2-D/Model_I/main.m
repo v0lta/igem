@@ -1,6 +1,11 @@
 %% Written bij KU Leuven iGEM team
 %% Model I
 close all;clear all;clc;
+numSimulation=1;
+for simulationCounter=1:numSimulation
+%numSimulation=0;
+%while 1
+%numSimulation=numSimulation+1;
 %filename=['zero_flux_',...
 %	'zero_initial_concentration_',...
 %	'high_degradation_',...
@@ -8,24 +13,29 @@ close all;clear all;clc;
 %	'uniform_B_',...
 %	'rectangular_domain_',...
 %	'small_simulation'];
-filename='cell_interaction_large_simulation_test';
+%filename='cell_interaction_large_simulation_test2';
+filename=['parametrised' num2str(simulationCounter)];
 framerate=25;
 
 %% Simulation parameters
-dt=0.01;				%time step
-tend=300;			%end time of simulation
+dt=1e-3;				%time step (h)
+%dt=1;				%time step
+tend=1e-2;			%end time of simulation
 N=tend/dt;			%time steps
 %N=200;				%time steps
-nBacteriaA=1000;	%number of bacteria A
+nBacteriaA=300;	%number of bacteria A
 %nBacteriaA=300;		%number of bacteria A
 %nBacteriaA=1;		%number of bacteria A
-nBacteriaB=1000;	%number of bacteria B
+nBacteriaB=300;	%number of bacteria B
 %nBacteriaB=300;		%number of bacteria B
 %nBacteriaB=1;		%number of bacteria B
+%initialpattern='gaussian';
+initialpattern='uniform_random';
+%initialpattern='spot';
 
 %% define domain
-XLength=10;			%Length of domain
-YLength=10;			%Length of domain
+XLength=1;			%Length of domain cm
+YLength=1;			%Length of domain cm
 Jx=101;				%# of subdivisions
 Jy=101;				%# of subdivisions
 domain.x=linspace(0,XLength,Jx);
@@ -34,7 +44,9 @@ domain.y=linspace(0,YLength,Jy);
 
 %% define kernel functions and bandwidth
 kernelfun=@epanechnikov2DNorm;
-bandwidth=.2;
+%bandwidth=.5;
+bandwidth=1e-4;
+%bandwidth=10;
 
 paramA.kernelfun=kernelfun;
 paramB.kernelfun=kernelfun;
@@ -43,20 +55,23 @@ paramB.bandwidth=bandwidth;
 
 %% define constants
 %Bacteria A and B
-r0=0.05;
-k1=10;
-k2=5;
-k3=20;
-gamma=2;
-modulo=10;
-%muA=1/30;
-muHighA=1/30;	%high diffusion constant of bacteria A
-muLowA=1/300;	%low diffusion constant of bacteria A
+kappa=2;
+r0=0.5e-4;		%cm
+k1=4;			%mN/cm
+k2=2;			%mN/cm
+k3=0;			%mN/cm
+%gamma=2.62e-8;	%mN*h/cm
+gamma=1e-1;	%mN*h/cm
+modulo=10;		%#
+
+muHighA=0.072e-3;	%high diffusion constant of bacteria A
+muLowA=0;			%low diffusion constant of bacteria A
+%muLowA=1/30;	%low diffusion constant of bacteria A
 paramA.muA.low=muLowA;
 paramA.muA.high=muHighA;
-paramA.kappaA=2;		%chemotactic sensitivity constant of bacteria A
+paramA.kappaA=kappa;		%chemotactic sensitivity constant of bacteria A
 %paramA.VthA=1.2;		%threshold concentration of AHL for bacteria A
-paramA.VthA=0.15;		%threshold concentration of AHL for bacteria A
+paramA.VthA=0.2;		%threshold concentration of AHL for bacteria A
 paramA.r0=r0;			%cell radius
 paramA.rcut=r0*1.25;		%cut off radius for attraction 
 paramA.k1=k1;			%spring constant
@@ -65,13 +80,14 @@ paramA.k3=k3;			%spring constant
 paramA.gamma=gamma;			%cell sensitivity
 paramA.modulo=modulo;		%number of iterations between refreshes
 
-muHighB=1/30;	%high diffusion constant of bacteria B
-muLowB=1/300;	%low diffusion constant of bacteria B
+muHighB=2.376e-3;	%high diffusion constant of bacteria B
+muLowB=0;	%low diffusion constant of bacteria B
+%muLowB=1/30;	%low diffusion constant of bacteria B
 paramB.muB.low=muLowB;
 paramB.muB.high=muHighB;
-paramB.kappaB=2;		%chemotactic sensitivity constant of bacteria B
+paramB.kappaB=kappa;		%chemotactic sensitivity constant of bacteria B
 %paramB.VthB=1.0;		%threshold concentration of AHL for bacteria B
-paramB.VthB=0.15;		%threshold concentration of AHL for bacteria B
+paramB.VthB=0.1;		%threshold concentration of AHL for bacteria B
 paramB.r0=r0;			%cell radius
 paramB.k1=k1;			%spring constant
 paramB.k2=k2;			%spring constant
@@ -79,34 +95,48 @@ paramB.gamma=gamma;			%cell sensitivity
 paramB.modulo=modulo;		%number of iterations between refreshes
 
 %AHL and leucine
-paramAHL.alpha=1e-3;		%production rate of AHL
+paramAHL.alpha=17.9e-4;		%production rate of AHL fmol/h
 %alpha=0;		%production rate of AHL
 %alpha=-3e-3;	%production rate of AHL
-paramleucine.beta=2e-3;		%production rate of leucine
+paramleucine.beta=5.4199e-4;		%production rate of leucine fmol/h
 %k1=5e-3;		%degradation rate of AHL
 %k1=0;			%degradation rate of AHL
-paramAHL.k1=5e-1;		%degradation rate of AHL
-paramleucine.k2=3e-1;		%degradation rate of leucine
+paramAHL.k1=1/48;		%degradation rate of AHL 1/h
+paramleucine.k2=1/80;		%degradation rate of leucine 1/h
 %DAHL=1/300;	%Diffusion constant of AHL
-paramAHL.DAHL=1/30;		%Diffusion constant of AHL
-paramleucine.Dleucine=1/20;	%Diffusion constant of leucine
+paramAHL.DAHL=50e-2;		%Diffusion constant of AHL cm^2/h
+paramleucine.Dleucine=26.46e-3;	%Diffusion constant of leucine cm^2/h
 
 %% Initialize bacteria A
 bacteriaA=[];
 
+%b=bacteriumA(XLength/2-r0*1.1,YLength/2);
+%b=bacteriumA(XLength,YLength);
+%bacteriaA=[bacteriaA b];
+%b=bacteriumA(XLength/2+r0*1.1,YLength/2);
+%bacteriaA=[bacteriaA b];
+
 for i=1:nBacteriaA
-	%x=XLength/2;
-	%y=YLength/2;
-
-	%gaussian
-	%x=normrnd(1/2*XLength,1);
-	%y=normrnd(1/2*YLength,1);
-	%x=normrnd(9/10*XLength,1);
-	%y=normrnd(9/10*YLength,1);
-
-	%uniform random
-	x=rand*XLength;
-	y=rand*YLength;
+	switch initialpattern
+	case 'spot'
+		x=XLength/2;
+		y=YLength/2;
+	case 'gaussian'
+		%gaussian
+		x=normrnd(1/2*XLength,1);
+		y=normrnd(1/2*YLength,1);
+		%x=normrnd(9/10*XLength,1);
+		%y=normrnd(9/10*YLength,1);
+	case 'uniform_random'
+		%uniform random
+		x=rand*XLength;
+		y=rand*YLength;
+	otherwise
+		warning('Unknown distribution, defaulting to uniform random');
+		%uniform random
+		x=rand*XLength;
+		y=rand*YLength;
+	end
 
 	if x>XLength
 		x=XLength;
@@ -127,17 +157,32 @@ end
 %% Initialize bacteria B
 bacteriaB=[];
 
+%b=bacteriumB(XLength/2+r0*0.3,YLength/2);
+%bacteriaB=[bacteriaB b];
+%b=bacteriumB(XLength/2-r0*0.3,YLength/2);
+%bacteriaB=[bacteriaB b];
+
 for i=1:nBacteriaB
-	%x=XLength/2;
-	%y=YLength/2;
-
-	%gaussian
-	%x=normrnd(XLength/2,1);
-	%y=normrnd(YLength/2,1);
-
-	%uniform random
-	x=rand*XLength;
-	y=rand*YLength;
+	switch initialpattern
+	case 'spot'
+		x=XLength/2;
+		y=YLength/2;
+	case 'gaussian'
+		%gaussian
+		x=normrnd(1/2*XLength,1);
+		y=normrnd(1/2*YLength,1);
+		%x=normrnd(9/10*XLength,1);
+		%y=normrnd(9/10*YLength,1);
+	case 'uniform_random'
+		%uniform random
+		x=rand*XLength;
+		y=rand*YLength;
+	otherwise
+		warning('Unknown distribution, defaulting to uniform random');
+		%uniform random
+		x=rand*XLength;
+		y=rand*YLength;
+	end
 
 	if x>XLength
 		x=XLength;
@@ -191,7 +236,8 @@ n=length(domain.x);
 
 %uniform
 %leucineconcentration=zeros(m,n)+1;
-leucineconcentration=zeros(m,n)+1e-5;
+%leucineconcentration=zeros(m,n)+1e-5;
+leucineconcentration=zeros(m,n)+1e-2;
 
 %block
 %a=floor(J/3);
@@ -223,12 +269,26 @@ model=model1(paramA,paramB,paramAHL,paramleucine,...
 	domain);
 
 %% run simulation
-disp('Running simulation');
-tic;
+disp(['Running simulation ' num2str(simulationCounter)]);
+t1=tic;
 for i=1:N
 	%if mod(i,N/10)==0
 	if mod(i,N/10)==0
-		disp(['iteration ' num2str(i)]);
+		disp('----- %%%%% -----');
+		%now
+		disp(datestr(now));
+		disp(['Current iteration: ' num2str(i)]);
+
+		%elapsed
+		tElapsed=toc(t1);
+		timeString1=displaytime(tElapsed);
+		disp([timeString1 ' have elapsed']);
+
+		%ETA
+		tPerIter=tElapsed/i;
+		tETA=tPerIter*(N-i);
+		timeString2=displaytime(tETA);
+		disp([timeString2 ' left']);
 	end
 	model.update(dt);
 end
@@ -236,16 +296,23 @@ end
 beep on;beep;beep off;
 
 disp('Simulation finished');
-toc;
+toc(t1);
 
 analObject=analyzer(paramAnal,model);
 
+%% preview cell cell
+%analObject.interactionpreview();
+
 %% preview
-%disp('Preview of simulation');
-%analObject.preview();
+disp('Preview of simulation');
+analObject.preview();
 
 %% save workspace and make videos
-analObject.makevideo(filename);
+%disp('Saving workspace and videos');
+%save(filename);
+%analObject.makevideo(filename);
 
 %% end!
 disp('End!');
+end
+disp('End of all simulations!');

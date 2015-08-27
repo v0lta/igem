@@ -40,10 +40,10 @@ clear all;close all;clc;
 
 %% Determination of suitable dt for given r
 %mu=1/30;
-mu=1/300;
+mu=2.376e-3;
 %dt=1;
 %r0=1/100;
-r0=0.05;
+r0=0.5e-4;
 
 %lambda2=(2*r0)^2/(4*mu*dt)
 

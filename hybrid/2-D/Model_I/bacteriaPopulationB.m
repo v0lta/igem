@@ -348,8 +348,10 @@ classdef bacteriaPopulationB < handle
 			Fr=k1*((k1+k2)/k1*r0-r);
 		end
 
-		vx=obj.gamma*Fr*ex;
-		vy=obj.gamma*Fr*ey;
+		vx=1/obj.gamma*Fr*ex;
+		%vx=obj.gamma*Fr*ex;
+		vy=1/obj.gamma*Fr*ey;
+		%vy=obj.gamma*Fr*ey;
 
 		end
 
@@ -434,19 +436,23 @@ classdef bacteriaPopulationB < handle
 
 			%calculate displacement due to neighboring cells
 			[cellvx,cellvy]=obj.totalcellforce(bacterium);
-			celldx=cellvx*dt*currentMuB;
-			celldy=cellvy*dt*currentMuB;
+			celldx=cellvx*dt;
+			%celldx=cellvx*dt*currentMuB;
+			celldy=cellvy*dt;
+			%celldy=cellvy*dt*currentMuB;
 			
 			%calculate new position
 			%new x
 			xNew=x;
 			xNew=xNew+sqrt(2*currentMuB*dt)*normrnd(0,1);
-			xNew=x-currentMuB*kappaB/leucine*dleucinex;
+			%xNew=x-currentMuB*kappaB/leucine*dleucinex;
+			xNew=x-currentMuB*kappaB*dleucinex;
 			xNew=xNew+celldx;
 			%new y
 			yNew=y;
 			yNew=yNew+sqrt(2*currentMuB*dt)*normrnd(0,1);
-			yNew=y-currentMuB*kappaB/leucine*dleuciney;
+			%yNew=y-currentMuB*kappaB/leucine*dleuciney;
+			yNew=y-currentMuB*kappaB*dleuciney;
 			yNew=yNew+celldy;
 
 			%correct for going out of boundary

@@ -40,15 +40,69 @@ classdef analyzer < handle
 		obj.domainGrid=model.getdomainGrid();
 		end
 
-		function preview(obj)
+		function interactionpreview(obj)
 		close all;
 		nFrames=obj.nFrames;
 		fig=figure();
 		set(fig,'units','normalized','outerposition',[0 0 1 1]);
+
+		for i=1:nFrames
+			%2D
+			obj.plotinteraction(i,fig);
+			pause(0.1);
+			%ylim([-5 75]);
+			clf;
+		end
+		end
+
+		function plotinteraction(obj,k,fig)
+
+		figure(fig);
+		hold on;
+
+		%cell A
+		coordinateAArray=obj.coordinateAMatrix(:,:,k);
+
+		xCoordinateArray=coordinateAArray(1,:);
+		yCoordinateArray=coordinateAArray(2,:);
+		n=length(xCoordinateArray);
+
+		zl=zlim;
+		marksize=20;
+		%marksize=1;
+		%plot3(xCoordinateArray,yCoordinateArray,ones(1,n)*zl(2),'k.','MarkerSize',marksize);
+		plot(xCoordinateArray,yCoordinateArray,'k.','MarkerSize',marksize);
+
+		viscircles(coordinateAArray',1*ones(n,1));
+		viscircles(coordinateAArray',1.25*ones(n,1));
+
+		%cell B
+		coordinateBArray=obj.coordinateBMatrix(:,:,k);
+
+		xCoordinateArray=coordinateBArray(1,:);
+		yCoordinateArray=coordinateBArray(2,:);
+		n=length(xCoordinateArray);
+
+		zl=zlim;
+		marksize=20;
+		%marksize=1;
+		%plot3(xCoordinateArray,yCoordinateArray,ones(1,n)*zl(2),'k.','MarkerSize',marksize);
+		plot(xCoordinateArray,yCoordinateArray,'k.','MarkerSize',marksize);
+
+		viscircles(coordinateBArray',1*ones(n,1));
+		%viscircles(coordinateAArray',1.25*ones(n,1));
+		hold off;
+		end
+
+		function preview(obj)
+		close all;
+		nFrames=obj.nFrames;
+		fig=figure('units','normalized','outerposition',[0 0 1 1]);
+		%set(fig,'units','normalized','outerposition',[0 0 1 1]);
 		%fig=figure(1);
 		for i=1:nFrames
 			%3D
-			obj.plot3D(i,fig);
+			obj.plot3D(i);
 			%ylim([-5 75]);
 			pause(0.1);
 			clf;
@@ -56,7 +110,7 @@ classdef analyzer < handle
 
 		for i=1:nFrames
 			%2D
-			obj.plot2D(i,fig);
+			obj.plot2D(i);
 			pause(0.1);
 			%ylim([-5 75]);
 			clf;
@@ -67,8 +121,7 @@ classdef analyzer < handle
 		framerate=obj.framerate;
 		nFrames=obj.nFrames;
 
-		save(filename);
-		disp('Saving workspace and videos');
+		%save(filename);
 		vidObj3D=VideoWriter([filename '_3D.avi']);
 		set(vidObj3D,'FrameRate',framerate);
 		open(vidObj3D);
@@ -77,32 +130,35 @@ classdef analyzer < handle
 		set(vidObj2D,'FrameRate',framerate);
 		open(vidObj2D);
 
-		fig=figure();
-		set(fig,'units','normalized','outerposition',[0 0 1 1]);
+		fig=figure('units','normalized','outerposition',[0 0 1 1],'Visible','off');
+		%set(fig,'units','normalized','outerposition',[0 0 1 1],'Visible','off');
 		%fig=figure(1);
 		for i=1:nFrames
 			%3D
-			obj.plot3D(i,fig);
+			%obj.plot3D(i,fig);
+			obj.plot3D(i);
 			%ylim([-5 75]);
 			writeVideo(vidObj3D,getframe(fig));
 			clf;
 		end
+		vidObj3D.close();
 
 		for i=1:nFrames
 			%2D
-			obj.plot2D(i,fig);
+			%obj.plot2D(i,fig);
+			obj.plot2D(i);
 			%ylim([-5 75]);
 			writeVideo(vidObj2D,getframe(fig));
 			clf;
 		end
+		vidObj2D.close();
 
 		close(fig);
-		vidObj3D.close();
-		vidObj2D.close();
 		end
 			
-		function plotrhoA3D(obj,k,fig)
-		figure(fig);
+		%function plotrhoA3D(obj,k,fig)
+		function plotrhoA3D(obj,k)
+		%figure(fig);
 		hold on;
 
 		X=obj.domainGrid.X;
@@ -120,8 +176,9 @@ classdef analyzer < handle
 		hold off;
 		end
 
-		function plotrhoB3D(obj,k,fig)
-		figure(fig);
+		%function plotrhoB3D(obj,k,fig)
+		function plotrhoB3D(obj,k)
+		%figure(fig);
 		hold on;
 
 		X=obj.domainGrid.X;
@@ -139,8 +196,9 @@ classdef analyzer < handle
 		hold off;
 		end
 
-		function plotAHL3D(obj,k,fig,scaling)
-		figure(fig);
+		%function plotAHL3D(obj,k,fig,scaling)
+		function plotAHL3D(obj,k,scaling)
+		%figure(fig);
 		hold on;
 
 		X=obj.domainGrid.X;
@@ -165,8 +223,9 @@ classdef analyzer < handle
 		hold off;
 		end
 
-		function plotleucine3D(obj,k,fig,scaling)
-		figure(fig);
+		%function plotleucine3D(obj,k,fig,scaling)
+		function plotleucine3D(obj,k,scaling)
+		%figure(fig);
 		hold on;
 
 		X=obj.domainGrid.X;
@@ -191,8 +250,9 @@ classdef analyzer < handle
 		hold off;
 		end
 
-		function plotbacteriaA3D(obj,k,fig)
-		figure(fig);
+		%function plotbacteriaA3D(obj,k,fig)
+		function plotbacteriaA3D(obj,k)
+		%figure(fig);
 		hold on;
 
 		coordinateAArray=obj.coordinateAMatrix(:,:,k);
@@ -206,8 +266,9 @@ classdef analyzer < handle
 		hold off;
 		end
 
-		function plotbacteriaB3D(obj,k,fig)
-		figure(fig);
+		%function plotbacteriaB3D(obj,k,fig)
+		function plotbacteriaB3D(obj,k)
+		%figure(fig);
 		hold on;
 
 		coordinateBArray=obj.coordinateBMatrix(:,:,k);
@@ -251,20 +312,25 @@ classdef analyzer < handle
 		%leucineLimit=obj.calculatelimit(maxleucine,currentMaxleucine);
 
 		rhoALimit=maxRhoA;
+		%rhoALimit=1;
 		rhoBLimit=maxRhoB;
+		%rhoBLimit=1;
 		AHLLimit=maxAHL;
 		leucineLimit=maxleucine;
 		end
 
-		function plot3D(obj,k,fig)
+		%function plot3D(obj,k,fig)
+		function plot3D(obj,k)
 
 		scaling=obj.scaling;
 		[rhoALimit,rhoBLimit,AHLLimit,leucineLimit]=obj.limitoptimizer(k);
 
 		%Bacteria A
 		subplot(2,2,1);
-		obj.plotrhoA3D(k,fig);
-		obj.plotbacteriaA3D(k,fig);
+		%obj.plotrhoA3D(k,fig);
+		obj.plotrhoA3D(k);
+		%obj.plotbacteriaA3D(k,fig);
+		obj.plotbacteriaA3D(k);
 		title('Bacteria A');
 		%legend('Density','Bacterium');
 		zlim([0 rhoALimit]);
@@ -276,8 +342,10 @@ classdef analyzer < handle
 
 		%Bacteria B
 		subplot(2,2,2);
-		obj.plotrhoB3D(k,fig);
-		obj.plotbacteriaB3D(k,fig);
+		%obj.plotrhoB3D(k,fig);
+		obj.plotrhoB3D(k);
+		%obj.plotbacteriaB3D(k,fig);
+		obj.plotbacteriaB3D(k);
 		title('Bacteria B');
 		%legend('Density','Bacterium');
 		zlim([0 rhoBLimit]);
@@ -289,7 +357,8 @@ classdef analyzer < handle
 
 		%AHL
 		subplot(2,2,3);
-		obj.plotAHL3D(k,fig,scaling);
+		%obj.plotAHL3D(k,fig,scaling);
+		obj.plotAHL3D(k,scaling);
 		title('AHL');
 		%legend('Concentration');
 		zlim([0 AHLLimit*scaling]);
@@ -301,7 +370,8 @@ classdef analyzer < handle
 
 		%leucine
 		subplot(2,2,4);
-		obj.plotleucine3D(k,fig,scaling);
+		%obj.plotleucine3D(k,fig,scaling);
+		obj.plotleucine3D(k,scaling);
 		title('Leucine');
 		%legend('Concentration');
 		zlim([0 leucineLimit*scaling]);
@@ -312,8 +382,7 @@ classdef analyzer < handle
 		zlabel('Concentration');
 		end
 
-		function plotrhoA2D(obj,k,fig)
-		figure(fig);
+		function plotrhoA2D(obj,k)
 		hold on;
 
 		X=obj.domainGrid.X;
@@ -329,8 +398,7 @@ classdef analyzer < handle
 		hold off;
 		end
 
-		function plotrhoB2D(obj,k,fig)
-		figure(fig);
+		function plotrhoB2D(obj,k)
 		hold on;
 
 		X=obj.domainGrid.X;
@@ -346,8 +414,7 @@ classdef analyzer < handle
 		hold off;
 		end
 
-		function plotAHL2D(obj,k,fig,scaling)
-		figure(fig);
+		function plotAHL2D(obj,k,scaling)
 		hold on;
 
 		X=obj.domainGrid.X;
@@ -366,8 +433,7 @@ classdef analyzer < handle
 		hold off;
 		end
 
-		function plotleucine2D(obj,k,fig,scaling)
-		figure(fig);
+		function plotleucine2D(obj,k,scaling)
 		hold on;
 
 		X=obj.domainGrid.X;
@@ -386,8 +452,7 @@ classdef analyzer < handle
 		hold off;
 		end
 
-		function plotbacteriaA2D(obj,k,fig)
-		figure(fig);
+		function plotbacteriaA2D(obj,k)
 		hold on;
 
 		coordinateAArray=obj.coordinateAMatrix(:,:,k);
@@ -404,8 +469,7 @@ classdef analyzer < handle
 		hold off;
 		end
 
-		function plotbacteriaB2D(obj,k,fig)
-		figure(fig);
+		function plotbacteriaB2D(obj,k)
 		hold on;
 
 		coordinateBArray=obj.coordinateBMatrix(:,:,k);
@@ -422,7 +486,7 @@ classdef analyzer < handle
 		hold off;
 		end
 
-		function plot2D(obj,k,fig)
+		function plot2D(obj,k)
 
 		scaling=1;
 		%maxRho=max(max(max(obj.rhoAArray)));
@@ -439,7 +503,7 @@ classdef analyzer < handle
 		%end
 
 		subplot(2,2,1);
-		obj.plotrhoA2D(k,fig);
+		obj.plotrhoA2D(k);
 		%obj.plotbacteriaA2D(k,fig);
 		title('Bacteria A');
 		axis equal;
@@ -448,7 +512,7 @@ classdef analyzer < handle
 		zlabel('Density');
 
 		subplot(2,2,2);
-		obj.plotrhoB2D(k,fig);
+		obj.plotrhoB2D(k);
 		%obj.plotbacteriaB2D(k,fig);
 		title('Bacteria B');
 		axis equal;
@@ -457,7 +521,7 @@ classdef analyzer < handle
 		zlabel('Density');
 
 		subplot(2,2,3);
-		obj.plotAHL2D(k,fig,scaling);
+		obj.plotAHL2D(k,scaling);
 		title('AHL');
 		axis equal;
 		xlabel('x');
@@ -465,7 +529,7 @@ classdef analyzer < handle
 		zlabel('Concentration');
 
 		subplot(2,2,4);
-		obj.plotleucine2D(k,fig,scaling);
+		obj.plotleucine2D(k,scaling);
 		title('Leucine');
 		axis equal;
 		xlabel('x');

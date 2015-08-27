@@ -378,8 +378,10 @@ classdef bacteriaPopulationA < handle
 			Fr=k1*((k1+k2)/k1*r0-r);
 		end
 
-		vx=obj.gamma*Fr*ex;
-		vy=obj.gamma*Fr*ey;
+		vx=1/obj.gamma*Fr*ex;
+		%vx=obj.gamma*Fr*ex;
+		vy=1/obj.gamma*Fr*ey;
+		%vy=obj.gamma*Fr*ey;
 
 		end
 
@@ -414,8 +416,10 @@ classdef bacteriaPopulationA < handle
 			Fr=k1*((k1+k2)/k1*r0-r);
 		end
 
-		vx=obj.gamma*Fr*ex;
-		vy=obj.gamma*Fr*ey;
+		vx=1/obj.gamma*Fr*ex;
+		%vx=obj.gamma*Fr*ex;
+		vy=1/obj.gamma*Fr*ey;
+		%vy=obj.gamma*Fr*ey;
 
 		end
 
@@ -498,8 +502,10 @@ classdef bacteriaPopulationA < handle
 
 			%calculate displacement due to neighboring cells
 			[cellvx,cellvy]=obj.totalcellforce(bacterium);
-			celldx=cellvx*dt*currentMuA;
-			celldy=cellvy*dt*currentMuA;
+			celldx=cellvx*dt;
+			%celldx=cellvx*dt*currentMuA;
+			celldy=cellvy*dt;
+			%celldy=cellvy*dt*currentMuA;
 			
 			%calculate new position
 			%new x
