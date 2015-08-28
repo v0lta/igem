@@ -107,9 +107,9 @@ classdef bacteriaPopulationB < handle
 			%calculate new position
 			%repelled by AHL
 			%new x
-			xNew=x-currentMuB*kappaB/leucine*dleucinex+sqrt(2*currentMuB*dt)*normrnd(0,1);
+			xNew=x-currentMuB*kappaB/leucine*dleucinex*dt+sqrt(2*currentMuB*dt)*normrnd(0,1);
 			%new y
-			yNew=y-currentMuB*kappaB/leucine*dleuciney+sqrt(2*currentMuB*dt)*normrnd(0,1);
+			yNew=y-currentMuB*kappaB/leucine*dleuciney*dt+sqrt(2*currentMuB*dt)*normrnd(0,1);
 
 			%correct for going out of boundary
 			%x
@@ -446,14 +446,14 @@ classdef bacteriaPopulationB < handle
 			%new x
 			xNew=x;
 			xNew=xNew+sqrt(2*currentMuB*dt)*normrnd(0,1);
-			%xNew=x-currentMuB*kappaB/leucine*dleucinex;
-			xNew=x-currentMuB*kappaB*dleucinex;
+			xNew=x-currentMuB*kappaB/leucine*dleucinex*dt;
+			%xNew=x-currentMuB*kappaB*dleucinex;
 			xNew=xNew+celldx;
 			%new y
 			yNew=y;
 			yNew=yNew+sqrt(2*currentMuB*dt)*normrnd(0,1);
-			%yNew=y-currentMuB*kappaB/leucine*dleuciney;
-			yNew=y-currentMuB*kappaB*dleuciney;
+			yNew=y-currentMuB*kappaB/leucine*dleuciney*dt;
+			%yNew=y-currentMuB*kappaB*dleuciney;
 			yNew=yNew+celldy;
 
 			%correct for going out of boundary

@@ -1,7 +1,8 @@
 function rho=KDE2D(coordinateArray,kernelfun,X,Y,bandwidth)
 
 rho=zeros(size(X));
-[m,numCoordinate]=size(coordinateArray);
+[~,numCoordinate]=size(coordinateArray);
+bandwidth2=bandwidth^2;
 
 %parallel version
 parfor i=1:numCoordinate
@@ -10,5 +11,5 @@ parfor i=1:numCoordinate
 	x=coordinateArray(1,i);
 	y=coordinateArray(2,i);
 
-	rho=rho+1/bandwidth*kernelfun((X-x)/bandwidth,(Y-y)/bandwidth);
+	rho=rho+1/bandwidth2*kernelfun((X-x)/bandwidth,(Y-y)/bandwidth);
 end
