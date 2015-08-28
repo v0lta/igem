@@ -24,7 +24,8 @@ for simulationCounter=1:numSimulation
 %	'rectangular_domain_',...
 %	'small_simulation'];
 %filename='cell_interaction_large_simulation_test2';
-filename=['fasttest' num2str(simulationCounter)];
+%filename=['fasttest' num2str(simulationCounter)];
+filename=['normaltest' num2str(simulationCounter)];
 framerate=25;
 scaling=20;
 
@@ -34,10 +35,10 @@ dt=0.1;				%time step
 tend=50;			%end time of simulation
 N=tend/dt;			%time steps
 %N=200;				%time steps
-nBacteriaA=50;	%number of bacteria A
+nBacteriaA=1;	%number of bacteria A
 %nBacteriaA=300;		%number of bacteria A
 %nBacteriaA=1;		%number of bacteria A
-nBacteriaB=50;	%number of bacteria B
+nBacteriaB=1;	%number of bacteria B
 %nBacteriaB=300;		%number of bacteria B
 %nBacteriaB=1;		%number of bacteria B
 %initialpattern='gaussian';
@@ -47,8 +48,10 @@ initialpattern='uniform_random';
 %% define domain
 XLength=10;			%Length of domain
 YLength=10;			%Length of domain
-Jx=101;				%# of subdivisions
-Jy=101;				%# of subdivisions
+%Jx=101;				%# of subdivisions
+%Jy=101;				%# of subdivisions
+Jx=2;				%# of subdivisions
+Jy=2;				%# of subdivisions
 domain.x=linspace(0,XLength,Jx);
 domain.y=linspace(0,YLength,Jy);
 %domain=[domainx',domainy'];
@@ -321,7 +324,10 @@ for i=1:N
 		%now
 		disp(datestr(now));
 		disp(['Current iteration: ' num2str(i)]);
-
+	end
+	model.update(dt);
+	%if mod(i,1)==0
+	if mod(i,N/10)==0
 		%elapsed
 		tElapsed=toc(t1);
 		timeString1=displaytime(tElapsed);
@@ -332,8 +338,12 @@ for i=1:N
 		tETA=tPerIter*(N-i);
 		timeString2=displaytime(tETA);
 		disp([timeString2 ' left']);
+
+		%total
+		tTotal=tElapsed/i*N;
+		timeString3=displaytime(tTotal);
+		disp([timeString3 ' total time']);
 	end
-	model.update(dt);
 end
 
 beep on;beep;beep off;
@@ -351,11 +361,22 @@ analObject=analyzer(paramAnal,model);
 %analObject.preview();
 
 %% save workspace and make videos
-disp('Saving workspace and videos');
+%disp('Saving workspace and videos');
+%t2=tic;
+%save(filename);
+%analObject.makevideo(filename);
+%disp('Workspace and videos saved');
+%toc(t2);
+
+%% compare serial and parallel video processing
+disp('Serial');
 t2=tic;
-save(filename);
-analObject.makevideo(filename);
-disp('Workspace and videos saved');
+analObject.make3Dvideoserial(filename);
+toc(t2);
+
+disp('Parallel');
+t2=tic;
+analObject.make3Dvideoparallel(filename);
 toc(t2);
 
 %% end!

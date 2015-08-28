@@ -156,6 +156,32 @@ classdef analyzer < handle
 		close(fig);
 		end
 			
+		function make3Dvideoserial(obj,filename)
+		framerate=obj.framerate;
+		nFrames=obj.nFrames;
+
+		%save(filename);
+		vidObj3D=VideoWriter([filename '_3Dserial.avi']);
+		set(vidObj3D,'FrameRate',framerate);
+		open(vidObj3D);
+
+
+		fig=figure('units','normalized','outerposition',[0 0 1 1],'Visible','off');
+		%set(fig,'units','normalized','outerposition',[0 0 1 1],'Visible','off');
+		%fig=figure(1);
+		for i=1:nFrames
+			%3D
+			%obj.plot3D(i,fig);
+			obj.plot3D(i);
+			%ylim([-5 75]);
+			writeVideo(vidObj3D,getframe(fig));
+			clf;
+		end
+		vidObj3D.close();
+
+		close(fig);
+		end
+			
 		%function plotrhoA3D(obj,k,fig)
 		function plotrhoA3D(obj,k)
 		%figure(fig);
@@ -311,12 +337,279 @@ classdef analyzer < handle
 		%AHLLimit=obj.calculatelimit(maxAHL,currentMaxAHL);
 		%leucineLimit=obj.calculatelimit(maxleucine,currentMaxleucine);
 
-		rhoALimit=maxRhoA;
-		%rhoALimit=1;
-		rhoBLimit=maxRhoB;
-		%rhoBLimit=1;
+		%rhoALimit=maxRhoA;
+		rhoALimit=1;
+		%rhoBLimit=maxRhoB;
+		rhoBLimit=1;
 		AHLLimit=maxAHL;
 		leucineLimit=maxleucine;
+		end
+
+		function make3Dvideoparallel(obj,filename)
+		framerate=obj.framerate;
+		nFrames=obj.nFrames;
+
+		scaling=obj.scaling;
+		[rhoALimit,rhoBLimit,AHLLimit,leucineLimit]=obj.limitoptimizer(1);
+
+		vidObj3D=VideoWriter([filename '_3Dparallel.avi']);
+		set(vidObj3D,'FrameRate',framerate);
+		open(vidObj3D);
+
+		%vidObj2D=VideoWriter([filename '_2D.avi']);
+		%set(vidObj2D,'FrameRate',framerate);
+		%open(vidObj2D);
+
+		X=obj.domainGrid.X;
+		Y=obj.domainGrid.Y;
+
+		frameArray=cell(nFrames,1);
+
+		rhoAArray=obj.rhoAArray;
+		coordinateAMatrix=obj.coordinateAMatrix;
+		rhoBArray=obj.rhoBArray;
+		coordinateBMatrix=obj.coordinateBMatrix;
+
+		AHLArray=obj.AHLArray;
+		leucineArray=obj.leucineArray;
+
+		%parfor i=1:nFrames
+		for i=1:nFrames
+			fig=figure('units','normalized','outerposition',[0 0 1 1],'Visible','off');
+			hold on;
+
+			%% -- Bacteria A -- %%
+			subplot(2,2,1);
+
+			%density
+			rhoA=rhoAArray(:,:,i);
+			mesh(X,Y,rhoA,'facecolor','none');
+			view(3);
+
+			%bacteria
+			coordinateAArray=coordinateAMatrix(:,:,i);
+
+			xCoordinateAArray=coordinateAArray(1,:);
+			yCoordinateAArray=coordinateAArray(2,:);
+			n=length(xCoordinateAArray);
+
+			plot3(xCoordinateAArray,yCoordinateAArray,zeros(1,n),'k.','MarkerSize',20);
+
+			%formatting
+			title('Bacteria A');
+			%legend('Density','Bacterium');
+			zlim([0 rhoALimit]);
+			foo = get(gca,'dataaspectratio');
+			set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
+			xlabel('x');
+			ylabel('y');
+			zlabel('Density');
+
+			%% -- Bacteria B -- %%
+			subplot(2,2,2);
+
+			%density
+			rhoB=rhoBArray(:,:,i);
+			mesh(X,Y,rhoB,'facecolor','none');
+			view(3);
+
+			%bacteria
+			coordinateBArray=coordinateBMatrix(:,:,i);
+
+			xCoordinateBArray=coordinateBArray(1,:);
+			yCoordinateBArray=coordinateBArray(2,:);
+			n=length(xCoordinateBArray);
+
+			plot3(xCoordinateBArray,yCoordinateBArray,zeros(1,n),'k.','MarkerSize',20);
+
+			%formatting
+			title('Bacteria B');
+			%legend('Density','Bacterium');
+			zlim([0 rhoBLimit]);
+			foo = get(gca,'dataaspectratio');
+			set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
+			xlabel('x');
+			ylabel('y');
+			zlabel('Density');
+
+			%% -- AHL -- %%
+			subplot(2,2,3);
+
+			%concentration
+			AHL=AHLArray(:,:,i);
+			mesh(X,Y,AHL*scaling,'facecolor','none');
+			view(3);
+
+			%formatting
+			title('AHL');
+			%legend('Concentration');
+			zlim([0 AHLLimit*scaling]);
+			foo = get(gca,'dataaspectratio');
+			set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
+			xlabel('x');
+			ylabel('y');
+			zlabel('Concentration');
+
+			%% -- leucine -- %%
+			subplot(2,2,4);
+
+			%concentration
+			leucine=leucineArray(:,:,i);
+			mesh(X,Y,leucine*scaling,'facecolor','none');
+			view(3);
+
+			%formatting
+			title('Leucine');
+			%legend('Concentration');
+			zlim([0 leucineLimit*scaling]);
+			foo = get(gca,'dataaspectratio');
+			set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
+			xlabel('x');
+			ylabel('y');
+			zlabel('Concentration');
+
+			frameArray{i}=getframe;
+			delete(fig);
+		end
+
+		for i=1:nFrames
+			writeVideo(vidObj3D,frameArray{i});
+		end
+
+		vidObj3D.close();
+		end
+
+		function make2Dvideoparallel(obj,filename)
+		framerate=obj.framerate;
+		nFrames=obj.nFrames;
+
+		scaling=obj.scaling;
+		[rhoALimit,rhoBLimit,AHLLimit,leucineLimit]=obj.limitoptimizer(1);
+
+		vidObj2D=VideoWriter([filename '_2Dparallel.avi']);
+		set(vidObj2D,'FrameRate',framerate);
+		open(vidObj2D);
+
+		%vidObj2D=VideoWriter([filename '_2D.avi']);
+		%set(vidObj2D,'FrameRate',framerate);
+		%open(vidObj2D);
+
+		X=obj.domainGrid.X;
+		Y=obj.domainGrid.Y;
+
+		frameArray=cell(nFrames,1);
+
+		rhoAArray=obj.rhoAArray;
+		coordinateAMatrix=obj.coordinateAMatrix;
+		rhoBArray=obj.rhoBArray;
+		coordinateBMatrix=obj.coordinateBMatrix;
+
+		AHLArray=obj.AHLArray;
+		leucineArray=obj.leucineArray;
+
+		%parfor i=1:nFrames
+		for i=1:nFrames
+			fig=figure('units','normalized','outerposition',[0 0 1 1],'Visible','off');
+			hold on;
+
+			%% -- Bacteria A -- %%
+			subplot(2,2,1);
+
+			%density
+			rhoA=rhoAArray(:,:,i);
+			surf(X,Y,rhoA);
+			shading('flat');
+			view(2);
+
+			%bacteria
+			%coordinateAArray=coordinateAMatrix(:,:,i);
+
+			%xCoordinateAArray=coordinateAArray(1,:);
+			%yCoordinateAArray=coordinateAArray(2,:);
+			%n=length(xCoordinateAArray);
+
+			%plot3(xCoordinateAArray,yCoordinateAArray,zeros(1,n),'k.','MarkerSize',20);
+
+			%formatting
+			title('Bacteria A');
+			zlim([0 rhoALimit]);
+			axis equal;
+			xlabel('x');
+			ylabel('y');
+			zlabel('Density');
+
+			%% -- Bacteria B -- %%
+			subplot(2,2,2);
+
+			%density
+			rhoB=rhoBArray(:,:,i);
+			surf(X,Y,rhoB);
+			shading('flat');
+			view(2);
+
+			%bacteria
+			%coordinateBArray=obj.coordinateBMatrix(:,:,i);
+
+			%xCoordinateBArray=coordinateBArray(1,:);
+			%yCoordinateBArray=coordinateBArray(2,:);
+			%n=length(xCoordinateBArray);
+
+			%plot3(xCoordinateBArray,yCoordinateBArray,zeros(1,n),'k.','MarkerSize',20);
+
+			%formatting
+			title('Bacteria B');
+			%legend('Density','Bacterium');
+			zlim([0 rhoBLimit]);
+			axis equal;
+			xlabel('x');
+			ylabel('y');
+			zlabel('Density');
+
+			%% -- AHL -- %%
+			subplot(2,2,3);
+
+			%concentration
+			AHL=AHLArray(:,:,i);
+			surf(X,Y,AHL*scaling);
+			shading('flat');
+			view(2);
+
+			%formatting
+			title('AHL');
+			%legend('Concentration');
+			zlim([0 AHLLimit*scaling]);
+			axis equal;
+			xlabel('x');
+			ylabel('y');
+			zlabel('Concentration');
+
+			%% -- leucine -- %%
+			subplot(2,2,4);
+
+			%concentration
+			leucine=leucineArray(:,:,i);
+			surf(X,Y,leucine*scaling);
+			shading('flat');
+			view(2);
+
+			%formatting
+			title('Leucine');
+			%legend('Concentration');
+			zlim([0 leucineLimit*scaling]);
+			axis equal;
+			xlabel('x');
+			ylabel('y');
+			zlabel('Concentration');
+
+			frameArray{i}=getframe;
+			delete(fig);
+		end
+
+		for i=1:nFrames
+			writeVideo(vidObj2D,frameArray{i});
+		end
+
+		vidObj2D.close();
 		end
 
 		%function plot3D(obj,k,fig)

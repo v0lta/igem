@@ -139,18 +139,18 @@ classdef bacteriaPopulationAB < handle
 		function coordinateArrayA=coordinatesA(obj);
 		%return coordinate array of bacteria A
 		numA=obj.numA;
-		coordinateArrayA=[obj.bactX(1:numA),obj.bactY(1:numA)];
+		coordinateArrayA=[obj.bactX(1:numA),obj.bactY(1:numA)]';
 		end
 	
 		function coordinateArrayB=coordinatesB(obj);
 		%return coordinate array of bacteria B
 		numA=obj.numA;
-		coordinateArrayB=[obj.bactX(numA+1:end),obj.bactY(numA+1:end)];
+		coordinateArrayB=[obj.bactX(numA+1:end),obj.bactY(numA+1:end)]';
 		end
 
 		function coordinateArray=coordinates(obj);
 		%return coordinate array of all bacteria
-		coordinateArray=[obj.bactX,obj.bactY];
+		coordinateArray=[obj.bactX,obj.bactY]';
 		end
 
 		function rhoA=bacteriadensityA(obj)
@@ -252,8 +252,8 @@ classdef bacteriaPopulationAB < handle
 		bactNb=obj.bactNb;
 
 		%parallel or serial?
+		%parfor i=1:N
 		for i=1:N
-		%for i=1:N
 			currentX=bactX(i);
 			currentY=bactY(i);
 
@@ -335,11 +335,13 @@ classdef bacteriaPopulationAB < handle
 		N=numA+numB;
 		AHL=zeros(N,1);
 
-		for i=1:N
-			currentX=obj.bactX(i);
-			currentY=obj.bactY(i);
+		%parallel or serial?
+		%parfor k=1:N
+		for k=1:N
+			currentX=obj.bactX(k);
+			currentY=obj.bactY(k);
 
-			AHL(i)=f(conc,[currentX currentY]);
+			AHL(k)=f(conc,[currentX currentY]);
 		end
 
 		muA=obj.muA;
@@ -348,6 +350,8 @@ classdef bacteriaPopulationAB < handle
 		VthB=obj.VthB;
 		currentMuArray=zeros(N,1);
 
+		%parallel or serial?
+		%parfor i=1:N
 		for i=1:N
 			%bacteria A
 			if i<=numA
@@ -431,9 +435,8 @@ classdef bacteriaPopulationAB < handle
 		leucine=zeros(N,1);
 
 		%parallel or serial?
-		%A=numA+1:N
+		%parfor i=numA+1:N
 		for k=numA+1:N
-		%for i=numA+1:N
 			currentX=obj.bactX(k);
 			currentY=obj.bactY(k);
 
@@ -478,6 +481,8 @@ classdef bacteriaPopulationAB < handle
 		randdx=zeros(N,1);
 		randdy=zeros(N,1);
 
+		%parallel or serial?
+		%parfor i=1:N
 		for i=1:N
 			randdx(i)=sqrt(2*currentMuArray(i)*dt)*normrnd(0,1);
 			randdy(i)=sqrt(2*currentMuArray(i)*dt)*normrnd(0,1);
@@ -540,7 +545,9 @@ classdef bacteriaPopulationAB < handle
 		celldx=zeros(N,1);
 		celldy=zeros(N,1);
 
-		for i=1:N
+		%parallel or serial? -> parallel
+		parfor i=1:N
+		%for i=1:N
 			%current coordinates
 			currentX=bactX(i);
 			currentY=bactY(i);
@@ -612,6 +619,8 @@ classdef bacteriaPopulationAB < handle
 		domainY1=obj.domain.y(1);
 		domainYEnd=obj.domain.y(end);
 
+		%parallel or serial?
+		%parfor i=1:N
 		for i=1:N
 			currentX=newBactX(i);
 			currentY=newBactY(i);
