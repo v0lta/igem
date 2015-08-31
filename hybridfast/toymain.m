@@ -32,14 +32,18 @@ scaling=20;
 %% Simulation parameters
 dt=0.1;				%time step
 %dt=1;				%time step
-tend=50;			%end time of simulation
+tend=0.1;			%end time of simulation
+%tend=2;			%end time of simulation
+%tend=30;			%end time of simulation
 N=tend/dt;			%time steps
 %N=200;				%time steps
-nBacteriaA=1;	%number of bacteria A
-%nBacteriaA=300;		%number of bacteria A
+%nBacteriaA=1000;	%number of bacteria A
+nBacteriaA=300;		%number of bacteria A
+%nBacteriaA=0;		%number of bacteria A
 %nBacteriaA=1;		%number of bacteria A
-nBacteriaB=1;	%number of bacteria B
-%nBacteriaB=300;		%number of bacteria B
+%nBacteriaB=1000;	%number of bacteria B
+nBacteriaB=300;		%number of bacteria B
+%nBacteriaB=0;		%number of bacteria B
 %nBacteriaB=1;		%number of bacteria B
 %initialpattern='gaussian';
 initialpattern='uniform_random';
@@ -48,10 +52,10 @@ initialpattern='uniform_random';
 %% define domain
 XLength=10;			%Length of domain
 YLength=10;			%Length of domain
-%Jx=101;				%# of subdivisions
-%Jy=101;				%# of subdivisions
-Jx=2;				%# of subdivisions
-Jy=2;				%# of subdivisions
+Jx=101;				%# of subdivisions
+Jy=101;				%# of subdivisions
+%Jx=2;				%# of subdivisions
+%Jy=2;				%# of subdivisions
 domain.x=linspace(0,XLength,Jx);
 domain.y=linspace(0,YLength,Jy);
 %domain=[domainx',domainy'];
@@ -77,6 +81,12 @@ k2=5;
 k3=20;
 gamma=60;
 modulo=10;
+muHighA=1/30;	%high diffusion constant of bacteria A
+muLowA=1/300;	%low diffusion constant of bacteria A
+muHighB=1/30;	%high diffusion constant of bacteria B
+muLowB=1/300;	%low diffusion constant of bacteria B
+VthA=0.2;
+VthB=0.1;
 
 %% -- fast -- %%
 paramAB.r0=r0;			%cell radius
@@ -88,22 +98,18 @@ paramAB.k3=k3;			%spring constant
 paramAB.gamma=gamma;			%cell sensitivity
 paramAB.modulo=modulo;		%number of iterations between refreshes
 
-muHighA=1/30;	%high diffusion constant of bacteria A
-muLowA=1/300;	%low diffusion constant of bacteria A
 %muLowA=1/30;	%low diffusion constant of bacteria A
 paramAB.muA.low=muLowA;
 paramAB.muA.high=muHighA;
 %paramAB.VthA=1.2;		%threshold concentration of AHL for bacteria A
-paramAB.VthA=0.2;		%threshold concentration of AHL for bacteria A
+paramAB.VthA=VthA;		%threshold concentration of AHL for bacteria A
 paramAB.kappaA=kappa;		%chemotactic sensitivity constant of bacteria A
 
-muHighB=1/30;	%high diffusion constant of bacteria B
-muLowB=1/300;	%low diffusion constant of bacteria B
 %muLowB=1/30;	%low diffusion constant of bacteria B
 paramAB.muB.low=muLowB;
 paramAB.muB.high=muHighB;
 %paramAB.VthB=1.0;		%threshold concentration of AHL for bacteria B
-paramAB.VthB=0.1;		%threshold concentration of AHL for bacteria B
+paramAB.VthB=VthB;		%threshold concentration of AHL for bacteria B
 paramAB.kappaB=kappa;		%chemotactic sensitivity constant of bacteria B
 
 %% -- normal -- %%
@@ -139,26 +145,27 @@ paramB.modulo=modulo;		%number of iterations between refreshes
 
 
 %AHL and leucine
+alpha=1e-3;
+beta=2e-3;
+kAHL=5e-1;
+kleucine=3e-1;
+DAHL=1/30;
+Dleucine=1/20;
+
 paramAHL.alpha=1e-3;		%production rate of AHL
 %alpha=0;		%production rate of AHL
 %alpha=-3e-3;	%production rate of AHL
 paramleucine.beta=2e-3;		%production rate of leucine
 %k1=5e-3;		%degradation rate of AHL
 %k1=0;			%degradation rate of AHL
-paramAHL.k1=5e-1;		%degradation rate of AHL
-paramleucine.k2=3e-1;		%degradation rate of leucine
+paramAHL.k1=kAHL;		%degradation rate of AHL
+paramleucine.k2=kleucine;		%degradation rate of leucine
 %DAHL=1/300;	%Diffusion constant of AHL
 paramAHL.DAHL=1/30;		%Diffusion constant of AHL
 paramleucine.Dleucine=1/20;	%Diffusion constant of leucine
 
 %% Initialize bacteria A
 bacteriaA=[];
-
-%b=bacteriumA(XLength/2-r0*1.1,YLength/2);
-%b=bacteriumA(XLength,YLength);
-%bacteriaA=[bacteriaA b];
-%b=bacteriumA(XLength/2+r0*1.1,YLength/2);
-%bacteriaA=[bacteriaA b];
 
 for i=1:nBacteriaA
 	switch initialpattern
@@ -175,6 +182,8 @@ for i=1:nBacteriaA
 		%uniform random
 		x=rand*XLength;
 		y=rand*YLength;
+		%x=rand*XLength/2;
+		%y=rand*YLength/2;
 	otherwise
 		warning('Unknown distribution, defaulting to uniform random');
 		%uniform random
@@ -201,11 +210,6 @@ end
 
 %% Initialize bacteria B
 bacteriaB=[];
-
-%b=bacteriumB(XLength/2+r0*0.3,YLength/2);
-%bacteriaB=[bacteriaB b];
-%b=bacteriumB(XLength/2-r0*0.3,YLength/2);
-%bacteriaB=[bacteriaB b];
 
 for i=1:nBacteriaB
 	switch initialpattern
@@ -245,6 +249,27 @@ for i=1:nBacteriaB
 	%bacteriaB=[bacteriaB b];
 	bacteriaB=[bacteriaB;x y];
 end
+
+%x=XLength/2-r0*.9;
+%y=YLength/2;
+%bacteriaA=[bacteriaA;x y];
+%x=XLength/2+r0*.9;
+%y=YLength/2;
+%bacteriaA=[bacteriaA;x y];
+%x=XLength;
+%y=YLength;
+%bacteriaA=[bacteriaA;x y];
+
+%x=XLength/2+r0*0.3;
+%y=YLength/2;
+%bacteriaB=[bacteriaB;x y];
+%x=XLength/2-r0*0.3;
+%y=YLength/2;
+%bacteriaB=[bacteriaB;x y];
+%x=XLength;
+%y=YLength;
+%bacteriaB=[bacteriaB;x y];
+
 
 %% initialize AHL field
 m=length(domain.y);
@@ -323,7 +348,7 @@ for i=1:N
 		disp('----- %%%%% -----');
 		%now
 		disp(datestr(now));
-		disp(['Current iteration: ' num2str(i)]);
+		disp(['Current iteration: ' num2str(i) '/' num2str(N)]);
 	end
 	model.update(dt);
 	%if mod(i,1)==0
@@ -364,21 +389,96 @@ analObject=analyzer(paramAnal,model);
 %disp('Saving workspace and videos');
 %t2=tic;
 %save(filename);
-%analObject.makevideo(filename);
+%analObject.makevideoparallel(filename);
 %disp('Workspace and videos saved');
 %toc(t2);
 
 %% compare serial and parallel video processing
-disp('Serial');
-t2=tic;
-analObject.make3Dvideoserial(filename);
-toc(t2);
+%disp('Serial');
+%t2=tic;
+%analObject.make3Dvideoserial(filename);
+%toc(t2);
+%
+%disp('Parallel');
+%t2=tic;
+%analObject.make3Dvideoparallel(filename);
+%toc(t2);
 
-disp('Parallel');
-t2=tic;
-analObject.make3Dvideoparallel(filename);
-toc(t2);
+%disp('Serial');
+%t2=tic;
+%analObject.make3Dvideoserial(filename);
+%toc(t2);
+%
+%disp('Parallel');
+%t2=tic;
+%analObject.make3Dvideoparallel(filename);
+%toc(t2);
 
+	%export data
+	AHLArray=model.AHLArray;
+	leucineArray=model.leucineArray;
+	rhoAArray=model.rhoAArray;
+	rhoBArray=model.rhoBArray;
+	coordinateAMatrix=model.coordinateAMatrix;
+	coordinateBMatrix=model.coordinateBMatrix;
+
+	fid=fopen([filename '_arguments.csv'],'w');
+	header=['dt,tend,nBacteriaA,nBacteriaB,initialpattern,',...
+		'XLength,YLength,Jx,Jy,',...
+		'bandwidth,',...
+		'kappa,r0,k1,k2,k3,gamma,modulo,',...
+		'muHighA,muLowA,muHighB,muLowB,VthA,VthB,',...
+		'alpha,beta,kAHL,kleucine,DAHL,Dleucine\r\n'];
+	fprintf(fid,header);
+
+	floatingSpec='%.5e,';
+	formatSpec=[repmat(floatingSpec,1,2) '%d,%d,%s,',...
+		repmat(floatingSpec,1,2),'%d,%d,',...
+		floatingSpec,...
+		repmat(floatingSpec,1,6),'%d,',...
+		repmat(floatingSpec,1,6),...
+		repmat(floatingSpec,1,6)];
+	formatSpec(end)='';
+	formatSpec=[formatSpec '\r\n'];
+	fprintf(fid,formatSpec,dt,tend,nBacteriaA,nBacteriaB,initialpattern,...
+		XLength,YLength,Jx,Jy,...
+		bandwidth,...
+		kappa,r0,k1,k2,k3,gamma,modulo,...
+		muHighA,muLowA,muHighB,muLowB,VthA,VthB,...
+		alpha,beta,kAHL,kleucine,DAHL,Dleucine);
+	fclose(fid);
+
+	%write AHLArray
+	fid=fopen([filename '_AHLArray.csv'],'w');
+
+	outputstr='';
+	formatSpec=repmat(floatingSpec,1,Jx);
+	formatSpec(end)='';
+	formatSpec=[formatSpec ';'];
+	parfor i=1:N+1
+		temp=sprintf(['t=' floatingSpec(1:end-1) ';\r\n'],(i-1)*dt);
+		temp=[temp 'AHLArray=['];
+		temp=[temp sprintf(formatSpec,AHLArray(:,:,i)') '];\r\n'];
+		outputstr=[outputstr temp];
+	end
+	fprintf(fid,outputstr);
+	fclose(fid);
+
+	%write coordinateAMatrix
+	fid=fopen([filename '_coordinateAMatrix.csv'],'w');
+
+	outputstr='';
+	formatSpec=repmat(floatingSpec,1,nBacteriaA);
+	formatSpec(end)='';
+	formatSpec=[formatSpec '];\r\n'];
+	parfor i=1:N+1
+		temp=sprintf(['t=' floatingSpec(1:end-1) ';\r\n'],(i-1)*dt);
+		temp=[temp 'bactX=[' sprintf(formatSpec,coordinateAMatrix(1,:,i)')];
+		temp=[temp 'bactY=[' sprintf(formatSpec,coordinateAMatrix(2,:,i)')];
+		outputstr=[outputstr temp];
+	end
+	fprintf(fid,outputstr);
+	fclose(fid);
 %% end!
 disp('End!');
 end

@@ -155,6 +155,14 @@ classdef analyzer < handle
 
 		close(fig);
 		end
+
+		function makevideoparallel(obj,filename)
+		%make videos in parallel
+
+		obj.make3Dvideoparallel(filename);
+		obj.make2Dvideoparallel(filename);
+
+		end
 			
 		function make3Dvideoserial(obj,filename)
 		framerate=obj.framerate;
@@ -337,10 +345,10 @@ classdef analyzer < handle
 		%AHLLimit=obj.calculatelimit(maxAHL,currentMaxAHL);
 		%leucineLimit=obj.calculatelimit(maxleucine,currentMaxleucine);
 
-		%rhoALimit=maxRhoA;
-		rhoALimit=1;
-		%rhoBLimit=maxRhoB;
-		rhoBLimit=1;
+		rhoALimit=maxRhoA;
+		%rhoALimit=1;
+		rhoBLimit=maxRhoB;
+		%rhoBLimit=1;
 		AHLLimit=maxAHL;
 		leucineLimit=maxleucine;
 		end

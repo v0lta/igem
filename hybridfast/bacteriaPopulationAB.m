@@ -183,7 +183,135 @@ classdef bacteriaPopulationAB < handle
 		rho=KDE2D(coordinateArray,kernelfun,X,Y,bandwidth);
 		end
 
-		function refreshneighborsserial(obj)
+		function refreshneighborscells(obj)
+		%searches for neighbors using cells algorithm, serial implementation
+
+		rsearch=obj.rsearch;
+		rsearch2=obj.rsearch2;
+		domain=obj.domain;
+		XLength=domain.x(end);
+		Kx=floor(XLength/rsearch)+1;
+
+			function cellid=determinecellid(x,y)
+				%determine cell id based on coordinates
+
+				%grid x coordinates
+				xi=x-mod(x,rsearch);
+				yi=y-mod(y,rsearch);
+
+				%indices
+				i=xi/rsearch+1;
+				j=yi/rsearch+1;
+
+				%cellid
+				cellid=j+(i-1)*Kx;
+			end
+
+		f=@determinecellid;
+
+		numA=obj.numA;
+		numB=obj.numB;
+		N=numA+numB;
+		bactX=obj.bactX;
+		bactY=obj.bactY;
+		cellidArray=zeros(N,1);
+
+		%determine cellid for all bacteria
+		parfor i=1:N
+		%for i=1:N
+			x=bactX(i);
+			y=bactY(i);
+
+			cellidArray(i)=f(x,y);
+		end
+
+		%sort cellids
+		[cellidArraySorted,sortedIndices]=sort(cellidArray);
+		sortedBactX=bactX(sortedIndices);
+		sortedBactY=bactY(sortedIndices);
+
+		%get unique cellids
+		uniqueCellidArray=unique(cellidArraySorted);
+		n=length(uniqueCellidArray);
+
+		%determine starting and ending index of cell ids
+		limitIndices=zeros(n,2);
+		limitIndices(1,1)=1;
+		lastLimitNumber=1;
+		lastCellid=uniqueCellidArray(1);
+
+		for i=2:N
+			currentCellid=cellidArraySorted(i);
+
+			if lastCellid~=currentCellid
+				limitIndices(lastLimitNumber,2)=i-1;
+				limitIndices(lastLimitNumber+1,1)=i;
+				
+				lastLimitNumber=lastLimitNumber+1;
+				lastCellid=currentCellid;
+			end
+		end
+
+		limitIndices(n,2)=N;
+
+		%initialize neighbor list
+		bactNb=cell(N,1);
+
+		%iterate over bacteria, create list of potential neighbors and check for neighbors
+		for i=1:N
+			%initialise current cell and cell id
+			indexArray=[];
+			currentCellid=cellidArraySorted(i);
+			currentCellidNumber=find(uniqueCellidArray==currentCellid);
+
+			%add current cell potential neighbors
+			endCurrentCellIndex=limitIndices(currentCellidNumber,2);
+			indexArray=[indexArray i+1:endCurrentCellIndex];
+
+			%check if k+1, k+Kx-1, k+Kx and k+Kx+1 cellids exists and if it exists, add to potential neighbors
+			otherCellidArray=[currentCellid+1 currentCellid+Kx-1 currentCellid+Kx currentCellid+Kx+1];
+
+			for otherCellid=otherCellidArray
+				cellidNumber=find(uniqueCellidArray==otherCellid);
+
+				if cellidNumber	%if cell with cellid cellidNumber contains bacteria
+					startCellIndex=limitIndices(cellidNumber,1);
+					endCellIndex=limitIndices(cellidNumber,2);
+
+					indexArray=[indexArray startCellIndex:endCellIndex];
+				end
+			end
+
+			%inner loop over potential neighbors
+			for otherIndex=indexArray
+				currentIndex=i;
+				otherIndex=otherIndex;
+
+				currentX=sortedBactX(currentIndex);
+				currentY=sortedBactY(currentIndex);
+
+				otherX=sortedBactX(otherIndex);
+				otherY=sortedBactY(otherIndex);
+
+				rsquare=(currentX-otherX)^2+(currentY-otherY)^2;
+
+				if rsquare<rsearch2
+					r=sqrt(rsquare);
+
+					%convert sorted index to index of actual list
+					currentIndex=sortedIndices(currentIndex);
+					otherIndex=sortedIndices(otherIndex);
+
+					bactNb{currentIndex}=[bactNb{currentIndex},[otherIndex;otherX;otherY;r]];
+					bactNb{otherIndex}=[bactNb{otherIndex},[currentIndex;currentX;currentY;r]];
+				end
+			end
+
+			obj.bactNb=bactNb;
+		end
+		end
+
+		function refreshneighborsprojection(obj)
 		%searches for neighbors using projection algorithm, serial implementation
 		varX=var(obj.bactX);
 		varY=var(obj.bactY);
@@ -251,9 +379,9 @@ classdef bacteriaPopulationAB < handle
 		bactY=obj.bactY;
 		bactNb=obj.bactNb;
 
-		%parallel or serial?
-		%parfor i=1:N
-		for i=1:N
+		%parallel or serial? faster for large bateria population
+		parfor i=1:N
+		%for i=1:N
 			currentX=bactX(i);
 			currentY=bactY(i);
 
@@ -279,7 +407,8 @@ classdef bacteriaPopulationAB < handle
 
 		%update neighbors
 		if mod(obj.counter,obj.modulo)==0
-			obj.refreshneighborsserial();
+			%obj.refreshneighborsprojection();
+			obj.refreshneighborscells();
 		else
 			obj.updateneighbors();
 		end
@@ -598,8 +727,14 @@ classdef bacteriaPopulationAB < handle
 
 		%calculate displacement due to chemotaxis, neighboring cell interactions and brownian motion
 		[chemodx,chemody]=calculatechemo(obj,leucineField,currentMuArray,dt);
+		%chemodx=0;
+		%chemody=0;
 		[randdx,randdy]=calculaterand(obj,currentMuArray,dt);
+		%randdx=0;
+		%randdy=0;
 		[celldx,celldy]=calculatecell(obj,dt);
+		%celldx=0;
+		%celldy=0;
 
 		%disp(['# of NaN numbers in chemodx: ' num2str(sum(isnan(chemodx)))]);
 		%disp(['# of NaN numbers in chemody: ' num2str(sum(isnan(chemody)))]);
