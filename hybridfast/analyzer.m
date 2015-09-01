@@ -21,23 +21,23 @@ classdef analyzer < handle
 	end
 	
 	methods
-		function obj=analyzer(paramAnal,model)
+		function obj=analyzer(paramAnal,AHLArray,leucineArray,rhoAArray,rhoBArray,coordinateAMatrix,coordinateBMatrix,domain,domainGrid)
 		%parameters
 		obj.scaling=paramAnal.scaling;
 		obj.framerate=paramAnal.framerate;
 
 		%extract history of model
-		obj.AHLArray=model.getAHLArray();
-		obj.leucineArray=model.getleucineArray();
-		obj.rhoAArray=model.getrhoAArray();
-		obj.rhoBArray=model.getrhoBArray();
-		obj.coordinateAMatrix=model.getcoordinateAMatrix();
-		obj.coordinateBMatrix=model.getcoordinateBMatrix();
-		obj.nFrames=model.getlength();
+		obj.AHLArray=AHLArray;
+		obj.leucineArray=leucineArray;
+		obj.rhoAArray=rhoAArray;
+		obj.rhoBArray=rhoBArray;
+		obj.coordinateAMatrix=coordinateAMatrix;
+		obj.coordinateBMatrix=coordinateBMatrix;
+		[~,~,obj.nFrames]=size(AHLArray);
 
 		%domain
-		obj.domain=model.getdomain();
-		obj.domainGrid=model.getdomainGrid();
+		obj.domain=domain;
+		obj.domainGrid=domainGrid;
 		end
 
 		function interactionpreview(obj)

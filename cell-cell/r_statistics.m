@@ -47,7 +47,7 @@ r0=0.5e-4;
 
 %lambda2=(2*r0)^2/(4*mu*dt)
 
-p=0.99;	% 5 percent chance of detaching
+p=0.99;	% 0.1 percent chance of detaching
 v=2;	% 2 degrees of freedom
 
 f=@(dt) ncx2inv(p,v,(2*r0)^2/(4*mu*dt))*(4*mu*dt)-(2*r0*1.25)^2;

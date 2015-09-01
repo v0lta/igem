@@ -32,8 +32,8 @@ for simulationCounter=1:numSimulation
 	%% define domain
 	XLength=1;			%Length of domain cm
 	YLength=1;			%Length of domain cm
-	Jx=101;				%# of subdivisions
-	Jy=101;				%# of subdivisions
+	Jx=10001;				%# of subdivisions
+	Jy=10001;				%# of subdivisions
 
 	%% define kernel functions and bandwidth
 	bandwidth=1e-4;

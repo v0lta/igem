@@ -38,6 +38,7 @@ classdef modelfast1 < handle
 		%record initial density functions, coordinates & AHL field
 		%bacteria A
 		obj.rhoAArray=obj.bacteriaPopAB.bacteriadensityA();		%density
+		rhoAArray=obj.rhoAArray;
 		obj.coordinateAMatrix=obj.bacteriaPopAB.coordinatesA();	%coordinates
 
 		%bacteria B
