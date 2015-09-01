@@ -1,13 +1,15 @@
 function runanalysis(previewOrSave,filename,framerate,scaling)
 
-	%filename='functiontest1';
-	eval([filename '_arguments']);
-	eval([filename '_AHLArray']);
-	eval([filename '_leucineArray']);
-	eval([filename '_rhoAArray']);
-	eval([filename '_rhoBArray']);
-	eval([filename '_coordinateAMatrix']);
-	eval([filename '_coordinateBMatrix']);
+	%disp(filename);
+	eval([filename '_arguments;']);
+	eval([filename '_AHLArray;']);
+	eval([filename '_leucineArray;']);
+	eval([filename '_rhoAArray;']);
+	eval([filename '_rhoBArray;']);
+	eval([filename '_coordinateAMatrix;']);
+	eval([filename '_coordinateBMatrix;']);
+
+	max(max(max(leucineArray)))
 
 	domain.x=linspace(0,XLength,Jx);
 	domain.y=linspace(0,YLength,Jy);
@@ -26,7 +28,7 @@ function runanalysis(previewOrSave,filename,framerate,scaling)
 		disp('Preview of simulation');
 		analObject.preview();
 	case 'save'
-		disp('Saving workspace and videos');
+		disp('Saving videos');
 		t2=tic;
 		save(filename);
 		analObject.makevideoparallel(filename);

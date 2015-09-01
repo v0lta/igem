@@ -2,8 +2,10 @@
 %% Model I
 close all;clear all;clc;
 
-previewOrSave='preview';
-filename='functiontest1';
+%previewOrSave='preview';
+previewOrSave='save';
+%filename='functiontest1';
+filename='toytest1';
 framerate=25;
 scaling=20;
 

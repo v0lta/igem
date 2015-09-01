@@ -261,6 +261,7 @@ function runsimulation(filename,simulationCounter,poolsize,...
 	%export data
 	AHLArray=model.AHLArray;
 	leucineArray=model.leucineArray;
+	%disp(max(max(max(leucineArray))));
 	rhoAArray=model.rhoAArray;
 	rhoBArray=model.rhoBArray;
 	coordinateAMatrix=model.coordinateAMatrix;
@@ -329,7 +330,7 @@ function runsimulation(filename,simulationCounter,poolsize,...
 	%write AHLArray
 	fid=fopen([filename '_AHLArray.m'],'w');
 
-	outputstr='';
+	outputstr=sprintf('AHLArray=zeros(%d,%d,%d);',Jy,Jx,N+1);
 	formatSpec=repmat(floatingSpec,1,Jx);
 	formatSpec(end)='';
 	formatSpec=[formatSpec ';'];
@@ -345,15 +346,17 @@ function runsimulation(filename,simulationCounter,poolsize,...
 	%write leucineArray
 	fid=fopen([filename '_leucineArray.m'],'w');
 
-	outputstr='';
+	outputstr=sprintf('leucineArray=zeros(%d,%d,%d);',Jy,Jx,N+1);
 	formatSpec=repmat(floatingSpec,1,Jx);
 	formatSpec(end)='';
 	formatSpec=[formatSpec ';'];
-	parfor i=1:N+1
+	%parfor i=1:N+1
+	for i=1:N+1
 		temp=sprintf(['t=' floatingSpec(1:end-1) ';\r\n'],(i-1)*dt);
 		temp=[temp 'leucineArray(:,:,' num2str(i) ')=['];
 		temp=[temp sprintf(formatSpec,leucineArray(:,:,i)') '];\r\n'];
 		outputstr=[outputstr temp];
+		clf;
 	end
 	fprintf(fid,outputstr);
 	fclose(fid);
@@ -361,7 +364,7 @@ function runsimulation(filename,simulationCounter,poolsize,...
 	%write rhoAArray
 	fid=fopen([filename '_rhoAArray.m'],'w');
 
-	outputstr='';
+	outputstr=sprintf('rhoAArray=zeros(%d,%d,%d);',Jy,Jx,N+1);
 	formatSpec=repmat(floatingSpec,1,Jx);
 	formatSpec(end)='';
 	formatSpec=[formatSpec ';'];
@@ -377,7 +380,7 @@ function runsimulation(filename,simulationCounter,poolsize,...
 	%write rhoBArray
 	fid=fopen([filename '_rhoBArray.m'],'w');
 
-	outputstr='';
+	outputstr=sprintf('rhoBArray=zeros(%d,%d,%d);',Jy,Jx,N+1);
 	formatSpec=repmat(floatingSpec,1,Jx);
 	formatSpec(end)='';
 	formatSpec=[formatSpec ';'];
@@ -393,7 +396,7 @@ function runsimulation(filename,simulationCounter,poolsize,...
 	%write coordinateAMatrix
 	fid=fopen([filename '_coordinateAMatrix.m'],'w');
 
-	outputstr='';
+	outputstr=sprintf('coordinateAMatrix=zeros(%d,%d,%d);\r\n',nBacteriaA,2,N+1);
 	formatSpec=repmat(floatingSpec,1,nBacteriaA);
 	formatSpec(end)='';
 	formatSpec=[formatSpec ']'';\r\n'];
@@ -410,7 +413,7 @@ function runsimulation(filename,simulationCounter,poolsize,...
 	%write coordinateBMatrix
 	fid=fopen([filename '_coordinateBMatrix.m'],'w');
 
-	outputstr='';
+	outputstr=sprintf('coordinateBMatrix=zeros(%d,%d,%d);\r\n',nBacteriaB,2,N+1);
 	formatSpec=repmat(floatingSpec,1,nBacteriaB);
 	formatSpec(end)='';
 	formatSpec=[formatSpec ']'';\r\n'];

@@ -55,15 +55,20 @@ classdef modelfast1 < handle
 		function update(obj,dt)
 		%Current rho of bacteria A
 		rhoAOld=obj.rhoAArray(:,:,end);
+		copyrhoAOld=rhoAOld;
 
 		%update bacteria positions
 		obj.bacteriaPopAB.updatefast(obj.AHLField,obj.leucineField,dt);
 		%calculate bacteria density
 		rhoA=obj.bacteriaPopAB.bacteriadensityA();
 		rhoB=obj.bacteriaPopAB.bacteriadensityB();
+		copyrhoA=rhoA;
+		copyrhoB=rhoB;
 
 		%update AHL field
 		obj.AHLField.update(rhoAOld,rhoA,dt);
+		%disp(any(any(copyrhoA==rhoA)));
+		%disp(any(any(copyrhoAOld==rhoAOld)));
 
 		%update leucine field
 		obj.leucineField.update(rhoAOld,rhoA,dt);
@@ -78,6 +83,8 @@ classdef modelfast1 < handle
 		obj.AHLArray(:,:,end+1)=obj.AHLField.getconcentration();
 		%record leucine field
 		obj.leucineArray(:,:,end+1)=obj.leucineField.getconcentration();
+		%fig=figure();
+		%surf(obj.leucineArray(:,:,end));
 		end
 
 		function k=getlength(obj)

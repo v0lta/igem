@@ -18,6 +18,8 @@ classdef analyzer < handle
 		%domain
 		domain;
 		domainGrid;
+		XLength;
+		YLength;
 	end
 	
 	methods
@@ -38,6 +40,9 @@ classdef analyzer < handle
 		%domain
 		obj.domain=domain;
 		obj.domainGrid=domainGrid;
+
+		obj.XLength=domain.x(end);
+		obj.YLength=domain.y(end);
 		end
 
 		function interactionpreview(obj)
@@ -291,8 +296,8 @@ classdef analyzer < handle
 
 		coordinateAArray=obj.coordinateAMatrix(:,:,k);
 
-		xCoordinateAArray=coordinateAArray(1,:);
-		yCoordinateAArray=coordinateAArray(2,:);
+		xCoordinateAArray=coordinateAArray(:,1);
+		yCoordinateAArray=coordinateAArray(:,2);
 		n=length(xCoordinateAArray);
 
 		plot3(xCoordinateAArray,yCoordinateAArray,zeros(1,n),'k.','MarkerSize',20);
@@ -307,8 +312,8 @@ classdef analyzer < handle
 
 		coordinateBArray=obj.coordinateBMatrix(:,:,k);
 
-		xCoordinateBArray=coordinateBArray(1,:);
-		yCoordinateBArray=coordinateBArray(2,:);
+		xCoordinateBArray=coordinateBArray(:,1);
+		yCoordinateBArray=coordinateBArray(:,2);
 		n=length(xCoordinateBArray);
 
 		plot3(xCoordinateBArray,yCoordinateBArray,zeros(1,n),'k.','MarkerSize',20);
@@ -328,16 +333,16 @@ classdef analyzer < handle
 
 
 		function [rhoALimit,rhoBLimit,AHLLimit,leucineLimit]=limitoptimizer(obj,k)
-		maxRhoA=max(max(max(obj.rhoAArray)));
+		maxRhoA=max([max(max(max(obj.rhoAArray))),1e-2]);
 		currentMaxRhoA=max(max(obj.rhoAArray(:,:,k)));
 
-		maxRhoB=max(max(max(obj.rhoBArray)));
+		maxRhoB=max([max(max(max(obj.rhoBArray))),1e-2]);
 		currentMaxRhoB=max(max(obj.rhoBArray(:,:,k)));
 
-		maxAHL=max(max(max(obj.AHLArray)));
+		maxAHL=max([max(max(max(obj.AHLArray))),1e-2]);
 		currentMaxAHL=max(max(obj.AHLArray(:,:,k)));
 
-		maxleucine=max(max(max(obj.leucineArray)));
+		maxleucine=max([max(max(max(obj.leucineArray))),1e-2]);
 		currentMaxleucine=max(max(obj.leucineArray(:,:,k)));
 
 		%rhoALimit=obj.calculatelimit(maxRhoA,currentMaxRhoA);
@@ -356,6 +361,9 @@ classdef analyzer < handle
 		function make3Dvideoparallel(obj,filename)
 		framerate=obj.framerate;
 		nFrames=obj.nFrames;
+		
+		XLength=obj.XLength;
+		YLength=obj.YLength;
 
 		scaling=obj.scaling;
 		[rhoALimit,rhoBLimit,AHLLimit,leucineLimit]=obj.limitoptimizer(1);
@@ -383,11 +391,12 @@ classdef analyzer < handle
 
 		%parfor i=1:nFrames
 		for i=1:nFrames
-			fig=figure('units','normalized','outerposition',[0 0 1 1],'Visible','off');
-			hold on;
+			%fig=figure('units','normalized','outerposition',[0 0 1 1],'Visible','off');
+			fig=figure('units','normalized','outerposition',[0 0 1 1],'Visible','on');
 
 			%% -- Bacteria A -- %%
 			subplot(2,2,1);
+			hold on;
 
 			%density
 			rhoA=rhoAArray(:,:,i);
@@ -397,8 +406,8 @@ classdef analyzer < handle
 			%bacteria
 			coordinateAArray=coordinateAMatrix(:,:,i);
 
-			xCoordinateAArray=coordinateAArray(1,:);
-			yCoordinateAArray=coordinateAArray(2,:);
+			xCoordinateAArray=coordinateAArray(:,1);
+			yCoordinateAArray=coordinateAArray(:,2);
 			n=length(xCoordinateAArray);
 
 			plot3(xCoordinateAArray,yCoordinateAArray,zeros(1,n),'k.','MarkerSize',20);
@@ -406,7 +415,9 @@ classdef analyzer < handle
 			%formatting
 			title('Bacteria A');
 			%legend('Density','Bacterium');
-			zlim([0 rhoALimit]);
+			xlim([0,XLength]);
+			ylim([0,YLength]);
+			zlim([0 rhoALimit])
 			foo = get(gca,'dataaspectratio');
 			set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
 			xlabel('x');
@@ -415,6 +426,7 @@ classdef analyzer < handle
 
 			%% -- Bacteria B -- %%
 			subplot(2,2,2);
+			hold on;
 
 			%density
 			rhoB=rhoBArray(:,:,i);
@@ -424,8 +436,8 @@ classdef analyzer < handle
 			%bacteria
 			coordinateBArray=coordinateBMatrix(:,:,i);
 
-			xCoordinateBArray=coordinateBArray(1,:);
-			yCoordinateBArray=coordinateBArray(2,:);
+			xCoordinateBArray=coordinateBArray(:,1);
+			yCoordinateBArray=coordinateBArray(:,2);
 			n=length(xCoordinateBArray);
 
 			plot3(xCoordinateBArray,yCoordinateBArray,zeros(1,n),'k.','MarkerSize',20);
@@ -433,6 +445,8 @@ classdef analyzer < handle
 			%formatting
 			title('Bacteria B');
 			%legend('Density','Bacterium');
+			xlim([0,XLength]);
+			ylim([0,YLength]);
 			zlim([0 rhoBLimit]);
 			foo = get(gca,'dataaspectratio');
 			set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
@@ -442,6 +456,7 @@ classdef analyzer < handle
 
 			%% -- AHL -- %%
 			subplot(2,2,3);
+			hold on;
 
 			%concentration
 			AHL=AHLArray(:,:,i);
@@ -451,6 +466,8 @@ classdef analyzer < handle
 			%formatting
 			title('AHL');
 			%legend('Concentration');
+			xlim([0,XLength]);
+			ylim([0,YLength]);
 			zlim([0 AHLLimit*scaling]);
 			foo = get(gca,'dataaspectratio');
 			set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
@@ -460,6 +477,7 @@ classdef analyzer < handle
 
 			%% -- leucine -- %%
 			subplot(2,2,4);
+			hold on;
 
 			%concentration
 			leucine=leucineArray(:,:,i);
@@ -469,6 +487,9 @@ classdef analyzer < handle
 			%formatting
 			title('Leucine');
 			%legend('Concentration');
+			%[0 leucineLimit*scaling]
+			xlim([0,XLength]);
+			ylim([0,YLength]);
 			zlim([0 leucineLimit*scaling]);
 			foo = get(gca,'dataaspectratio');
 			set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
@@ -476,7 +497,7 @@ classdef analyzer < handle
 			ylabel('y');
 			zlabel('Concentration');
 
-			frameArray{i}=getframe;
+			frameArray{i}=getframe();
 			delete(fig);
 		end
 
@@ -624,6 +645,8 @@ classdef analyzer < handle
 		function plot3D(obj,k)
 
 		scaling=obj.scaling;
+		XLength=obj.XLength;
+		YLength=obj.YLength;
 		[rhoALimit,rhoBLimit,AHLLimit,leucineLimit]=obj.limitoptimizer(k);
 
 		%Bacteria A
@@ -634,6 +657,8 @@ classdef analyzer < handle
 		obj.plotbacteriaA3D(k);
 		title('Bacteria A');
 		%legend('Density','Bacterium');
+		xlim([0,XLength]);
+		ylim([0,YLength]);
 		zlim([0 rhoALimit]);
 		foo = get(gca,'dataaspectratio');
 		set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
@@ -649,6 +674,8 @@ classdef analyzer < handle
 		obj.plotbacteriaB3D(k);
 		title('Bacteria B');
 		%legend('Density','Bacterium');
+		xlim([0,XLength]);
+		ylim([0,YLength]);
 		zlim([0 rhoBLimit]);
 		foo = get(gca,'dataaspectratio');
 		set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
@@ -662,6 +689,8 @@ classdef analyzer < handle
 		obj.plotAHL3D(k,scaling);
 		title('AHL');
 		%legend('Concentration');
+		xlim([0,XLength]);
+		ylim([0,YLength]);
 		zlim([0 AHLLimit*scaling]);
 		foo = get(gca,'dataaspectratio');
 		set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
@@ -675,6 +704,8 @@ classdef analyzer < handle
 		obj.plotleucine3D(k,scaling);
 		title('Leucine');
 		%legend('Concentration');
+		xlim([0,XLength]);
+		ylim([0,YLength]);
 		zlim([0 leucineLimit*scaling]);
 		foo = get(gca,'dataaspectratio');
 		set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
