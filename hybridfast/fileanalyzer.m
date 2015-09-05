@@ -1,12 +1,7 @@
-classdef analyzer < handle
+classdef fileanalyzer < handle
 	properties
 		%array of density arrays & coordinate arrays
-		AHLArray;
-		leucineArray;
-		rhoAArray;
-		rhoBArray;
-		coordinateAMatrix;
-		coordinateBMatrix;
+		mFile;
 
 		%scaling for plotting concentrations
 		scaling;
@@ -23,26 +18,36 @@ classdef analyzer < handle
 	end
 	
 	methods
-		function obj=analyzer(paramAnal,AHLArray,leucineArray,rhoAArray,rhoBArray,coordinateAMatrix,coordinateBMatrix,domain,domainGrid)
+		function obj=fileanalyzer(filename,paramAnal)
 		%parameters
 		obj.scaling=paramAnal.scaling;
 		obj.framerate=paramAnal.framerate;
 
-		%extract history of model
-		obj.AHLArray=AHLArray;
-		obj.leucineArray=leucineArray;
-		obj.rhoAArray=rhoAArray;
-		obj.rhoBArray=rhoBArray;
-		obj.coordinateAMatrix=coordinateAMatrix;
-		obj.coordinateBMatrix=coordinateBMatrix;
-		[~,~,obj.nFrames]=size(AHLArray);
+		%make matfile
+		mFile=matfile([filename '_data.mat']);
+		
+		%number of frames
+		obj.nFrames=round(mFile.tend/mFile.dt)+1;
 
 		%domain
+		Jx=mFile.Jx;
+		Jy=mFile.Jy;
+		XLength=mFile.XLength;
+		YLength=mFile.YLength;
+		domain.x=linspace(0,XLength,Jx);
+		domain.y=linspace(0,YLength,Jy);
+
+		[X,Y]=meshgrid(domain.x,domain.y);
+		domainGrid.X=X;
+		domainGrid.Y=Y;
+
 		obj.domain=domain;
 		obj.domainGrid=domainGrid;
 
 		obj.XLength=domain.x(end);
 		obj.YLength=domain.y(end);
+
+		obj.mFile=mFile;
 		end
 
 		function makevideo(obj,filename)
@@ -62,28 +67,36 @@ classdef analyzer < handle
 		end
 
 		function [rhoALimit,rhoBLimit,AHLLimit,leucineLimit]=limitoptimizer(obj,k)
-		maxRhoA=max(max(max(obj.rhoAArray)));
-		%maxRhoA=max([max(max(max(obj.rhoAArray))),1e-2]);
-		%currentMaxRhoA=max(max(obj.rhoAArray(:,:,k)));
+		mFile=obj.mFile;
 
-		maxRhoB=max(max(max(obj.rhoBArray)));
-		%maxRhoB=max([max(max(max(obj.rhoBArray))),1e-2]);
-		%currentMaxRhoB=max(max(obj.rhoBArray(:,:,k)));
+		maxRhoA=mFile.maxRhoA;
+		minRhoA=mFile.minRhoA;
+		%maxRhoA=max([max(max(max(obj.mFile.rhoAArray))),1e-2]);
+		%currentMaxRhoA=max(max(obj.mFile.rhoAArray(:,:,k)));
 
-		maxAHL=max(max(max(obj.AHLArray)));
-		%maxAHL=max([max(max(max(obj.AHLArray))),1e-2]);
-		%currentMaxAHL=max(max(obj.AHLArray(:,:,k)));
+		maxRhoB=mFile.maxRhoB;
+		minRhoB=mFile.minRhoB;
+		%maxRhoB=max([max(max(max(obj.mFile.rhoBArray))),1e-2]);
+		%currentMaxRhoB=max(max(obj.mFile.rhoBArray(:,:,k)));
 
-		maxleucine=max(max(max(obj.leucineArray)));
-		%maxleucine=max([max(max(max(obj.leucineArray))),1e-2]);
-		%currentMaxleucine=max(max(obj.leucineArray(:,:,k)));
+		maxAHL=mFile.maxAHL;
+		minAHL=mFile.minAHL;
+		%minAHL=min(min(min(obj.mFile.AHLArray)));
+		%maxAHL=max([max(max(max(obj.mFile.AHLArray))),1e-2]);
+		%currentMaxAHL=max(max(obj.mFile.AHLArray(:,:,k)));
 
-		rhoALimit=maxRhoA;
+		maxleucine=mFile.maxleucine;
+		minleucine=mFile.minleucine;
+		%minRhoB=min(min(min(obj.mFile.rhoBArray)));
+		%maxleucine=max([max(max(max(obj.mFile.leucineArray))),1e-2]);
+		%currentMaxleucine=max(max(obj.mFile.leucineArray(:,:,k)));
+
+		rhoALimit=[minRhoA,maxRhoA];
 		%rhoALimit=1;
-		rhoBLimit=maxRhoB;
+		rhoBLimit=[minRhoB,maxRhoB];
 		%rhoBLimit=1;
-		AHLLimit=maxAHL;
-		leucineLimit=maxleucine;
+		AHLLimit=[minAHL,maxAHL];
+		leucineLimit=[minleucine,maxleucine];
 		end
 
 		function make3Dvideo(obj,filename)
@@ -105,17 +118,18 @@ classdef analyzer < handle
 
 		frameArray=cell(nFrames,1);
 
-		rhoAArray=obj.rhoAArray;
-		coordinateAMatrix=obj.coordinateAMatrix;
-		rhoBArray=obj.rhoBArray;
-		coordinateBMatrix=obj.coordinateBMatrix;
+		%rhoAArray=obj.rhoAArray;
+		%coordinateAMatrix=obj.coordinateAMatrix;
+		%rhoBArray=obj.rhoBArray;
+		%coordinateBMatrix=obj.coordinateBMatrix;
 
-		AHLArray=obj.AHLArray;
-		leucineArray=obj.leucineArray;
+		%AHLArray=obj.AHLArray;
+		%leucineArray=obj.leucineArray;
 
 		%plot coarser grid if given grid is too fine
-		Jx=numel(obj.domain.x);
-		Jy=numel(obj.domain.y);
+		mFile=obj.mFile;
+		Jx=mFile.Jx;
+		Jy=mFile.Jy;
 
 		dx=round(Jx/100);
 		dy=round(Jy/100);
@@ -127,8 +141,8 @@ classdef analyzer < handle
 		Y=Y(dyi,dxi);
 
 		%plot only 1000 bacteria
-		[nBacteriaA,~,~]=size(coordinateAMatrix);
-		[nBacteriaB,~,~]=size(coordinateBMatrix);
+		nBacteriaA=mFile.nBacteriaA;
+		nBacteriaB=mFile.nBacteriaB;
 		dA=round(nBacteriaA/1000);
 		dB=round(nBacteriaB/1000);
 		if dA<1,dA=1;end;
@@ -136,8 +150,9 @@ classdef analyzer < handle
 		dAi=1:dA:nBacteriaA;
 		dBi=1:dB:nBacteriaB;
 
-		parfor i=1:nFrames
-			fig=figure('units','normalized','outerposition',[0 0 1 1],'Visible','off');
+		fig=figure('units','normalized','outerposition',[0 0 1 1],'Visible','off');
+		%parfor i=1:nFrames
+		for i=1:nFrames
 			%fig=figure('units','normalized','outerposition',[0 0 1 1],'Visible','on');
 
 			%% -- Bacteria A -- %%
@@ -145,14 +160,12 @@ classdef analyzer < handle
 			hold on;
 
 			%density
-			rhoA=rhoAArray(:,:,i);
-			rhoA=rhoA(dyi,dxi);
+			rhoA=mFile.rhoAArray(dyi,dxi,i);
 			mesh(X,Y,rhoA,'facecolor','none');
 			view(3);
 
 			%bacteria
-			coordinateAArray=coordinateAMatrix(:,:,i);
-			coordinateAArray=coordinateAArray(dAi,:);
+			coordinateAArray=mFile.coordinateAMatrix(dAi,:,i);
 
 			xCoordinateAArray=coordinateAArray(:,1);
 			yCoordinateAArray=coordinateAArray(:,2);
@@ -164,7 +177,7 @@ classdef analyzer < handle
 			title('Bacteria A');
 			%xlim([0,XLength]);
 			%ylim([0,YLength]);
-			zlim([0 rhoALimit])
+			zlim([rhoALimit])
 			foo = get(gca,'dataaspectratio');
 			set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
 			xlabel('x');
@@ -176,14 +189,12 @@ classdef analyzer < handle
 			hold on;
 
 			%density
-			rhoB=rhoBArray(:,:,i);
-			rhoB=rhoB(dyi,dxi);
+			rhoB=mFile.rhoBArray(dyi,dxi,i);
 			mesh(X,Y,rhoB,'facecolor','none');
 			view(3);
 
 			%bacteria
-			coordinateBArray=coordinateBMatrix(:,:,i);
-			coordinateBArray=coordinateBArray(dBi,:);
+			coordinateBArray=mFile.coordinateBMatrix(dBi,:,i);
 
 			xCoordinateBArray=coordinateBArray(:,1);
 			yCoordinateBArray=coordinateBArray(:,2);
@@ -195,7 +206,7 @@ classdef analyzer < handle
 			title('Bacteria B');
 			%xlim([0,XLength]);
 			%ylim([0,YLength]);
-			zlim([0 rhoBLimit]);
+			zlim([rhoBLimit]);
 			foo = get(gca,'dataaspectratio');
 			set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
 			xlabel('x');
@@ -207,8 +218,7 @@ classdef analyzer < handle
 			hold on;
 
 			%concentration
-			AHL=AHLArray(:,:,i);
-			AHL=AHL(dyi,dxi);
+			AHL=mFile.AHLArray(dyi,dxi,i);
 			mesh(X,Y,AHL*scaling,'facecolor','none');
 			view(3);
 
@@ -216,7 +226,7 @@ classdef analyzer < handle
 			title('AHL');
 			xlim([0,XLength]);
 			ylim([0,YLength]);
-			zlim([0 AHLLimit*scaling]);
+			zlim([AHLLimit*scaling]);
 			foo = get(gca,'dataaspectratio');
 			set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
 			xlabel('x');
@@ -228,8 +238,7 @@ classdef analyzer < handle
 			hold on;
 
 			%concentration
-			leucine=leucineArray(:,:,i);
-			leucine=leucine(dyi,dxi);
+			leucine=mFile.leucineArray(dyi,dxi,i);
 			mesh(X,Y,leucine*scaling,'facecolor','none');
 			view(3);
 
@@ -237,20 +246,21 @@ classdef analyzer < handle
 			title('Leucine');
 			xlim([0,XLength]);
 			ylim([0,YLength]);
-			zlim([0 leucineLimit*scaling]);
+			zlim([leucineLimit*scaling]);
 			foo = get(gca,'dataaspectratio');
 			set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
 			xlabel('x');
 			ylabel('y');
 			zlabel('Concentration');
 
-			frameArray{i}=getframe(fig);
-			delete(fig);
+			writeVideo(vidObj3D,getframe(gcf));
+			%frameArray{i}=getframe(fig);
+			%delete(fig);
+			clf;
 		end
 
-		for i=1:nFrames
-			writeVideo(vidObj3D,frameArray{i});
-		end
+		%for i=1:nFrames
+		%end
 
 		vidObj3D.close();
 		end
@@ -271,17 +281,10 @@ classdef analyzer < handle
 
 		frameArray=cell(nFrames,1);
 
-		rhoAArray=obj.rhoAArray;
-		coordinateAMatrix=obj.coordinateAMatrix;
-		rhoBArray=obj.rhoBArray;
-		coordinateBMatrix=obj.coordinateBMatrix;
-
-		AHLArray=obj.AHLArray;
-		leucineArray=obj.leucineArray;
-
 		%plot coarser grid if given grid is too fine
-		Jx=numel(obj.domain.x);
-		Jy=numel(obj.domain.y);
+		mFile=obj.mFile;
+		Jx=mFile.Jx;
+		Jy=mFile.Jy;
 
 		dx=round(Jx/100);
 		dy=round(Jy/100);
@@ -292,16 +295,17 @@ classdef analyzer < handle
 		X=X(dyi,dxi);
 		Y=Y(dyi,dxi);
 
-		parfor i=1:nFrames
-			fig=figure('units','normalized','outerposition',[0 0 1 1],'Visible','off');
+		fig=figure('units','normalized','outerposition',[0 0 1 1],'Visible','off');
+		for i=1:nFrames
+		%parfor i=1:nFrames
+			%fig=figure('units','normalized','outerposition',[0 0 1 1],'Visible','off');
 			hold on;
 
 			%% -- Bacteria A -- %%
 			subplot(2,2,1);
 
 			%density
-			rhoA=rhoAArray(:,:,i);
-			rhoA=rhoA(dyi,dxi);
+			rhoA=mFile.rhoAArray(dyi,dxi,i);
 			surf(X,Y,rhoA);
 			shading('flat');
 			view(2);
@@ -317,19 +321,19 @@ classdef analyzer < handle
 
 			%formatting
 			title('Bacteria A');
-			zlim([0 rhoALimit]);
+			zlim([rhoALimit]);
 			axis equal;
 			xlabel('x');
 			ylabel('y');
 			zlabel('Density');
-			grid off;axis off;
+			grid off;
+			axis off;
 
 			%% -- Bacteria B -- %%
 			subplot(2,2,2);
 
 			%density
-			rhoB=rhoBArray(:,:,i);
-			rhoB=rhoB(dyi,dxi);
+			rhoB=mFile.rhoBArray(dyi,dxi,i);
 			surf(X,Y,rhoB);
 			shading('flat');
 			view(2);
@@ -346,19 +350,19 @@ classdef analyzer < handle
 			%formatting
 			title('Bacteria B');
 			%legend('Density','Bacterium');
-			zlim([0 rhoBLimit]);
+			zlim([rhoBLimit]);
 			axis equal;
 			xlabel('x');
 			ylabel('y');
 			zlabel('Density');
-			grid off;axis off;
+			grid off;
+			axis off;
 
 			%% -- AHL -- %%
 			subplot(2,2,3);
 
 			%concentration
-			AHL=AHLArray(:,:,i);
-			AHL=AHL(dyi,dxi);
+			AHL=mFile.AHLArray(dyi,dxi,i);
 			surf(X,Y,AHL*scaling);
 			shading('flat');
 			view(2);
@@ -366,19 +370,19 @@ classdef analyzer < handle
 			%formatting
 			title('AHL');
 			%legend('Concentration');
-			zlim([0 AHLLimit*scaling]);
+			zlim([AHLLimit*scaling]);
 			axis equal;
 			xlabel('x');
 			ylabel('y');
 			zlabel('Concentration');
-			grid off;axis off;
+			grid off;
+			axis off;
 
 			%% -- leucine -- %%
 			subplot(2,2,4);
 
 			%concentration
-			leucine=leucineArray(:,:,i);
-			leucine=leucine(dyi,dxi);
+			leucine=mFile.leucineArray(dyi,dxi,i);
 			surf(X,Y,leucine*scaling);
 			shading('flat');
 			view(2);
@@ -386,20 +390,23 @@ classdef analyzer < handle
 			%formatting
 			title('Leucine');
 			%legend('Concentration');
-			zlim([0 leucineLimit*scaling]);
+			zlim([leucineLimit*scaling]);
 			axis equal;
 			xlabel('x');
 			ylabel('y');
 			zlabel('Concentration');
-			grid off;axis off;
+			grid off;
+			axis off;
 
-			frameArray{i}=getframe(fig);
-			delete(fig);
+			writeVideo(vidObj2D,getframe(fig));
+			%frameArray{i}=getframe(fig);
+			%delete(fig);
+			clf;
 		end
 
-		for i=1:nFrames
-			writeVideo(vidObj2D,frameArray{i});
-		end
+%		for i=1:nFrames
+%			writeVideo(vidObj2D,frameArray{i});
+%		end
 
 		vidObj2D.close();
 		end
@@ -418,17 +425,18 @@ classdef analyzer < handle
 		X=obj.domainGrid.X;
 		Y=obj.domainGrid.Y;
 
-		rhoAArray=obj.rhoAArray;
-		coordinateAMatrix=obj.coordinateAMatrix;
-		rhoBArray=obj.rhoBArray;
-		coordinateBMatrix=obj.coordinateBMatrix;
+		%rhoAArray=obj.rhoAArray;
+		%coordinateAMatrix=obj.coordinateAMatrix;
+		%rhoBArray=obj.rhoBArray;
+		%coordinateBMatrix=obj.coordinateBMatrix;
 
-		AHLArray=obj.AHLArray;
-		leucineArray=obj.leucineArray;
+		%AHLArray=obj.AHLArray;
+		%leucineArray=obj.leucineArray;
 
 		%plot coarser grid if given grid is too fine
-		Jx=numel(obj.domain.x);
-		Jy=numel(obj.domain.y);
+		mFile=obj.mFile;
+		Jx=mFile.Jx;
+		Jy=mFile.Jy;
 
 		dx=round(Jx/100);
 		dy=round(Jy/100);
@@ -440,8 +448,8 @@ classdef analyzer < handle
 		Y=Y(dyi,dxi);
 
 		%plot only 1000 bacteria
-		[nBacteriaA,~,~]=size(coordinateAMatrix);
-		[nBacteriaB,~,~]=size(coordinateBMatrix);
+		nBacteriaA=mFile.nBacteriaA;
+		nBacteriaB=mFile.nBacteriaB;
 		dA=round(nBacteriaA/1000);
 		dB=round(nBacteriaB/1000);
 		if dA<1,dA=1;end;
@@ -456,14 +464,12 @@ classdef analyzer < handle
 			hold on;
 
 			%density
-			rhoA=rhoAArray(:,:,i);
-			rhoA=rhoA(dyi,dxi);
+			rhoA=mFile.rhoAArray(dyi,dxi,i);
 			mesh(X,Y,rhoA,'facecolor','none');
 			view(3);
 
 			%bacteria
-			coordinateAArray=coordinateAMatrix(:,:,i);
-			coordinateAArray=coordinateAArray(dAi,:);
+			coordinateAArray=mFile.coordinateAMatrix(dAi,:,i);
 
 			xCoordinateAArray=coordinateAArray(:,1);
 			yCoordinateAArray=coordinateAArray(:,2);
@@ -476,7 +482,7 @@ classdef analyzer < handle
 			%legend('Density','Bacterium');
 			xlim([0,XLength]);
 			ylim([0,YLength]);
-			zlim([0 rhoALimit])
+			zlim([rhoALimit])
 			foo = get(gca,'dataaspectratio');
 			set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
 			xlabel('x');
@@ -488,14 +494,12 @@ classdef analyzer < handle
 			hold on;
 
 			%density
-			rhoB=rhoBArray(:,:,i);
-			rhoB=rhoB(dyi,dxi);
+			rhoB=mFile.rhoBArray(dyi,dxi,i);
 			mesh(X,Y,rhoB,'facecolor','none');
 			view(3);
 
 			%bacteria
-			coordinateBArray=coordinateBMatrix(:,:,i);
-			coordinateBArray=coordinateBArray(dBi,:);
+			coordinateBArray=mFile.coordinateBMatrix(dBi,:,i);
 
 			xCoordinateBArray=coordinateBArray(:,1);
 			yCoordinateBArray=coordinateBArray(:,2);
@@ -508,7 +512,7 @@ classdef analyzer < handle
 			%legend('Density','Bacterium');
 			xlim([0,XLength]);
 			ylim([0,YLength]);
-			zlim([0 rhoBLimit]);
+			zlim([rhoBLimit]);
 			foo = get(gca,'dataaspectratio');
 			set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
 			xlabel('x');
@@ -520,8 +524,7 @@ classdef analyzer < handle
 			hold on;
 
 			%concentration
-			AHL=AHLArray(:,:,i);
-			AHL=AHL(dyi,dxi);
+			AHL=mFile.AHLArray(dyi,dxi,i);
 			mesh(X,Y,AHL*scaling,'facecolor','none');
 			view(3);
 
@@ -530,7 +533,7 @@ classdef analyzer < handle
 			%legend('Concentration');
 			xlim([0,XLength]);
 			ylim([0,YLength]);
-			zlim([0 AHLLimit*scaling]);
+			zlim([AHLLimit*scaling]);
 			foo = get(gca,'dataaspectratio');
 			set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
 			xlabel('x');
@@ -542,8 +545,7 @@ classdef analyzer < handle
 			hold on;
 
 			%concentration
-			leucine=leucineArray(:,:,i);
-			leucine=leucine(dyi,dxi);
+			leucine=mFile.leucineArray(dyi,dxi,i);
 			mesh(X,Y,leucine*scaling,'facecolor','none');
 			view(3);
 
@@ -553,7 +555,7 @@ classdef analyzer < handle
 			%[0 leucineLimit*scaling]
 			xlim([0,XLength]);
 			ylim([0,YLength]);
-			zlim([0 leucineLimit*scaling]);
+			zlim([leucineLimit*scaling]);
 			foo = get(gca,'dataaspectratio');
 			set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
 			xlabel('x');
@@ -590,8 +592,9 @@ classdef analyzer < handle
 		leucineArray=obj.leucineArray;
 
 		%plot coarser grid if given grid is too fine
-		Jx=numel(obj.domain.x);
-		Jy=numel(obj.domain.y);
+		mFile=obj.mFile;
+		Jx=mFile.Jx;
+		Jy=mFile.Jy;
 
 		dx=round(Jx/100);
 		dy=round(Jy/100);
@@ -610,8 +613,7 @@ classdef analyzer < handle
 			hold on;
 
 			%density
-			rhoA=rhoAArray(:,:,i);
-			rhoA=rhoA(dyi,dxi);
+			rhoA=mFile.rhoAArray(dyi,dxi,i);
 			surf(X,Y,rhoA);
 			shading('flat');
 			view(2);
@@ -627,7 +629,7 @@ classdef analyzer < handle
 
 			%formatting
 			title('Bacteria A');
-			zlim([0 rhoALimit]);
+			zlim([rhoALimit]);
 			axis equal;
 			xlabel('x');
 			ylabel('y');
@@ -638,8 +640,7 @@ classdef analyzer < handle
 			hold on;
 
 			%density
-			rhoB=rhoBArray(:,:,i);
-			rhoB=rhoB(dyi,dxi);
+			rhoB=mFile.rhoBArray(dyi,dxi,i);
 			surf(X,Y,rhoB);
 			shading('flat');
 			view(2);
@@ -656,7 +657,7 @@ classdef analyzer < handle
 			%formatting
 			title('Bacteria B');
 			%legend('Density','Bacterium');
-			zlim([0 rhoBLimit]);
+			zlim([rhoBLimit]);
 			axis equal;
 			xlabel('x');
 			ylabel('y');
@@ -667,8 +668,7 @@ classdef analyzer < handle
 			hold on;
 
 			%concentration
-			AHL=AHLArray(:,:,i);
-			AHL=AHL(dyi,dxi);
+			AHL=mFile.AHLArray(dyi,dxi,i);
 			surf(X,Y,AHL*scaling);
 			shading('flat');
 			view(2);
@@ -676,7 +676,7 @@ classdef analyzer < handle
 			%formatting
 			title('AHL');
 			%legend('Concentration');
-			zlim([0 AHLLimit*scaling]);
+			zlim([AHLLimit*scaling]);
 			axis equal;
 			xlabel('x');
 			ylabel('y');
@@ -687,8 +687,7 @@ classdef analyzer < handle
 			hold on;
 
 			%concentration
-			leucine=leucineArray(:,:,i);
-			leucine=leucine(dyi,dxi);
+			leucine=mFile.leucineArray(dyi,dxi,i);
 			surf(X,Y,leucine*scaling);
 			shading('flat');
 			view(2);
@@ -696,7 +695,7 @@ classdef analyzer < handle
 			%formatting
 			title('Leucine');
 			%legend('Concentration');
-			zlim([0 leucineLimit*scaling]);
+			zlim([leucineLimit*scaling]);
 			axis equal;
 			xlabel('x');
 			ylabel('y');

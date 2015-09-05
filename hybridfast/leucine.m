@@ -156,12 +156,13 @@ classdef leucine<handle
 		end
 
 		function interpolatedGradient=interpolgrad(obj,coordinateVector)
-		interpolatedXDeriv=obj.interpol(obj.gradient.x,coordinateVector);
-		interpolatedYDeriv=obj.interpol(obj.gradient.y,coordinateVector);
+		gradient=obj.gradient;
+		interpolatedXDeriv=obj.interpol(gradient.x,coordinateVector);
+		interpolatedYDeriv=obj.interpol(gradient.y,coordinateVector);
 		interpolatedGradient=[interpolatedXDeriv interpolatedYDeriv];
 		end
 
-		function updatedirichlet(obj,rhoAOld,rhoANew,dt)
+		function updatedirichlet(obj,rhoANew,dt)
 		%Update concentration based on bacterial density, diffusion constant,
 	   	%and consumption rate and timestep
 		Dleucine=obj.Dleucine;
@@ -191,7 +192,7 @@ classdef leucine<handle
 		RHS1=(1-muY)*A(idy,idx)+...
 			1/2*muY*A(idy-1,idx)+...
 			1/2*muY*A(idy+1,idx)+...
-			dt/2*beta*rhoAOld(idy,idx);
+			dt/2*beta*rhoANew(idy,idx);
 
 		%add known boundary conditions at t+1/2
 		RHS1=RHS1';
@@ -227,9 +228,9 @@ classdef leucine<handle
 		obj.concentration(idy,idx)=B;
 		end
 
-		function updatezeroflux(obj,rhoAOld,rhoANew,dt)
+		function updatezeroflux(obj,rhoANew,dt)
 		%Update concentration based on bacterial density, diffusion constant,
-	   	%and consumption rate and timestep
+	   	%and production rate, linear degradation constant and timestep
 		Dleucine=obj.Dleucine;
 		beta=obj.beta;
 		k2=obj.k2;
@@ -268,7 +269,7 @@ classdef leucine<handle
 		%Calculate RHS 1
 		A=obj.concentration;
 		RHS1=MRHSy*A;
-		RHS1=RHS1+dt/2*beta*rhoAOld;
+		RHS1=RHS1+dt/2*beta*rhoANew;
 
 		%calculate concentration at half timestep
 		A=(MLHSx\RHS1')';
@@ -284,7 +285,7 @@ classdef leucine<handle
 		obj.concentration=A;
 		end
 
-		function update(obj,rhoAOld,rhoANew,dt)
+		function update(obj,rhoANew,dt)
 		%Update concentration based on bacterial density, diffusion constant,
 	   	%and consumption rate and timestep
 
@@ -292,19 +293,21 @@ classdef leucine<handle
 		Jy=obj.Jy;
 
 		%Dirichlet boundary conditions
-		%obj.updatedirichlet(rhoAOld,rhoANew,dt);
+		%obj.updatedirichlet(rhoANew,dt);
 
 		%Zero flux boundary conditions
-		obj.updatezeroflux(rhoAOld,rhoANew,dt);
+		obj.updatezeroflux(rhoANew,dt);
 
+		concentration=obj.concentration;
 		%Correct for negative concentration
 		for j=1:Jx
 			for i=1:Jy
-				if obj.concentration(i,j)<1e-5
-					obj.concentration(i,j)=1e-5;
+				if concentration(i,j)<1e-5
+					concentration(i,j)=1e-5;
 				end
 			end
 		end
+		obj.concentration=concentration;
 
 		%update gradient
 		obj.calculategradient();

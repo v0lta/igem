@@ -1,28 +1,32 @@
 %% Written bij KU Leuven iGEM team
 %% Model I
-close all;clear all;clc;
+close all;clear all;
+
+%% realistic set of parameters %%
 
 %numSimulation=1;
 %for simulationCounter=1:numSimulation
 %	poolsize=4;
 %
-%	filename=['functiontest' num2str(simulationCounter)];
-%	framerate=25;
-%	scaling=20;
+%	filename='real_large_domain';
+%	list=ls([filename '*_data.mat']);
+%	[k,~]=size(list);
+%
+%	filename=[filename num2str(simulationCounter+k)];
 %
 %	%% Simulation parameters
 %	dt=1e-2;				%time step (h)
-%	tend=1e-1;			%end time of simulation
+%	tend=1;			%end time of simulation
 %	%tend=2;			%end time of simulation
 %	%tend=30;			%end time of simulation
-%	N=tend/dt;			%time steps
+%	N=round(tend/dt);			%time steps
 %	%N=200;				%time steps
 %	%nBacteriaA=1000;	%number of bacteria A
-%	nBacteriaA=10;		%number of bacteria A
+%	nBacteriaA=5e3;		%number of bacteria A
 %	%nBacteriaA=0;		%number of bacteria A
 %	%nBacteriaA=1;		%number of bacteria A
 %	%nBacteriaB=1000;	%number of bacteria B
-%	nBacteriaB=10;		%number of bacteria B
+%	nBacteriaB=5e3;		%number of bacteria B
 %	%nBacteriaB=0;		%number of bacteria B
 %	%nBacteriaB=1;		%number of bacteria B
 %	%initialpattern='gaussian';
@@ -30,14 +34,15 @@ close all;clear all;clc;
 %	%initialpattern='spot';
 %
 %	%% define domain
-%	XLength=10;			%Length of domain um
-%	YLength=10;			%Length of domain um
-%	Jx=101;				%# of subdivisions
-%	Jy=101;				%# of subdivisions
+%	XLength=1000;			%Length of domain um
+%	YLength=1000;			%Length of domain um
+%	Jx=1000;				%# of subdivisions
+%	Jy=1000;				%# of subdivisions
 %
 %	%% define kernel functions and bandwidth
 %	%bandwidth=1e-4;
-%	bandwidth=1;
+%	%bandwidth=1;
+%	bandwidth=5;
 %
 %	%% define constants
 %	%Bacteria A and B
@@ -57,13 +62,13 @@ close all;clear all;clc;
 %	VthB=0.1;
 %
 %	%AHL and leucine
-%	%alpha=17.9e-4;		%nmol/h
-%	alpha=17.9e-2;		%nmol/h
-%	%beta=5.4199e-4;		%nmol/h
-%	beta=5.4199e-0;		%nmol/h
+%	alpha=17.9e-4;		%nmol/h
+%	%alpha=17.9e-2;		%nmol/h
+%	beta=5.4199e-4;		%nmol/h
+%	%beta=5.4199e-0;		%nmol/h
 %	kAHL=1/48;			%1/h
 %	kleucine=1/80;		%1/h
-%	DAHL=50e6;			%cm^2/h
+%	DAHL=50e5;			%um^2/h
 %	Dleucine=26.46e5;	%um^2/h
 %
 %	runsimulation(filename,simulationCounter,poolsize,...
@@ -75,18 +80,22 @@ close all;clear all;clc;
 %		alpha,beta,kAHL,kleucine,DAHL,Dleucine);
 %end
 
+% toy parameters %%
 numSimulation=1;
 for simulationCounter=1:numSimulation
 	poolsize=4;
 
-	filename=['toytest' num2str(simulationCounter)];
-	framerate=25;
-	scaling=20;
+	filename='toy_no_attr';
+
+	list=ls([filename '*_data.mat']);
+	[k,~]=size(list);
+
+	filename=[filename num2str(simulationCounter+k)];
 
 	%% Simulation parameters
 	dt=0.1;				%time step
-	tend=10;			%end time of simulation
-	%tend=2;			%end time of simulation
+	tend=1;			%end time of simulation
+	%tend=1;			%end time of simulation
 	%tend=30;			%end time of simulation
 	N=tend/dt;			%time steps
 	%N=200;				%time steps
@@ -118,7 +127,8 @@ for simulationCounter=1:numSimulation
 	r0=0.5;		%um
 	k1=10;			%mN/um
 	k2=5;			%mN/um
-	k3=20;			%mN/um
+	k3=20;			%mN/um	%original parameter
+	%k3=0;			%mN/um
 	%gamma=2.62e-8;	%mN*h/cm
 	gamma=60;	%mN*h/um
 	modulo=10;		%#
@@ -147,3 +157,4 @@ for simulationCounter=1:numSimulation
 		muHighA,muLowA,muHighB,muLowB,VthA,VthB,...
 		alpha,beta,kAHL,kleucine,DAHL,Dleucine);
 end
+

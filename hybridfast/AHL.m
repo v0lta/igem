@@ -156,12 +156,13 @@ classdef AHL<handle
 		end
 
 		function interpolatedGradient=interpolgrad(obj,coordinateVector)
-		interpolatedXDeriv=obj.interpol(obj.gradient.x,coordinateVector);
-		interpolatedYDeriv=obj.interpol(obj.gradient.y,coordinateVector);
+		gradient=obj.gradient;
+		interpolatedXDeriv=obj.interpol(gradient.x,coordinateVector);
+		interpolatedYDeriv=obj.interpol(gradient.y,coordinateVector);
 		interpolatedGradient=[interpolatedXDeriv interpolatedYDeriv];
 		end
 
-		function updatedirichlet(obj,rhoAOld,rhoANew,dt)
+		function updatedirichlet(obj,rhoANew,dt)
 		%Update concentration based on bacterial density, diffusion constant,
 	   	%and consumption rate and timestep
 		DAHL=obj.DAHL;
@@ -191,7 +192,7 @@ classdef AHL<handle
 		RHS1=(1-muY)*A(idy,idx)+...
 			1/2*muY*A(idy-1,idx)+...
 			1/2*muY*A(idy+1,idx)+...
-			dt/2*alpha*rhoAOld(idy,idx);
+			dt/2*alpha*rhoANew(idy,idx);
 
 		%add known boundary conditions at t+1/2
 		RHS1=RHS1';
@@ -227,7 +228,7 @@ classdef AHL<handle
 		obj.concentration(idy,idx)=B;
 		end
 
-		function updatezeroflux(obj,rhoAOld,rhoANew,dt)
+		function updatezeroflux(obj,rhoANew,dt)
 		%Update concentration based on bacterial density, diffusion constant,
 	   	%and production rate, linear degradation constant and timestep
 		DAHL=obj.DAHL;
@@ -267,24 +268,24 @@ classdef AHL<handle
 		%First half step
 		%Calculate RHS 1
 		A=obj.concentration;
-		RHS1=MRHSy*A;
-		RHS1=RHS1+dt/2*alpha*rhoAOld;
+		RHS1=MRHSy*A; %original
+		RHS1=RHS1+dt/2*alpha*rhoANew;
 
 		%calculate concentration at half timestep
 		A=(MLHSx\RHS1')';
 
 		%Second half step
 		%Calculate RHS 2
-		RHS2=(MRHSx*A')';
-		RHS2=RHS2+dt/2*alpha*rhoANew;
+		RHS2=(MRHSx*A')';	%original
+		RHS2=RHS2+dt/2*alpha*rhoANew;	%original
 
 		%calculate concentration at full timestep
-		A=MLHSy\RHS2;
+		A=MLHSy\RHS2;	%original
 
 		obj.concentration=A;
 		end
 
-		function update(obj,rhoAOld,rhoANew,dt)
+		function update(obj,rhoANew,dt)
 		%Update concentration based on bacterial density, diffusion constant,
 	   	%and consumption rate and timestep
 
@@ -292,19 +293,21 @@ classdef AHL<handle
 		Jy=obj.Jy;
 
 		%Dirichlet boundary conditions
-		%obj.updatedirichlet(rhoAOld,rhoANew,dt);
+		%obj.updatedirichlet(rhoANew,dt);
 
 		%Zero flux boundary conditions
-		obj.updatezeroflux(rhoAOld,rhoANew,dt);
+		obj.updatezeroflux(rhoANew,dt);
 
+		concentration=obj.concentration;
 		%Correct for negative concentration
 		for j=1:Jx
 			for i=1:Jy
-				if obj.concentration(i,j)<1e-5
-					obj.concentration(i,j)=1e-5;
+				if concentration(i,j)<1e-5
+					concentration(i,j)=1e-5;
 				end
 			end
 		end
+		obj.concentration=concentration;
 
 		%update gradient
 		obj.calculategradient();

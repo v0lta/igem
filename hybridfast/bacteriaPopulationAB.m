@@ -97,8 +97,8 @@ classdef bacteriaPopulationAB < handle
 			obj.bactY=[obj.bactY(1:numA);bacteriaA(:,2);obj.bactY(numA+1:end);bacteriaB(:,2)];
 		end
 
-		obj.numA=obj.numA+nA;
-		obj.numB=obj.numB+nB;
+		obj.numA=numA+nA;
+		obj.numB=numB+nB;
 		end
 
 
@@ -106,17 +106,19 @@ classdef bacteriaPopulationAB < handle
 		%add a bacterium of type A
 
 		numA=obj.numA;
+		bactX=obj.bactX;
+		bactY=obj.bactY;
 		if numA~=0
-			precedingAX=obj.bactX(1:numA);
-			precedingAY=obj.bactY(1:numA);
+			precedingAX=bactX(1:numA);
+			precedingAY=bactY(1:numA);
 		else
 			precedingAX=[];
 			precedingAY=[];
 		end
 
 		if numB~=0
-			succeedingBX=obj.bactX(numA+1:end);
-			succeedingBY=obj.bactY(numA+1:end);
+			succeedingBX=bactX(numA+1:end);
+			succeedingBY=bactY(numA+1:end);
 		else
 			succeedingBX=[];
 			succeedingBY=[];
@@ -125,7 +127,7 @@ classdef bacteriaPopulationAB < handle
 		obj.bactX=[precedingAX;x;succeedingBX];
 		obj.bactY=[precedingAY;y;succeedingBY];
 
-		numA=numA+1;
+		obj.numA=numA+1;
 		end
 
 		function addbacteriumB(obj,x,y)
@@ -133,54 +135,42 @@ classdef bacteriaPopulationAB < handle
 
 		obj.bactX=[obj.bactX;x];
 		obj.bactY=[obj.bactY;y];
-		numB=numB+1;
+		obj.numB=numB+1;
 		end
 
 		function coordinateArrayA=coordinatesA(obj);
 		%return coordinate array of bacteria A
 		numA=obj.numA;
-		coordinateArrayA=[obj.bactX(1:numA),obj.bactY(1:numA)]';
+		coordinateArrayA=[obj.bactX(1:numA),obj.bactY(1:numA)];
 		end
 	
 		function coordinateArrayB=coordinatesB(obj);
 		%return coordinate array of bacteria B
 		numA=obj.numA;
-		coordinateArrayB=[obj.bactX(numA+1:end),obj.bactY(numA+1:end)]';
+		coordinateArrayB=[obj.bactX(numA+1:end),obj.bactY(numA+1:end)];
 		end
 
 		function coordinateArray=coordinates(obj);
 		%return coordinate array of all bacteria
-		coordinateArray=[obj.bactX,obj.bactY]';
+		coordinateArray=[obj.bactX,obj.bactY];
 		end
 
 		function rhoA=bacteriadensityA(obj)
 		%return bacteria A density array evaluated on grid points of domain
-		kernelfun=obj.kernelfun;
-		bandwidth=obj.bandwidth;
-		X=obj.domainGrid.X;
-		Y=obj.domainGrid.Y;
 		coordinateArray=obj.coordinatesA();
-		rhoA=KDE2D(coordinateArray,kernelfun,X,Y,bandwidth);
+		rhoA=KDE2D(coordinateArray,obj.kernelfun,obj.domainGrid.X,obj.domainGrid.Y,obj.bandwidth);
 		end
 
 		function rhoB=bacteriadensityB(obj)
 		%return bacteria B density array evaluated on grid points of domain
-		kernelfun=obj.kernelfun;
-		bandwidth=obj.bandwidth;
-		X=obj.domainGrid.X;
-		Y=obj.domainGrid.Y;
 		coordinateArray=obj.coordinatesB();
-		rhoB=KDE2D(coordinateArray,kernelfun,X,Y,bandwidth);
+		rhoB=KDE2D(coordinateArray,obj.kernelfun,obj.domainGrid.X,obj.domainGrid.Y,obj.bandwidth);
 		end
 
 		function rho=bacteriadensity(obj)
 		%return total bacteria density array evaluated on grid points of domain
-		kernelfun=obj.kernelfun;
-		bandwidth=obj.bandwidth;
-		X=obj.domainGrid.X;
-		Y=obj.domainGrid.Y;
 		coordinateArray=obj.coordinates();
-		rho=KDE2D(coordinateArray,kernelfun,X,Y,bandwidth);
+		rho=KDE2D(coordinateArray,obj.kernelfun,obj.domainGrid.X,obj.domainGrid.Y,obj.bandwidth);
 		end
 
 		function refreshneighborscells(obj)
@@ -232,7 +222,7 @@ classdef bacteriaPopulationAB < handle
 
 		%get unique cellids
 		uniqueCellidArray=unique(cellidArraySorted);
-		n=length(uniqueCellidArray);
+		n=numel(uniqueCellidArray);
 
 		%determine starting and ending index of cell ids
 		limitIndices=zeros(n,2);
@@ -256,23 +246,55 @@ classdef bacteriaPopulationAB < handle
 
 		%initialize neighbor list
 		bactNb=cell(N,1);
+		lastCellidNumber=1;
+		currentCellidNumber=1;
+		lastCellid=uniqueCellidArray(1);
+		finalCellid=uniqueCellidArray(end);
 
 		%iterate over bacteria, create list of potential neighbors and check for neighbors
 		for i=1:N
 			%initialise current cell and cell id
 			indexArray=[];
 			currentCellid=cellidArraySorted(i);
-			currentCellidNumber=find(uniqueCellidArray==currentCellid);
+
+			%currentCellidNumber=find(uniqueCellidArray==currentCellid);
+
+			if lastCellid~=currentCellid
+				lastCellidNumber=lastCellidNumber+1;
+				lastCellid=currentCellid;
+				currentCellidNumber=lastCellidNumber;
+
+				if lastCellid~=uniqueCellidArray(lastCellidNumber)
+					warning('Error in cell algorithm');
+				end
+			end
 
 			%add current cell potential neighbors
 			endCurrentCellIndex=limitIndices(currentCellidNumber,2);
 			indexArray=[indexArray i+1:endCurrentCellIndex];
 
 			%check if k+1, k+Kx-1, k+Kx and k+Kx+1 cellids exists and if it exists, add to potential neighbors
-			otherCellidArray=[currentCellid+1 currentCellid+Kx-1 currentCellid+Kx currentCellid+Kx+1];
+			if currentCellid<finalCellid
+				otherCellidArray=[currentCellid+1 currentCellid+Kx-1 currentCellid+Kx currentCellid+Kx+1];
+			else
+				otherCellidArray=[];
+			end
+
+			lastOtherCellidNumber=currentCellidNumber+1;
 
 			for otherCellid=otherCellidArray
-				cellidNumber=find(uniqueCellidArray==otherCellid);
+				while lastOtherCellidNumber<n && otherCellid<uniqueCellidArray(lastOtherCellidNumber)
+					lastOtherCellidNumber=lastOtherCellidNumber+1;
+				end
+				%disp('post loop');
+
+				if otherCellid==uniqueCellidArray(lastOtherCellidNumber)
+					cellidNumber=lastOtherCellidNumber;
+				else
+					cellidNumber=0;
+				end
+
+				%cellidNumber=find(uniqueCellidArray==otherCellid);
 
 				if cellidNumber	%if cell with cellid cellidNumber contains bacteria
 					startCellIndex=limitIndices(cellidNumber,1);
@@ -306,37 +328,41 @@ classdef bacteriaPopulationAB < handle
 					bactNb{otherIndex}=[bactNb{otherIndex},[currentIndex;currentX;currentY;r]];
 				end
 			end
-
-			obj.bactNb=bactNb;
 		end
+		obj.bactNb=bactNb;
 		end
 
 		function refreshneighborsprojection(obj)
 		%searches for neighbors using projection algorithm, serial implementation
-		varX=var(obj.bactX);
-		varY=var(obj.bactY);
+		bactX=obj.bactX;
+		bactY=obj.bactY;
+		varX=var(bactX);
+		varY=var(bactY);
 
 		%select dimension with largest variance
 		if varX>varY
-			[coordArray,indices]=sort(obj.bactX);
+			[coordArray,indices]=sort(bactX);
 		else
-			[coordArray,indices]=sort(obj.bactY);
+			[coordArray,indices]=sort(bactY);
 		end
 
 		%initialize neighbor list
 		N=obj.numA+obj.numB;
-		obj.bactNb=cell(N,1);
+		bactNb=cell(N,1);
 
 		%initialize pointers
 		i=1;
 		j=1;
+
+		rsearch=obj.rsearch;
+		rsearch2=obj.rsearch2;
 
 		%outer loop
 		while j<=N
 			currentCoord=coordArray(i);
 
 			%set second pointer
-			while coordArray(j)-currentCoord<obj.rsearch && j<N
+			while coordArray(j)-currentCoord<rsearch && j<N
 				j=j+1;
 			end
 
@@ -345,19 +371,19 @@ classdef bacteriaPopulationAB < handle
 				currentIndex=indices(i);
 				otherIndex=indices(k);
 
-				currentX=obj.bactX(currentIndex);
-				currentY=obj.bactY(currentIndex);
+				currentX=bactX(currentIndex);
+				currentY=bactY(currentIndex);
 
-				otherX=obj.bactX(otherIndex);
-				otherY=obj.bactY(otherIndex);
+				otherX=bactX(otherIndex);
+				otherY=bactY(otherIndex);
 
 				rsquare=(currentX-otherX)^2+(currentY-otherY)^2;
 
-				if rsquare<obj.rsearch2
+				if rsquare<rsearch2
 					r=sqrt(rsquare);
 
-					obj.bactNb{currentIndex}=[obj.bactNb{currentIndex},[otherIndex;otherX;otherY;r]];
-					obj.bactNb{otherIndex}=[obj.bactNb{otherIndex},[currentIndex;currentX;currentY;r]];
+					bactNb{currentIndex}=[bactNb{currentIndex},[otherIndex;otherX;otherY;r]];
+					bactNb{otherIndex}=[bactNb{otherIndex},[currentIndex;currentX;currentY;r]];
 				end
 			end
 
@@ -366,6 +392,7 @@ classdef bacteriaPopulationAB < handle
 				j=j+1;
 			end
 		end
+		obj.bactNb=bactNb;
 		end
 
 		function updateneighbors(obj)
@@ -419,8 +446,8 @@ classdef bacteriaPopulationAB < handle
 		function [currentMuArray]=determinemu(obj,AHLField)
 		%calculate mobilities for every bacterium
 
+		domain=obj.domain;
 			function interpolatedValue=interpol(field,coordinateVector)
-				domain=obj.domain;
 				xCoordinate=coordinateVector(1);
 				yCoordinate=coordinateVector(2);
 				m=length(domain.y);
@@ -463,12 +490,14 @@ classdef bacteriaPopulationAB < handle
 		numB=obj.numB;
 		N=numA+numB;
 		AHL=zeros(N,1);
+		bactX=obj.bactX;
+		bactY=obj.bactY;
 
 		%parallel or serial?
 		%parfor k=1:N
 		for k=1:N
-			currentX=obj.bactX(k);
-			currentY=obj.bactY(k);
+			currentX=bactX(k);
+			currentY=bactY(k);
 
 			AHL(k)=f(conc,[currentX currentY]);
 		end
@@ -503,9 +532,9 @@ classdef bacteriaPopulationAB < handle
 		function [chemodx,chemody]=calculatechemo(obj,leucineField,currentMuArray,dt)
 		%calculate displacement due to chemotaxis
 
+		domain=obj.domain;
 			function interpolatedValue=interpol(field,coordinateVector)
 				%disp(['# of zeros in field: ' num2str(sum(sum(field==0)))]);
-				domain=obj.domain;
 				xCoordinate=coordinateVector(1);
 				yCoordinate=coordinateVector(2);
 				m=length(domain.y);
@@ -563,11 +592,14 @@ classdef bacteriaPopulationAB < handle
 		dleuciney=zeros(N,1);
 		leucine=zeros(N,1);
 
+		bactX=obj.bactX;
+		bactY=obj.bactY;
+
 		%parallel or serial?
 		%parfor i=numA+1:N
 		for k=numA+1:N
-			currentX=obj.bactX(k);
-			currentY=obj.bactY(k);
+			currentX=bactX(k);
+			currentY=bactY(k);
 
 			dleucinex(k)=f(xgradient,[currentX currentY]);
 			dleuciney(k)=f(ygradient,[currentX currentY]);
@@ -674,6 +706,8 @@ classdef bacteriaPopulationAB < handle
 		celldx=zeros(N,1);
 		celldy=zeros(N,1);
 
+		bactNb=obj.bactNb;
+
 		%parallel or serial? -> parallel
 		parfor i=1:N
 		%for i=1:N
@@ -682,7 +716,7 @@ classdef bacteriaPopulationAB < handle
 			currentY=bactY(i);
 
 			%load neighbor matrix
-			nbMatrix=obj.bactNb{i};
+			nbMatrix=bactNb{i};
 			[~,m]=size(nbMatrix);
 
 			%initialise total displacement
@@ -749,10 +783,11 @@ classdef bacteriaPopulationAB < handle
 		%correct for going out of boundary
 		N=obj.numA+obj.numB;
 
-		domainX1=obj.domain.x(1);
-		domainXEnd=obj.domain.x(end);
-		domainY1=obj.domain.y(1);
-		domainYEnd=obj.domain.y(end);
+		domain=obj.domain;
+		domainX1=domain.x(1);
+		domainXEnd=domain.x(end);
+		domainY1=domain.y(1);
+		domainYEnd=domain.y(end);
 
 		%parallel or serial?
 		%parfor i=1:N

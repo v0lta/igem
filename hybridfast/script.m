@@ -1,11 +1,20 @@
-rsearch=1;
-%domain=obj.domain;
-XLength=21;
+clear all;close all;
+N=10;
 
-x=21;
-y=0.1;
+%save('test.mat','-v7.3');
+save('test.mat');
+m=matfile('test.mat','Writable',true,'-v7.3');
+m.A=zeros(N,N,2);
 
-%x=0.1;
-%y=1.1;
+B=magic(N);
 
-cellid=determinecellidtest(x,y,XLength,rsearch)
+disp('piep');
+for i=1:N
+	%m.A=cat(3,m.A,magic(N));
+	m.A(:,:,i)=B;
+end
+
+parfor i=1:N
+	disp(['i: ' num2str(i)]);
+	m.A(:,:,i);
+end

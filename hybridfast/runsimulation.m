@@ -8,36 +8,70 @@ function runsimulation(filename,simulationCounter,poolsize,...
 	%run simulation with given parameters and output data in filename.m
 	
 	%convert str to numeric values
-	if (ischar(simulationCounter)), simulationCounter=str2num(simulationCounter);,end;
-	if (ischar(poolsize)), poolsize=str2num(poolsize);,end;
-	if (ischar(dt)), dt=str2num(dt);,end;
-	if (ischar(tend)), tend=str2num(tend);,end;
-	if (ischar(nBacteriaA)), nBacteriaA=str2num(nBacteriaA);,end;
-	if (ischar(nBacteriaB)), nBacteriaB=str2num(nBacteriaB);,end;
-	if (ischar(XLength)), XLength=str2num(XLength);,end;
-	if (ischar(YLength)), YLength=str2num(YLength);,end;
-	if (ischar(Jx)), Jx=str2num(Jx);,end;
-	if (ischar(Jy)), Jy=str2num(Jy);,end;
-	if (ischar(bandwidth)), bandwidth=str2num(bandwidth);,end;
-	if (ischar(kappa)), kappa=str2num(kappa);,end;
-	if (ischar(r0)), r0=str2num(r0);,end;
-	if (ischar(k1)), k1=str2num(k1);,end;
-	if (ischar(k2)), k2=str2num(k2);,end;
-	if (ischar(k3)), k3=str2num(k3);,end;
-	if (ischar(gamma)), gamma=str2num(gamma);,end;
-	if (ischar(modulo)), modulo=str2num(modulo);,end;
-	if (ischar(muHighA)), muHighA=str2num(muHighA);,end;
-	if (ischar(muLowA)), muLowA=str2num(muLowA);,end;
-	if (ischar(muHighB)), muHighB=str2num(muHighB);,end;
-	if (ischar(muLowB)), muLowB=str2num(muLowB);,end;
-	if (ischar(VthA)), VthA=str2num(VthA);,end;
-	if (ischar(VthB)), VthB=str2num(VthB);,end;
-	if (ischar(alpha)), alpha=str2num(alpha);,end;
-	if (ischar(beta)), beta=str2num(beta);,end;
-	if (ischar(kAHL)), kAHL=str2num(kAHL);,end;
-	if (ischar(kleucine)), kleucine=str2num(kleucine);,end;
-	if (ischar(DAHL)), DAHL=str2num(DAHL);,end;
-	if (ischar(Dleucine)), Dleucine=str2num(Dleucine);,end;
+	if (ischar(simulationCounter)), simulationCounter=str2num(simulationCounter);end;
+	if (ischar(poolsize)), poolsize=str2num(poolsize);end;
+	if (ischar(dt)), dt=str2num(dt);end;
+	if (ischar(tend)), tend=str2num(tend);end;
+	if (ischar(nBacteriaA)), nBacteriaA=str2num(nBacteriaA);end;
+	if (ischar(nBacteriaB)), nBacteriaB=str2num(nBacteriaB);end;
+	if (ischar(XLength)), XLength=str2num(XLength);end;
+	if (ischar(YLength)), YLength=str2num(YLength);end;
+	if (ischar(Jx)), Jx=str2num(Jx);end;
+	if (ischar(Jy)), Jy=str2num(Jy);end;
+	if (ischar(bandwidth)), bandwidth=str2num(bandwidth);end;
+	if (ischar(kappa)), kappa=str2num(kappa);end;
+	if (ischar(r0)), r0=str2num(r0);end;
+	if (ischar(k1)), k1=str2num(k1);end;
+	if (ischar(k2)), k2=str2num(k2);end;
+	if (ischar(k3)), k3=str2num(k3);end;
+	if (ischar(gamma)), gamma=str2num(gamma);end;
+	if (ischar(modulo)), modulo=str2num(modulo);end;
+	if (ischar(muHighA)), muHighA=str2num(muHighA);end;
+	if (ischar(muLowA)), muLowA=str2num(muLowA);end;
+	if (ischar(muHighB)), muHighB=str2num(muHighB);end;
+	if (ischar(muLowB)), muLowB=str2num(muLowB);end;
+	if (ischar(VthA)), VthA=str2num(VthA);end;
+	if (ischar(VthB)), VthB=str2num(VthB);end;
+	if (ischar(alpha)), alpha=str2num(alpha);end;
+	if (ischar(beta)), beta=str2num(beta);end;
+	if (ischar(kAHL)), kAHL=str2num(kAHL);end;
+	if (ischar(kleucine)), kleucine=str2num(kleucine);end;
+	if (ischar(DAHL)), DAHL=str2num(DAHL);end;
+	if (ischar(Dleucine)), Dleucine=str2num(Dleucine);end;
+
+	disp('Saving variables in matlab file');
+	t2=tic;
+	save([filename '_data.mat'],'-v7.3',...
+		'dt',...
+		'tend',...
+		'nBacteriaA',...
+		'nBacteriaB',...
+		'initialpattern',...
+		'XLength',...
+		'YLength',...
+		'Jx',...
+		'Jy',...
+		'bandwidth',...
+		'kappa',...
+		'r0',...
+		'k1',...
+		'k2',...
+		'k3',...
+		'gamma',...
+		'modulo',...
+		'muHighA',...
+		'muLowA',...
+		'muHighB',...
+		'muLowB',...
+		'VthA',...
+		'VthB',...
+		'alpha',...
+		'beta',...
+		'kAHL',...
+		'kleucine',...
+		'DAHL',...
+		'Dleucine');
+	toc(t2);
 
 	%myCluster=parcluster('local');
 	%delete(myCluster.Jobs);
@@ -65,8 +99,6 @@ function runsimulation(filename,simulationCounter,poolsize,...
 
 	%% define constants
 	%Bacteria A and B
-
-	%% -- fast -- %%
 	paramAB.r0=r0;			%cell radius
 	paramAB.rcut=r0*1.25;		%cut off radius for attraction 
 	paramAB.rsearch=r0*1.25*2;	%search radius
@@ -95,11 +127,13 @@ function runsimulation(filename,simulationCounter,poolsize,...
 	paramleucine.Dleucine=Dleucine;	%Diffusion constant of leucine
 
 	%% Initialize bacteria A
+	disp('Initializing bacteria');
+	t1=tic;
 	bacteriaA=zeros(nBacteriaA,2);
 
 	switch initialpattern
 	case 'spot'
-		bacteriaA=[ones(nBacteriaA,1)*XLength/2,ones(nBacteriaA,1)*YLength/2];
+		bacteriaA=[ones(nBacteriaA,1)*XLength*3/4,ones(nBacteriaA,1)*YLength/2];
 	case 'gaussian'
 		bacteriaA=[normrnd(1/2*XLength,1,nBacteriaA,1),normrnd(1/2*YLength,1,nBacteriaA,1)];
 		parfor i=1:nBacteriaA
@@ -169,15 +203,20 @@ function runsimulation(filename,simulationCounter,poolsize,...
 		warning('Unknown distribution, defaulting to uniform random');
 		bacteriaB=[rand(nBacteriaB,1)*XLength,rand(nBacteriaB,1)*YLength];
 	end
-
+	disp('Bacteria initialization finished');
+	toc(t1);
 
 	%% initialize AHL field
+	disp('Initializing fields');
+	t1=tic;
+
 	m=length(domain.y);
 	n=length(domain.x);
-	[X,Y]=meshgrid(domain.x,domain.y);
+	%[X,Y]=meshgrid(domain.x,domain.y);
 
 	%uniform
-	AHLconcentration=zeros(m,n)+1e-5;
+	%AHLconcentration=zeros(m,n)+1e-5;
+	AHLconcentration=ones(m,n)*1e-5;
 
 	%boundary conditions
 	west=AHLconcentration(:,1);
@@ -196,10 +235,10 @@ function runsimulation(filename,simulationCounter,poolsize,...
 	%% initialize leucine field
 	m=length(domain.y);
 	n=length(domain.x);
-	[X,Y]=meshgrid(domain.x,domain.y);
+	%[X,Y]=meshgrid(domain.x,domain.y);
 
 	%uniform
-	leucineconcentration=zeros(m,n)+1e-5;
+	leucineconcentration=ones(m,n)*1e-5;
 
 	%boundary conditions
 	west=leucineconcentration(:,1);
@@ -215,18 +254,27 @@ function runsimulation(filename,simulationCounter,poolsize,...
 	end
 	leucineboundaries=[[west;zeros(foo,1)],[east;zeros(foo,1)],[south';zeros(bar,1)],[north';zeros(bar,1)]];
 
+	disp('Fields initialization finished');
+	toc(t1);
+
+	%% Set up model
+	disp('Setting up model');
+	t1=tic;
 	%model=model1(paramA,paramB,paramAHL,paramleucine,...
-	model=modelfast1(paramAB,paramAHL,paramleucine,...
+	model=modelfast1(filename,paramAB,paramAHL,paramleucine,...
 		bacteriaA,bacteriaB,...
 		AHLconcentration,AHLboundaries,leucineconcentration,leucineboundaries,...
-		domain);
+		domain,N);
+	disp('Model setup finished');
+	toc(t1);
 
 	%% run simulation
 	disp(['Running simulation ' num2str(simulationCounter)]);
 	t1=tic;
 	for i=1:N
 		%if mod(i,1)==0
-		if mod(i,N/10)==0 || i==10
+		%if mod(i,N/10)==0 || i==10
+		if mod(i,N/10)==0
 			disp('----- %%%%% -----');
 			%now
 			disp(datestr(now));
@@ -234,7 +282,8 @@ function runsimulation(filename,simulationCounter,poolsize,...
 		end
 		model.update(dt);
 		%if mod(i,1)==0
-		if mod(i,N/10)==0 || i==10
+		%if mod(i,N/10)==0 || i==10
+		if mod(i,N/10)==0
 			%elapsed
 			tElapsed=toc(t1);
 			timeString1=displaytime(tElapsed);
@@ -253,177 +302,50 @@ function runsimulation(filename,simulationCounter,poolsize,...
 		end
 	end
 
-	%beep on;beep;beep off;
+	beep on;beep;beep off;
 
 	disp('Simulation finished');
 	toc(t1);
 
-	%export data
-	AHLArray=model.AHLArray;
-	leucineArray=model.leucineArray;
-	%disp(max(max(max(leucineArray))));
-	rhoAArray=model.rhoAArray;
-	rhoBArray=model.rhoBArray;
-	coordinateAMatrix=model.coordinateAMatrix;
-	coordinateBMatrix=model.coordinateBMatrix;
+	%% export data
+	%AHLArray=model.AHLArray;
+	%leucineArray=model.leucineArray;
+	%rhoAArray=model.rhoAArray;
+	%rhoBArray=model.rhoBArray;
+	%coordinateAMatrix=model.coordinateAMatrix;
+	%coordinateBMatrix=model.coordinateBMatrix;
 
-	%write arguments
-	%fid=fopen([filename '_arguments.m'],'w');
-	%header=['dt,tend,nBacteriaA,nBacteriaB,initialpattern,',...
-	%	'XLength,YLength,Jx,Jy,',...
-	%	'bandwidth,',...
-	%	'kappa,r0,k1,k2,k3,gamma,modulo,',...
-	%	'muHighA,muLowA,muHighB,muLowB,VthA,VthB,',...
-	%	'alpha,beta,kAHL,kleucine,DAHL,Dleucine\r\n'];
-	%fprintf(fid,header);
-
-	%formatSpec=[repmat(floatingSpec,1,2) '%d,%d,%s,',...
-	%	repmat(floatingSpec,1,2),'%d,%d,',...
-	%	floatingSpec,...
-	%	repmat(floatingSpec,1,6),'%d,',...
-	%	repmat(floatingSpec,1,6),...
-	%	repmat(floatingSpec,1,6)];
-	%formatSpec(end)='';
-	%formatSpec=[formatSpec '\r\n'];
-
-	fid=fopen([filename '_arguments.m'],'w');
-	floatingSpec='%.5e,';
-	fSpec='%.5e;';
-	formatSpec=['dt=',fSpec,'\r\n',...
-		'tend=',fSpec,'\r\n',...
-		'nBacteriaA=%d;\r\n',...
-		'nBacteriaB=%d;\r\n',...
-		'initialpattern=''%s'';\r\n',...
-		'XLength=',fSpec,'\r\n',...
-		'YLength=',fSpec,'\r\n',...
-		'Jx=',fSpec,'\r\n',...
-		'Jy=',fSpec,'\r\n',...
-		'bandwidth=',fSpec,'\r\n',...
-		'kappa=',fSpec,'\r\n',...
-		'r0=',fSpec,'\r\n',...
-		'k1=',fSpec,'\r\n',...
-		'k2=',fSpec,'\r\n',...
-		'k3=',fSpec,'\r\n',...
-		'gamma=',fSpec,'\r\n',...
-		'modulo=%d;\r\n',...
-		'muHighA=',fSpec,'\r\n',...
-		'muLowA=',fSpec,'\r\n',...
-		'muHighB=',fSpec,'\r\n',...
-		'muLowB=',fSpec,'\r\n',...
-		'VthA=',fSpec,'\r\n',...
-		'VthB=',fSpec,'\r\n',...
-		'alpha=',fSpec,'\r\n',...
-		'beta=',fSpec,'\r\n',...
-		'kAHL=',fSpec,'\r\n',...
-		'kleucine=',fSpec,'\r\n',...
-		'DAHL=',fSpec,'\r\n',...
-		'Dleucine=',fSpec,'\r\n'];
-
-	fprintf(fid,formatSpec,dt,tend,nBacteriaA,nBacteriaB,initialpattern,...
-		XLength,YLength,Jx,Jy,...
-		bandwidth,...
-		kappa,r0,k1,k2,k3,gamma,modulo,...
-		muHighA,muLowA,muHighB,muLowB,VthA,VthB,...
-		alpha,beta,kAHL,kleucine,DAHL,Dleucine);
-	fclose(fid);
-		
-	%write AHLArray
-	fid=fopen([filename '_AHLArray.m'],'w');
-
-	outputstr=sprintf('AHLArray=zeros(%d,%d,%d);',Jy,Jx,N+1);
-	formatSpec=repmat(floatingSpec,1,Jx);
-	formatSpec(end)='';
-	formatSpec=[formatSpec ';'];
-	parfor i=1:N+1
-		temp=sprintf(['t=' floatingSpec(1:end-1) ';\r\n'],(i-1)*dt);
-		temp=[temp 'AHLArray(:,:,' num2str(i) ')=['];
-		temp=[temp sprintf(formatSpec,AHLArray(:,:,i)') '];\r\n'];
-		outputstr=[outputstr temp];
-	end
-	fprintf(fid,outputstr);
-	fclose(fid);
-
-	%write leucineArray
-	fid=fopen([filename '_leucineArray.m'],'w');
-
-	outputstr=sprintf('leucineArray=zeros(%d,%d,%d);',Jy,Jx,N+1);
-	formatSpec=repmat(floatingSpec,1,Jx);
-	formatSpec(end)='';
-	formatSpec=[formatSpec ';'];
-	%parfor i=1:N+1
-	for i=1:N+1
-		temp=sprintf(['t=' floatingSpec(1:end-1) ';\r\n'],(i-1)*dt);
-		temp=[temp 'leucineArray(:,:,' num2str(i) ')=['];
-		temp=[temp sprintf(formatSpec,leucineArray(:,:,i)') '];\r\n'];
-		outputstr=[outputstr temp];
-		clf;
-	end
-	fprintf(fid,outputstr);
-	fclose(fid);
-
-	%write rhoAArray
-	fid=fopen([filename '_rhoAArray.m'],'w');
-
-	outputstr=sprintf('rhoAArray=zeros(%d,%d,%d);',Jy,Jx,N+1);
-	formatSpec=repmat(floatingSpec,1,Jx);
-	formatSpec(end)='';
-	formatSpec=[formatSpec ';'];
-	parfor i=1:N+1
-		temp=sprintf(['t=' floatingSpec(1:end-1) ';\r\n'],(i-1)*dt);
-		temp=[temp 'rhoAArray(:,:,' num2str(i) ')=['];
-		temp=[temp sprintf(formatSpec,rhoAArray(:,:,i)') '];\r\n'];
-		outputstr=[outputstr temp];
-	end
-	fprintf(fid,outputstr);
-	fclose(fid);
-
-	%write rhoBArray
-	fid=fopen([filename '_rhoBArray.m'],'w');
-
-	outputstr=sprintf('rhoBArray=zeros(%d,%d,%d);',Jy,Jx,N+1);
-	formatSpec=repmat(floatingSpec,1,Jx);
-	formatSpec(end)='';
-	formatSpec=[formatSpec ';'];
-	parfor i=1:N+1
-		temp=sprintf(['t=' floatingSpec(1:end-1) ';\r\n'],(i-1)*dt);
-		temp=[temp 'rhoBArray(:,:,' num2str(i) ')=['];
-		temp=[temp sprintf(formatSpec,rhoBArray(:,:,i)') '];\r\n'];
-		outputstr=[outputstr temp];
-	end
-	fprintf(fid,outputstr);
-	fclose(fid);
-
-	%write coordinateAMatrix
-	fid=fopen([filename '_coordinateAMatrix.m'],'w');
-
-	outputstr=sprintf('coordinateAMatrix=zeros(%d,%d,%d);\r\n',nBacteriaA,2,N+1);
-	formatSpec=repmat(floatingSpec,1,nBacteriaA);
-	formatSpec(end)='';
-	formatSpec=[formatSpec ']'';\r\n'];
-	parfor i=1:N+1
-		temp=sprintf(['t=' floatingSpec(1:end-1) ';\r\n'],(i-1)*dt);
-		temp=[temp 'bactX=[' sprintf(formatSpec,coordinateAMatrix(1,:,i)')];
-		temp=[temp 'bactY=[' sprintf(formatSpec,coordinateAMatrix(2,:,i)')];
-		temp=[temp 'coordinateAMatrix(:,:,' num2str(i) ')=[bactX,bactY];\r\n'];
-		outputstr=[outputstr temp];
-	end
-	fprintf(fid,outputstr);
-	fclose(fid);
-
-	%write coordinateBMatrix
-	fid=fopen([filename '_coordinateBMatrix.m'],'w');
-
-	outputstr=sprintf('coordinateBMatrix=zeros(%d,%d,%d);\r\n',nBacteriaB,2,N+1);
-	formatSpec=repmat(floatingSpec,1,nBacteriaB);
-	formatSpec(end)='';
-	formatSpec=[formatSpec ']'';\r\n'];
-	parfor i=1:N+1
-		temp=sprintf(['t=' floatingSpec(1:end-1) ';\r\n'],(i-1)*dt);
-		temp=[temp 'bactX=[' sprintf(formatSpec,coordinateBMatrix(1,:,i)')];
-		temp=[temp 'bactY=[' sprintf(formatSpec,coordinateBMatrix(2,:,i)')];
-		temp=[temp 'coordinateBMatrix(:,:,' num2str(i) ')=[bactX,bactY];\r\n'];
-		outputstr=[outputstr temp];
-	end
-	fprintf(fid,outputstr);
-	fclose(fid);
+	%disp('Saving variables in matlab file');
+	%t2=tic;
+	%save([filename '_data.mat'],'-append',...
+	%	'dt',...
+	%	'tend',...
+	%	'nBacteriaA',...
+	%	'nBacteriaB',...
+	%	'initialpattern',...
+	%	'XLength',...
+	%	'YLength',...
+	%	'Jx',...
+	%	'Jy',...
+	%	'bandwidth',...
+	%	'kappa',...
+	%	'r0',...
+	%	'k1',...
+	%	'k2',...
+	%	'k3',...
+	%	'gamma',...
+	%	'modulo',...
+	%	'muHighA',...
+	%	'muLowA',...
+	%	'muHighB',...
+	%	'muLowB',...
+	%	'VthA',...
+	%	'VthB',...
+	%	'alpha',...
+	%	'beta',...
+	%	'kAHL',...
+	%	'kleucine',...
+	%	'DAHL',...
+	%	'Dleucine');
+	%toc(t2);
 end
