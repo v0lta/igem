@@ -85,7 +85,7 @@ numSimulation=1;
 for simulationCounter=1:numSimulation
 	poolsize=4;
 
-	filename='toy_no_attr';
+	filename='revert_test';
 
 	list=ls([filename '*_data.mat']);
 	[k,~]=size(list);

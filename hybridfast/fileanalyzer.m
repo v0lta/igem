@@ -69,26 +69,28 @@ classdef fileanalyzer < handle
 		function [rhoALimit,rhoBLimit,AHLLimit,leucineLimit]=limitoptimizer(obj,k)
 		mFile=obj.mFile;
 
-		maxRhoA=mFile.maxRhoA;
-		minRhoA=mFile.minRhoA;
-		%maxRhoA=max([max(max(max(obj.mFile.rhoAArray))),1e-2]);
+		%maxRhoA=mFile.maxRhoA;
+		%minRhoA=mFile.minRhoA;
+		minRhoA=min(min(min(obj.mFile.rhoAArray)));
+		maxRhoA=max(max(max(obj.mFile.rhoAArray)));
 		%currentMaxRhoA=max(max(obj.mFile.rhoAArray(:,:,k)));
 
-		maxRhoB=mFile.maxRhoB;
-		minRhoB=mFile.minRhoB;
-		%maxRhoB=max([max(max(max(obj.mFile.rhoBArray))),1e-2]);
+		%maxRhoB=mFile.maxRhoB;
+		%minRhoB=mFile.minRhoB;
+		minRhoB=min(min(min(obj.mFile.rhoBArray)));
+		maxRhoB=max(max(max(obj.mFile.rhoBArray)));
 		%currentMaxRhoB=max(max(obj.mFile.rhoBArray(:,:,k)));
 
-		maxAHL=mFile.maxAHL;
-		minAHL=mFile.minAHL;
-		%minAHL=min(min(min(obj.mFile.AHLArray)));
-		%maxAHL=max([max(max(max(obj.mFile.AHLArray))),1e-2]);
+		%maxAHL=mFile.maxAHL;
+		%minAHL=mFile.minAHL;
+		minAHL=min(min(min(obj.mFile.AHLArray)));
+		maxAHL=max(max(max(obj.mFile.AHLArray)));
 		%currentMaxAHL=max(max(obj.mFile.AHLArray(:,:,k)));
 
-		maxleucine=mFile.maxleucine;
-		minleucine=mFile.minleucine;
-		%minRhoB=min(min(min(obj.mFile.rhoBArray)));
-		%maxleucine=max([max(max(max(obj.mFile.leucineArray))),1e-2]);
+		%maxleucine=mFile.maxleucine;
+		%minleucine=mFile.minleucine;
+		minleucine=min(min(min(obj.mFile.leucineArray)));
+		maxleucine=max(max(max(obj.mFile.leucineArray)));
 		%currentMaxleucine=max(max(obj.mFile.leucineArray(:,:,k)));
 
 		rhoALimit=[minRhoA,maxRhoA];
