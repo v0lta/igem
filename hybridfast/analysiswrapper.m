@@ -10,7 +10,8 @@ previewOrSave='save';
 %filename='toytest1';
 %filename='speedupshort1';
 %filename='toyfull';
-filename='revert_test';
+%filename='revert_test';
+filename='periodic_test';
 
 list=ls([filename '*_data.mat']);
 [k,~]=size(list);
@@ -19,7 +20,7 @@ filename=[filename num2str(k)];
 %filename='revert_test';
 
 %framerate=25;
-framerate=1;
+framerate=15;
 scaling=20;
 
 runanalysis(previewOrSave,filename,framerate,scaling);

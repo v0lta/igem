@@ -85,7 +85,7 @@ numSimulation=1;
 for simulationCounter=1:numSimulation
 	poolsize=4;
 
-	filename='revert_test';
+	filename='periodic_test';
 
 	list=ls([filename '*_data.mat']);
 	[k,~]=size(list);
@@ -94,22 +94,22 @@ for simulationCounter=1:numSimulation
 
 	%% Simulation parameters
 	dt=0.1;				%time step
-	tend=1;			%end time of simulation
+	tend=3;			%end time of simulation
 	%tend=1;			%end time of simulation
 	%tend=30;			%end time of simulation
 	N=tend/dt;			%time steps
 	%N=200;				%time steps
 	%nBacteriaA=1000;	%number of bacteria A
-	nBacteriaA=300;		%number of bacteria A
+	%nBacteriaA=300;		%number of bacteria A
 	%nBacteriaA=0;		%number of bacteria A
-	%nBacteriaA=1;		%number of bacteria A
+	nBacteriaA=1;		%number of bacteria A
 	%nBacteriaB=1000;	%number of bacteria B
-	nBacteriaB=300;		%number of bacteria B
+	%nBacteriaB=300;		%number of bacteria B
 	%nBacteriaB=0;		%number of bacteria B
-	%nBacteriaB=1;		%number of bacteria B
+	nBacteriaB=1;		%number of bacteria B
 	%initialpattern='gaussian';
-	initialpattern='uniform_random';
-	%initialpattern='spot';
+	%initialpattern='uniform_random';
+	initialpattern='spot';
 
 	%% define domain
 	XLength=10;			%Length of domain um
@@ -119,7 +119,7 @@ for simulationCounter=1:numSimulation
 
 	%% define kernel functions and bandwidth
 	%bandwidth=1e-4;
-	bandwidth=.5;
+	bandwidth=3;
 
 	%% define constants
 	%Bacteria A and B

@@ -134,7 +134,7 @@ function runsimulation(filename,simulationCounter,poolsize,...
 
 	switch initialpattern
 	case 'spot'
-		bacteriaA=[ones(nBacteriaA,1)*XLength*3/4,ones(nBacteriaA,1)*YLength/2];
+		bacteriaA=[ones(nBacteriaA,1)*XLength*1/2,ones(nBacteriaA,1)*YLength/2];
 	case 'gaussian'
 		bacteriaA=[normrnd(1/2*XLength,1,nBacteriaA,1),normrnd(1/2*YLength,1,nBacteriaA,1)];
 		parfor i=1:nBacteriaA
