@@ -35,6 +35,24 @@ classdef bacteriaPopulationAB < handle
 		domain;
 		domainGrid;
 
+		%extended domain and index arrays for periodic boundary conditions
+		domainExtended;
+		domainGridExtended;
+
+		dxi;
+		dsx1;
+		dsxend;
+
+		dyi;
+		dsy1;
+		dsyend;
+
+		Sx;
+		Sy;
+
+		Jx;
+		Jy;
+
 		%neighbor search helper variables
 		counter;
 		modulo;
@@ -64,6 +82,40 @@ classdef bacteriaPopulationAB < handle
 		%domain
 		obj.domain=domain;
 		obj.domainGrid=domainGrid;
+
+		%extended domain for periodic boundary conditions
+		dx=domain.x(2)-domain.x(1);
+		Jx=numel(domain.x);
+		Sx=floor(paramAB.bandwidth/dx);
+		Lx=domain.x(end);
+		domainExtended.x=linspace(-Sx*dx,Lx+(Sx+1)*dx,Jx+2*Sx+1);
+
+		dy=domain.y(2)-domain.y(1);
+		Jy=numel(domain.y);
+		Sy=floor(paramAB.bandwidth/dy);
+		Ly=domain.y(end);
+		domainExtended.y=linspace(-Sy*dy,Ly+(Sy+1)*dy,Jy+2*Sy+1);
+
+		[X,Y]=meshgrid(domainExtended.x,domainExtended.y);
+		domainGridExtended.X=X;
+		domainGridExtended.Y=Y;
+
+		obj.domainExtended=domainExtended;
+		obj.domainGridExtended=domainGridExtended;
+
+		obj.dxi=Sx+1:Sx+Jx;
+		obj.dsx1=1:Sx;
+		obj.dsxend=Sx+Jx+1:Jx+2*Sx+1;
+
+		obj.dyi=Sy+1:Sy+Jy;
+		obj.dsy1=1:Sy;
+		obj.dsyend=Sy+Jy+1:Jy+2*Sy+1;
+
+		obj.Sx=Sx;
+		obj.Sy=Sy;
+
+		obj.Jx=Jx;
+		obj.Jy=Jy;
 
 		%neighbor variables
 		obj.counter=0;
@@ -157,20 +209,158 @@ classdef bacteriaPopulationAB < handle
 
 		function rhoA=bacteriadensityA(obj)
 		%return bacteria A density array evaluated on grid points of domain
-		coordinateArray=obj.coordinatesA();
-		rhoA=KDE2D(coordinateArray,obj.kernelfun,obj.domainGrid.X,obj.domainGrid.Y,obj.bandwidth);
+		%coordinateArray=obj.coordinatesA();
+		%rhoA=KDE2D(coordinateArray,obj.kernelfun,obj.domainGrid.X,obj.domainGrid.Y,obj.bandwidth);
+		rhoA=obj.bacteriadensityAperiodic();
 		end
 
 		function rhoB=bacteriadensityB(obj)
 		%return bacteria B density array evaluated on grid points of domain
-		coordinateArray=obj.coordinatesB();
-		rhoB=KDE2D(coordinateArray,obj.kernelfun,obj.domainGrid.X,obj.domainGrid.Y,obj.bandwidth);
+		%coordinateArray=obj.coordinatesB();
+		%rhoB=KDE2D(coordinateArray,obj.kernelfun,obj.domainGrid.X,obj.domainGrid.Y,obj.bandwidth);
+		rhoB=obj.bacteriadensityBperiodic();
 		end
 
 		function rho=bacteriadensity(obj)
 		%return total bacteria density array evaluated on grid points of domain
+		%coordinateArray=obj.coordinates();
+		%rho=KDE2D(coordinateArray,obj.kernelfun,obj.domainGrid.X,obj.domainGrid.Y,obj.bandwidth);
+		rho=obj.bacteriadensityperiodic();
+		end
+
+		function rhoA=bacteriadensityAperiodic(obj)
+		%return bacteria A density array evaluated on grid points of periodic domain
+		coordinateArray=obj.coordinatesA();
+		rhoAExtended=KDE2D(coordinateArray,obj.kernelfun,...
+			obj.domainGridExtended.X,obj.domainGridExtended.Y,obj.bandwidth);
+
+		%load index arrays
+		dxi=obj.dxi;
+		dsx1=obj.dsx1;
+		dsxend=obj.dsxend;
+
+		dyi=obj.dyi;
+		dsy1=obj.dsy1;
+		dsyend=obj.dsyend;
+
+		Sx=obj.Sx;
+		Sy=obj.Sy;
+
+		Jx=obj.Jx;
+		Jy=obj.Jy;
+
+		%center part
+		rhoA=rhoAExtended(dyi,dxi);
+
+		%left
+		%Sx
+		%dsxend
+		rhoA(:,1:Sx+1)=rhoA(:,1:Sx+1)+rhoAExtended(dyi,dsxend);
+		%right
+		rhoA(:,Jx-Sx+1:Jx)=rhoA(:,Jx-Sx+1:Jx)+rhoAExtended(dyi,dsx1);
+
+		%top
+		rhoA(1:Sy+1,:)=rhoA(1:Sy+1,:)+rhoAExtended(dsyend,dxi);
+		%bottom
+		rhoA(Jy-Sy+1:Jy,:)=rhoA(Jy-Sy+1:Jy,:)+rhoAExtended(dsy1,dxi);
+
+		%top left corner
+		rhoA(1:Sy+1,1:Sx+1)=rhoA(1:Sy+1,1:Sx+1)+rhoAExtended(dsyend,dsxend);
+		%top right corner
+		rhoA(1:Sy+1,Jx-Sx+1:Jx)=rhoA(1:Sy+1,Jx-Sx+1:Jx)+rhoAExtended(dsyend,dsx1);
+		%bottom left corner
+		rhoA(Jy-Sy+1:Jy,1:Sx+1)=rhoA(Jy-Sy+1:Jy,1:Sx+1)+rhoAExtended(dsy1,dsxend);
+		%bottom right corner
+		rhoA(Jy-Sy+1:Jy,Jx-Sx+1:Jx)=rhoA(Jy-Sy+1:Jy,Jx-Sx+1:Jx)+rhoAExtended(dsy1,dsx1);
+
+		end
+
+		function rhoB=bacteriadensityBperiodic(obj)
+		%return bacteria B density array evaluated on grid points of domain
+		coordinateArray=obj.coordinatesB();
+		rhoBExtended=KDE2D(coordinateArray,obj.kernelfun,...
+			obj.domainGridExtended.X,obj.domainGridExtended.Y,obj.bandwidth);
+
+		%load index arrays
+		dxi=obj.dxi;
+		dsx1=obj.dsx1;
+		dsxend=obj.dsxend;
+
+		dyi=obj.dyi;
+		dsy1=obj.dsy1;
+		dsyend=obj.dsyend;
+
+		Sx=obj.Sx;
+		Sy=obj.Sy;
+
+		Jx=obj.Jx;
+		Jy=obj.Jy;
+
+		%center part
+		rhoB=rhoBExtended(dyi,dxi);
+
+		%left
+		rhoB(:,1:Sx+1)=rhoB(:,1:Sx+1)+rhoBExtended(dyi,dsxend);
+		%right
+		rhoB(:,Jx-Sx+1:Jx)=rhoB(:,Jx-Sx+1:Jx)+rhoBExtended(dyi,dsx1);
+
+		%top
+		rhoB(1:Sy+1,:)=rhoB(1:Sy+1,:)+rhoBExtended(dsyend,dxi);
+		%bottom
+		rhoB(Jy-Sy+1:Jy,:)=rhoB(Jy-Sy+1:Jy,:)+rhoBExtended(dsy1,dxi);
+
+		%top left corner
+		rhoB(1:Sy+1,1:Sx+1)=rhoB(1:Sy+1,1:Sx+1)+rhoBExtended(dsyend,dsxend);
+		%top right corner
+		rhoB(1:Sy+1,Jx-Sx+1:Jx)=rhoB(1:Sy+1,Jx-Sx+1:Jx)+rhoBExtended(dsyend,dsx1);
+		%bottom left corner
+		rhoB(Jy-Sy+1:Jy,1:Sx+1)=rhoB(Jy-Sy+1:Jy,1:Sx+1)+rhoBExtended(dsy1,dsxend);
+		%bottom right corner
+		rhoB(Jy-Sy+1:Jy,Jx-Sx+1:Jx)=rhoB(Jy-Sy+1:Jy,Jx-Sx+1:Jx)+rhoBExtended(dsy1,dsx1);
+		end
+
+		function rho=bacteriadensityperiodic(obj)
+		%return total bacteria density array evaluated on grid points of domain
 		coordinateArray=obj.coordinates();
-		rho=KDE2D(coordinateArray,obj.kernelfun,obj.domainGrid.X,obj.domainGrid.Y,obj.bandwidth);
+		rhoExtended=KDE2D(coordinateArray,obj.kernelfun,...
+			obj.domainGridExtended.X,obj.domainGridExtended.Y,obj.bandwidth);
+
+		%load index arrays
+		dxi=obj.dxi;
+		dsx1=obj.dsx1;
+		dsxend=obj.dsxend;
+
+		dyi=obj.dyi;
+		dsy1=obj.dsy1;
+		dsyend=obj.dsyend;
+
+		Sx=obj.Sx;
+		Sy=obj.Sy;
+
+		Jx=obj.Jx;
+		Jy=obj.Jy;
+
+		%center part
+		rho=rhoExtended(dyi,dxi);
+
+		%left
+		rho(:,1:Sx+1)=rho(:,1:Sx+1)+rhoExtended(dyi,dsxend);
+		%right
+		rho(:,Jx-Sx+1:Jx)=rho(:,Jx-Sx+1:Jx)+rhoExtended(dyi,dsx1);
+
+		%top
+		rho(1:Sy+1,:)=rho(1:Sy+1,:)+rhoExtended(dsyend,dxi);
+		%bottom
+		rho(Jy-Sy+1:Jy,:)=rho(Jy-Sy+1:Jy,:)+rhoExtended(dsy1,dxi);
+
+		%top left corner
+		rho(1:Sy+1,1:Sx+1)=rho(1:Sy+1,1:Sx+1)+rhoExtended(dsyend,dsxend);
+		%top right corner
+		rho(1:Sy+1,Jx-Sx+1:Jx)=rho(1:Sy+1,Jx-Sx+1:Jx)+rhoExtended(dsyend,dsx1);
+		%bottom left corner
+		rho(Jy-Sy+1:Jy,1:Sx+1)=rho(Jy-Sy+1:Jy,1:Sx+1)+rhoExtended(dsy1,dsxend);
+		%bottom right corner
+		rho(Jy-Sy+1:Jy,Jx-Sx+1:Jx)=rho(Jy-Sy+1:Jy,Jx-Sx+1:Jx)+rhoExtended(dsy1,dsx1);
 		end
 
 		function refreshneighborscells(obj)
@@ -760,15 +950,20 @@ classdef bacteriaPopulationAB < handle
 		currentMuArray=obj.determinemu(AHLField);
 
 		%calculate displacement due to chemotaxis, neighboring cell interactions and brownian motion
-		[chemodx,chemody]=calculatechemo(obj,leucineField,currentMuArray,dt);
-		%chemodx=0;
-		%chemody=0;
-		[randdx,randdy]=calculaterand(obj,currentMuArray,dt);
-		%randdx=0;
-		%randdy=0;
-		[celldx,celldy]=calculatecell(obj,dt);
-		%celldx=0;
-		%celldy=0;
+		%[chemodx,chemody]=calculatechemo(obj,leucineField,currentMuArray,dt);
+		chemodx=0;
+		chemody=0;
+		%[randdx,randdy]=calculaterand(obj,currentMuArray,dt);
+		randdx=0;
+		randdy=0;
+		%[celldx,celldy]=calculatecell(obj,dt);
+		celldx=0;
+		celldy=0;
+
+		vx=10;
+		vy=10;
+		testx=vx*dt;
+		testy=vy*dt;
 
 		%disp(['# of NaN numbers in chemodx: ' num2str(sum(isnan(chemodx)))]);
 		%disp(['# of NaN numbers in chemody: ' num2str(sum(isnan(chemody)))]);
@@ -780,36 +975,55 @@ classdef bacteriaPopulationAB < handle
 		newBactX=obj.bactX+chemodx+randdx+celldx;
 		newBactY=obj.bactY+chemody+randdy+celldy;
 
+		newBactX=obj.bactX+testx;
+		newBactY=obj.bactY+testy;
+
 		%correct for going out of boundary
 		N=obj.numA+obj.numB;
 
 		domain=obj.domain;
+		dx=domain.x(2)-domain.x(1);
 		domainX1=domain.x(1);
 		domainXEnd=domain.x(end);
+		domainXEndPeriodic=domainXEnd+dx;
+		dy=domain.y(2)-domain.y(1);
 		domainY1=domain.y(1);
 		domainYEnd=domain.y(end);
+		domainYEndPeriodic=domainYEnd+dy;
 
+		%%zero flux boundary condition
+		%%parallel or serial?
+		%%parfor i=1:N
+		%for i=1:N
+		%	currentX=newBactX(i);
+		%	currentY=newBactY(i);
+
+		%	if currentX<domainX1
+		%		newBactX(i)=domainX1;
+		%	elseif currentX>domainXEnd
+		%		newBactX(i)=domainXEnd;
+		%	else
+		%		newBactX(i)=currentX;
+		%	end
+
+		%	if currentY<domainY1
+		%		newBactY(i)=domainY1;
+		%	elseif currentY>domainYEnd
+		%		newBactY(i)=domainYEnd;
+		%	else
+		%		newBactY(i)=currentY;
+		%	end
+		%end
+
+		%Periodic boundary condition
 		%parallel or serial?
 		%parfor i=1:N
 		for i=1:N
 			currentX=newBactX(i);
 			currentY=newBactY(i);
 
-			if currentX<domainX1
-				newBactX(i)=domainX1;
-			elseif currentX>domainXEnd
-				newBactX(i)=domainXEnd;
-			else
-				newBactX(i)=currentX;
-			end
-
-			if currentY<domainY1
-				newBactY(i)=domainY1;
-			elseif currentY>domainYEnd
-				newBactY(i)=domainYEnd;
-			else
-				newBactY(i)=currentY;
-			end
+			newBactX(i)=mod(currentX,domainXEndPeriodic);
+			newBactY(i)=mod(currentY,domainYEndPeriodic);
 		end
 
 		obj.bactX=newBactX;
