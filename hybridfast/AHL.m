@@ -160,8 +160,42 @@ classdef AHL<handle
 		interpolatedXDeriv=obj.interpol(gradient.x,coordinateVector);
 		interpolatedYDeriv=obj.interpol(gradient.y,coordinateVector);
 		interpolatedGradient=[interpolatedXDeriv interpolatedYDeriv];
-		end
+        end
 
+        function updateperiodic(obj,rhoANew,dt)
+            %Update concentration based on bacterial density, diffusion
+            %constant and consumption rate and timestep.
+            H = obj.concentration;
+            k1 = obj.k1;
+            
+            dx = obj.domain.x(2) - obj.domain.x(1);
+		    dy = obj.domain.y(2) - obj.domain.y(1);
+           
+            muX = obj.DAHL*dt/dx^2;
+		    muY = obj.DAHL*dt/dy^2;
+            %% Define step matrices:
+            xStepRight = toeplitz([(1 - muX + 0.25*k1) 0.5*muX zeros(1,obj.Jx-2)],...
+                 [(1 - muX + 0.25*k1) 0.5*muX zeros(1,obj.Jx-2)]);
+            yStepRight = toeplitz([(1 - muY + 0.25*k1) 0.5*muY zeros(1,obj.Jy-2)],...
+                 [(1 - muY + 0.25*k1 ) 0.5*muY zeros(1,obj.Jy-2)]);
+            xStepLeft  = toeplitz([(1 + muX - 0.25*k1) -0.5*muX zeros(1,obj.Jx-2)],...
+                 [(1 + muX - 0.25*k1) -0.5*muX zeros(1,obj.Jx-2)]);
+            yStepLeft  = toeplitz([(1 + muY - 0.25*k1) -0.5*muY zeros(1,obj.Jy-2)],...
+                 [(1 + muY - 0.25*k1) -0.5*muY zeros(1,obj.Jy-2)]);
+
+            %periodic boundary conditions:
+            xStepRight(1,obj.Jx) = 0.5*muX;  xStepRight(end,1) = 0.5*muX;
+            yStepRight(1,obj.Jy) = 0.5*muY;  yStepRight(end,1) = 0.5*muY;
+            xStepLeft(1,obj.Jx)  = -0.5*muX; xStepLeft(end,1) = -0.5*muX;
+            yStepLeft(1,obj.Jy)  = -0.5*muY; yStepLeft(end,1) = -0.5*muY;
+           
+            Hhalf = xStepLeft\(yStepRight*H) + dt/2*obj.alpha*rhoANew;
+            H = (xStepRight*Hhalf)/yStepLeft  + dt/2*obj.alpha*rhoANew;
+            
+            obj.concentration = H;
+            
+        end     
+        
 		function updatedirichlet(obj,rhoANew,dt)
 		%Update concentration based on bacterial density, diffusion constant,
 	   	%and consumption rate and timestep
@@ -296,8 +330,11 @@ classdef AHL<handle
 		%obj.updatedirichlet(rhoANew,dt);
 
 		%Zero flux boundary conditions
-		obj.updatezeroflux(rhoANew,dt);
+		%obj.updatezeroflux(rhoANew,dt);
 
+        %Periodic boundarey boundary conditions
+        obj.updateperiodic(rhoANew,dt);
+        
 		concentration=obj.concentration;
 		%Correct for negative concentration
 		for j=1:Jx
