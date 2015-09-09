@@ -31,30 +31,30 @@ classdef modelfast1 < handle
 		AHLconcentration,AHLboundaries,leucineconcentration,leucineboundaries,...
 		domain,N)
 		%domain
-		obj.domain=domain;
-		[X,Y]=meshgrid(domain.x,domain.y);
-		domainGrid.X=X;
-		domainGrid.Y=Y;
-		obj.domainGrid=domainGrid;
+		obj.domain = domain;
+		[X,Y] = meshgrid(domain.x,domain.y);
+		domainGrid.X = X;
+		domainGrid.Y = Y;
+		obj.domainGrid = domainGrid;
 
 		%create objects
-		obj.bacteriaPopAB=bacteriaPopulationAB(paramAB,bacteriaA,bacteriaB,domain,domainGrid);
-		obj.AHLField=AHL(paramAHL,AHLconcentration,AHLboundaries,domain,domainGrid);
-		obj.leucineField=leucine(paramleucine,leucineconcentration,leucineboundaries,domain,domainGrid);
+		obj.bacteriaPopAB = bacteriaPopulationAB(paramAB,bacteriaA,bacteriaB,domain,domainGrid);
+		obj.AHLField = AHL(paramAHL,AHLconcentration,AHLboundaries,domain,domainGrid);
+		obj.leucineField = leucine(paramleucine,leucineconcentration,leucineboundaries,domain,domainGrid);
 
 		%%initialize initial density functions, coordinates & AHL field
-		Jx=numel(domain.x);
-		Jy=numel(domain.y);
-		Nend=uint16(N+1);
-		rhoAArray=zeros(Jy,Jx,Nend);
-		rhoBArray=zeros(Jy,Jx,Nend);
-		AHLArray=zeros(Jy,Jx,Nend);
-		leucineArray=zeros(Jy,Jx,Nend);
-		[nBacteriaA,~]=size(bacteriaA);
-		[nBacteriaB,~]=size(bacteriaB);
-		coordinateAMatrix=zeros(nBacteriaA,2,Nend);
-		coordinateBMatrix=zeros(nBacteriaB,2,Nend);
-		counter=1;
+		Jx = numel(domain.x);
+		Jy = numel(domain.y);
+		Nend = uint16(N+1);
+		rhoAArray = zeros(Jy,Jx,Nend);
+		rhoBArray = zeros(Jy,Jx,Nend);
+		AHLArray = zeros(Jy,Jx,Nend);
+		leucineArray = zeros(Jy,Jx,Nend);
+		[nBacteriaA,~] = size(bacteriaA);
+		[nBacteriaB,~] = size(bacteriaB);
+		coordinateAMatrix = zeros(nBacteriaA,2,Nend);
+		coordinateBMatrix = zeros(nBacteriaB,2,Nend);
+		counter = 1;
 
 		%record initial density functions, coordinates & AHL field
 		%bacteria A
@@ -64,9 +64,9 @@ classdef modelfast1 < handle
 		%obj.coordinateAMatrix=coordinateAMatrix;
 
 		%bacteria B
-		obj.rhoBArray(:,:,counter)=obj.bacteriaPopAB.bacteriadensityB();		%density
+		obj.rhoBArray(:,:,counter)=obj.bacteriaPopAB.bacteriadensityB();	%density
 		%obj.rhoBArray=rhoBArray;
-		obj.coordinateBMatrix(:,:,counter)=obj.bacteriaPopAB.coordinatesB();	%coordinates
+		obj.coordinateBMatrix(:,:,counter)=obj.bacteriaPopAB.coordinatesB(); %coordinates
 		%obj.coordinateBMatrix=coordinateBMatrix;
 
 		%AHL field
@@ -80,30 +80,50 @@ classdef modelfast1 < handle
 		obj.counter=counter;
 		end
 
-		function update(obj,dt)
-
-		%update bacteria positions
-		obj.bacteriaPopAB.updatefast(obj.AHLField,obj.leucineField,dt);
-		%calculate bacteria density
-		rhoA=obj.bacteriaPopAB.bacteriadensityA();
-		rhoB=obj.bacteriaPopAB.bacteriadensityB();
-
+		function update(obj,dtPDE,dtBact)
+        
+        avgRhoA =  obj.bacteriaPopAB.bacteriadensityA() .* 0;
+        avgRhoB = avgRhoA;
+            
+        %comment this assertion for improved performance!
+        assert(mod(dtPDE,dtBact) == 0, 'dtBact step must be divisible by dtPDE step.');
+            
+        numBactStep =  dtPDE/dtBact;
+        
+        for i = 1:numBactStep
+            %update bacteria positions
+            obj.bacteriaPopAB.updatefast(obj.AHLField,obj.leucineField,dtBact);
+            %calculate bacteria density
+            rhoA=obj.bacteriaPopAB.bacteriadensityA();
+            rhoB=obj.bacteriaPopAB.bacteriadensityB(); 
+            
+            %compute a smeared trace of bacteria movement.
+            avgRhoA = avgRhoA + rhoA;
+            avgRhoB = avgRhoB + rhoB;            
+        end
+        
+        %do the division necessary for a proper average.
+        avgRhoA = avgRhoA./numBactStep;
+        avgRhoB = avgRhoB./numBactStep;
+        
+                
+        %increment counter (for nearest neighbour checks).
+        counter=obj.counter;
+        counter=counter+1;
+        
+        %record coordinates
+        obj.coordinateAMatrix(:,:,counter)=obj.bacteriaPopAB.coordinatesA();
+        obj.coordinateBMatrix(:,:,counter)=obj.bacteriaPopAB.coordinatesB();
+        
+        %record Rho
+        obj.rhoAArray(:,:,counter)=rhoA;
+        obj.rhoBArray(:,:,counter)=rhoB;
+                   
 		%update AHL field
-		obj.AHLField.update(rhoA,dt);
-
+		obj.AHLField.update(avgRhoA,dtPDE);
 		%update leucine field
-		obj.leucineField.update(rhoA,dt);
+		obj.leucineField.update(avgRhoA,dtPDE);
 
-		%increment counter
-		counter=obj.counter;
-		counter=counter+1;
-
-		%record rho
-		obj.rhoAArray(:,:,counter)=rhoA;
-		obj.rhoBArray(:,:,counter)=rhoB;
-		%record coordinates
-		obj.coordinateAMatrix(:,:,counter)=obj.bacteriaPopAB.coordinatesA();
-		obj.coordinateBMatrix(:,:,counter)=obj.bacteriaPopAB.coordinatesB();
 		%record AHL field
 		obj.AHLArray(:,:,counter)=obj.AHLField.getconcentration();
 		%record leucine field

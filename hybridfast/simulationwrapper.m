@@ -87,17 +87,18 @@ for simulationCounter=1:numSimulation
 
 	filename='periodic_test';
 
-	list=ls([filename '*_data.mat']);
-	[k,~]=size(list);
+%	list=ls([filename '*_data.mat']);
+%	[k,~]=size(list);
 
-	filename=[filename num2str(simulationCounter+k)];
+%	filename=[filename num2str(simulationCounter+k)];
 
 	%% Simulation parameters
-	dt=0.1;				%time step
-	tend=3;			%end time of simulation
+	dtPDE=0.1;       %time step PDE
+    dtBact = 0.025;   %time step Bact
+	tend=6;			 %end time of simulation
 	%tend=1;			%end time of simulation
 	%tend=30;			%end time of simulation
-	N=tend/dt;			%time steps
+	N=tend/dtPDE;			%time steps
 	%N=200;				%time steps
 	%nBacteriaA=1000;	%number of bacteria A
 	%nBacteriaA=300;		%number of bacteria A
@@ -144,13 +145,13 @@ for simulationCounter=1:numSimulation
 	alpha=1e-3;		%nmol/h
 	%beta=5.4199e-4;		%nmol/h
 	beta=2e-3;		%nmol/h
-	kAHL=5e-1;			%1/h
-	kleucine=3e-1;		%1/h
+	kAHL=2e-1;			%1/h
+	kleucine=1e-1;		%1/h
 	DAHL=1/30;			%cm^2/h
 	Dleucine=1/20;	%um^2/h
 
 	runsimulation(filename,simulationCounter,poolsize,...
-		dt,tend,nBacteriaA,nBacteriaB,initialpattern,...
+		dtPDE,dtBact,tend,nBacteriaA,nBacteriaB,initialpattern,...
 		XLength,YLength,Jx,Jy,...
 		bandwidth,...
 		kappa,r0,k1,k2,k3,gamma,modulo,...

@@ -27,7 +27,7 @@ classdef fileanalyzer < handle
 		mFile=matfile([filename '_data.mat']);
 		
 		%number of frames
-		obj.nFrames=round(mFile.tend/mFile.dt)+1;
+		obj.nFrames=round(mFile.tend/mFile.dtPDE)+1;
 
 		%domain
 		Jx=mFile.Jx;

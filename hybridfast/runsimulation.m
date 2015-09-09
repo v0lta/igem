@@ -1,5 +1,5 @@
 function runsimulation(filename,simulationCounter,poolsize,...
-	dt,tend,nBacteriaA,nBacteriaB,initialpattern,...
+	dtPDE,dtBact,tend,nBacteriaA,nBacteriaB,initialpattern,...
 	XLength,YLength,Jx,Jy,...
 	bandwidth,...
 	kappa,r0,k1,k2,k3,gamma,modulo,...
@@ -10,7 +10,8 @@ function runsimulation(filename,simulationCounter,poolsize,...
 	%convert str to numeric values
 	if (ischar(simulationCounter)), simulationCounter=str2num(simulationCounter);end;
 	if (ischar(poolsize)), poolsize=str2num(poolsize);end;
-	if (ischar(dt)), dt=str2num(dt);end;
+	if (ischar(dtPDE)), dtPDE=str2num(dtPDE);end;
+    if (ischar(dtBact)), dtPDE=str2num(dtBact);end;
 	if (ischar(tend)), tend=str2num(tend);end;
 	if (ischar(nBacteriaA)), nBacteriaA=str2num(nBacteriaA);end;
 	if (ischar(nBacteriaB)), nBacteriaB=str2num(nBacteriaB);end;
@@ -42,7 +43,7 @@ function runsimulation(filename,simulationCounter,poolsize,...
 	disp('Saving parameters in matlab file');
 	t2=tic;
 	save([filename '_data.mat'],'-v7.3',...
-		'dt',...
+		'dtPDE',...
 		'tend',...
 		'nBacteriaA',...
 		'nBacteriaB',...
@@ -86,7 +87,7 @@ function runsimulation(filename,simulationCounter,poolsize,...
 	end
 
 	%% process simulation parameters
-	N=tend/dt;			%time steps
+	N=tend/dtPDE;			%time steps
 
 	%% process domain
 	domain.x=linspace(0,XLength,Jx);
@@ -218,6 +219,7 @@ function runsimulation(filename,simulationCounter,poolsize,...
 	%uniform
 	%AHLconcentration=zeros(m,n)+1e-5;
 	AHLconcentration=ones(m,n)*1e-5;
+    %AHLconcentration(end-10:end,end-10:end) = 10;
 
 	%boundary conditions
 	west=AHLconcentration(:,1);
@@ -240,6 +242,7 @@ function runsimulation(filename,simulationCounter,poolsize,...
 
 	%uniform
 	leucineconcentration=ones(m,n)*1e-5;
+    %leucineconcentration(end-10:end,end-10:end) = 10;
 
 	%boundary conditions
 	west=leucineconcentration(:,1);
@@ -281,7 +284,7 @@ function runsimulation(filename,simulationCounter,poolsize,...
 			disp(datestr(now));
 			disp(['Current iteration: ' num2str(i) '/' num2str(N)]);
 		end
-		model.update(dt);
+		model.update(dtPDE,dtBact);
 		%if mod(i,1)==0
 		%if mod(i,N/10)==0 || i==10
 		if mod(i,N/10)==0

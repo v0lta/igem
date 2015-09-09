@@ -13,9 +13,9 @@ previewOrSave='save';
 %filename='revert_test';
 filename='periodic_test';
 
-list=ls([filename '*_data.mat']);
-[k,~]=size(list);
-filename=[filename num2str(k)];
+%list=ls([filename '*_data.mat']);
+%[k,~]=size(list);
+%filename=[filename num2str(k)];
 
 %filename='revert_test';
 
