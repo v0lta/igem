@@ -85,17 +85,16 @@ numSimulation=1;
 for simulationCounter=1:numSimulation
 	poolsize=4;
 
-	filename='periodic_test';
+	filename='periodic_field_test';
 
-%	list=ls([filename '*_data.mat']);
-%	[k,~]=size(list);
-
-%	filename=[filename num2str(simulationCounter+k)];
+	list=ls([filename '*_data.mat']);
+	[k,~]=size(list);
+	filename=[filename num2str(simulationCounter+k)];
 
 	%% Simulation parameters
-	dtPDE=0.1;       %time step PDE
-    dtBact = 0.025;   %time step Bact
-	tend=6;			 %end time of simulation
+	dtPDE=1;       %time step PDE
+    dtBact = 1;   %time step Bact
+	tend=10;			 %end time of simulation
 	%tend=1;			%end time of simulation
 	%tend=30;			%end time of simulation
 	N=tend/dtPDE;			%time steps
@@ -103,14 +102,15 @@ for simulationCounter=1:numSimulation
 	%nBacteriaA=1000;	%number of bacteria A
 	%nBacteriaA=300;		%number of bacteria A
 	%nBacteriaA=0;		%number of bacteria A
-	nBacteriaA=1;		%number of bacteria A
+	nBacteriaA=100;		%number of bacteria A
 	%nBacteriaB=1000;	%number of bacteria B
 	%nBacteriaB=300;		%number of bacteria B
 	%nBacteriaB=0;		%number of bacteria B
 	nBacteriaB=1;		%number of bacteria B
 	%initialpattern='gaussian';
 	%initialpattern='uniform_random';
-	initialpattern='spot';
+	%initialpattern='spot';
+	initialpattern='corner_spot';
 
 	%% define domain
 	XLength=10;			%Length of domain um
@@ -147,6 +147,8 @@ for simulationCounter=1:numSimulation
 	beta=2e-3;		%nmol/h
 	kAHL=2e-1;			%1/h
 	kleucine=1e-1;		%1/h
+	%kAHL=0;			%1/h
+	%kleucine=0;		%1/h
 	DAHL=1/30;			%cm^2/h
 	Dleucine=1/20;	%um^2/h
 
@@ -157,5 +159,7 @@ for simulationCounter=1:numSimulation
 		kappa,r0,k1,k2,k3,gamma,modulo,...
 		muHighA,muLowA,muHighB,muLowB,VthA,VthB,...
 		alpha,beta,kAHL,kleucine,DAHL,Dleucine);
+
+	beep on;beep;beep off;
 end
 

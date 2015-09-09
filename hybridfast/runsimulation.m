@@ -134,8 +134,11 @@ function runsimulation(filename,simulationCounter,poolsize,...
 	bacteriaA=zeros(nBacteriaA,2);
 
 	switch initialpattern
-	case 'spot'
+	case 'center_spot'
 		bacteriaA=[ones(nBacteriaA,1)*XLength*1/2,ones(nBacteriaA,1)*YLength/2];
+	case 'corner_spot'
+		%bacteriaA=[ones(nBacteriaA,1)*XLength,ones(nBacteriaA,1)*YLength];
+		bacteriaA=[ones(nBacteriaA,1)*XLength-3,ones(nBacteriaA,1)*YLength-3];
 	case 'gaussian'
 		bacteriaA=[normrnd(1/2*XLength,1,nBacteriaA,1),normrnd(1/2*YLength,1,nBacteriaA,1)];
 		parfor i=1:nBacteriaA
@@ -305,8 +308,6 @@ function runsimulation(filename,simulationCounter,poolsize,...
 			disp([timeString3 ' total time']);
 		end
 	end
-
-	beep on;beep;beep off;
 
 	disp('Simulation finished');
 	toc(t1);

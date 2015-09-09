@@ -82,8 +82,12 @@ classdef modelfast1 < handle
 
 		function update(obj,dtPDE,dtBact)
         
-        avgRhoA =  obj.bacteriaPopAB.bacteriadensityA() .* 0;
-        avgRhoB = avgRhoA;
+		domain=obj.domain;
+		Jx = numel(domain.x);
+		Jy = numel(domain.y);
+
+        avgRhoA = zeros(Jy,Jx);
+        avgRhoB = zeros(Jy,Jx);
             
         %comment this assertion for improved performance!
         assert(mod(dtPDE,dtBact) == 0, 'dtBact step must be divisible by dtPDE step.');
@@ -107,7 +111,7 @@ classdef modelfast1 < handle
         avgRhoB = avgRhoB./numBactStep;
         
                 
-        %increment counter (for nearest neighbour checks).
+        %increment counter (for saving data).
         counter=obj.counter;
         counter=counter+1;
         

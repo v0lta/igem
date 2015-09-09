@@ -167,36 +167,44 @@ classdef leucine<handle
             %constant and consumption rate and timestep.
             L = obj.concentration;
             k2 = obj.k2;
+			domain=obj.domain;
+			Dleucine=obj.Dleucine;
+			beta=obj.beta;
+			Jx=obj.Jx;
+			Jy=obj.Jy;
             
-            dx = obj.domain.x(2) - obj.domain.x(1);
-		    dy = obj.domain.y(2) - obj.domain.y(1);
+            dx = domain.x(2) - domain.x(1);
+		    dy = domain.y(2) - domain.y(1);
            
-            muX = obj.Dleucine*dt/dx^2;
-		    muY = obj.Dleucine*dt/dy^2;
+            muX = Dleucine*dt/dx^2;
+		    muY = Dleucine*dt/dy^2;
 
             %% Define step matrices:
-            xStepRight = toeplitz([(1 - muX - 0.25*k2) 0.5*muX zeros(1,obj.Jx-2)],...
-                 [(1 - muX - 0.25*k2) 0.5*muX zeros(1,obj.Jx-2)]);
-            yStepRight = toeplitz([(1 - muY - 0.25*k2) 0.5*muY zeros(1,obj.Jy-2)],...
-                 [(1 - muY - 0.25*k2 ) 0.5*muY zeros(1,obj.Jy-2)]);
-            xStepLeft  = toeplitz([(1 + muX + 0.25*k2) -0.5*muX zeros(1,obj.Jx-2)],...
-                 [(1 + muX + 0.25*k2) -0.5*muX zeros(1,obj.Jx-2)]);
-            yStepLeft  = toeplitz([(1 + muY + 0.25*k2) -0.5*muY zeros(1,obj.Jy-2)],...
-                 [(1 + muY + 0.25*k2) -0.5*muY zeros(1,obj.Jy-2)]);
+            xStepRight = toeplitz([(1 - muX - 0.25*k2) 0.5*muX zeros(1,Jx-2)],...
+                 [(1 - muX - 0.25*k2) 0.5*muX zeros(1,Jx-2)]);
+            yStepRight = toeplitz([(1 - muY - 0.25*k2) 0.5*muY zeros(1,Jy-2)],...
+                 [(1 - muY - 0.25*k2 ) 0.5*muY zeros(1,Jy-2)]);
+            xStepLeft  = toeplitz([(1 + muX + 0.25*k2) -0.5*muX zeros(1,Jx-2)],...
+                 [(1 + muX + 0.25*k2) -0.5*muX zeros(1,Jx-2)]);
+            yStepLeft  = toeplitz([(1 + muY + 0.25*k2) -0.5*muY zeros(1,Jy-2)],...
+                 [(1 + muY + 0.25*k2) -0.5*muY zeros(1,Jy-2)]);
 
             %periodic boundary conditions:
-            xStepRight(1,obj.Jx) = 0.5*muX;  xStepRight(end,1) = 0.5*muX;
-            yStepRight(1,obj.Jy) = 0.5*muY;  yStepRight(end,1) = 0.5*muY;
-            xStepLeft(1,obj.Jx)  = -0.5*muX; xStepLeft(end,1) = -0.5*muX;
-            yStepLeft(1,obj.Jy)  = -0.5*muY; yStepLeft(end,1) = -0.5*muY;
+            xStepRight(1,Jx) = 0.5*muX;  xStepRight(end,1) = 0.5*muX;
+            yStepRight(1,Jy) = 0.5*muY;  yStepRight(end,1) = 0.5*muY;
+            xStepLeft(1,Jx)  = -0.5*muX; xStepLeft(end,1) = -0.5*muX;
+            yStepLeft(1,Jy)  = -0.5*muY; yStepLeft(end,1) = -0.5*muY;
            
-            Hhalf = xStepLeft\(yStepRight*L) + dt/2*obj.beta*rhoANew;
-            L = (xStepRight*Hhalf)/yStepLeft + dt/2*obj.beta*rhoANew;
+            %Hhalf = xStepLeft\(yStepRight*L) + dt/2*beta*rhoANew;
+            %L = (xStepRight*Hhalf)/yStepLeft + dt/2*beta*rhoANew;
+
+            Hhalf = xStepLeft\(yStepRight*L + dt/2*beta*rhoANew)';
+            L = yStepLeft\((xStepRight*Hhalf)' + dt/2*beta*rhoANew);
             
             obj.concentration = L;
             
         end  
-                
+
 		function updatedirichlet(obj,rhoANew,dt)
 		%Update concentration based on bacterial density, diffusion constant,
 	   	%and consumption rate and timestep
@@ -307,11 +315,11 @@ classdef leucine<handle
 		RHS1=RHS1+dt/2*beta*rhoANew;
 
 		%calculate concentration at half timestep
-		A=(MLHSx\RHS1')';
+		A=(MLHSx\RHS1');
 
 		%Second half step
 		%Calculate RHS 2
-		RHS2=(MRHSx*A')';
+		RHS2=(MRHSx*A)';
 		RHS2=RHS2+dt/2*beta*rhoANew;
 
 		%calculate concentration at full timestep
@@ -332,7 +340,7 @@ classdef leucine<handle
 
 		%Zero flux boundary conditions
 		%obj.updatezeroflux(rhoANew,dt);
-        
+
         %Periodic boundary conditions:
         obj.updateperiodic(rhoANew,dt);
 

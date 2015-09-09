@@ -40,21 +40,18 @@ function runanalysis(previewOrSave,filename,framerate,scaling)
 		analObject.makevideo(filename);
 		disp('Videos saved');
 		toc(t2);
-		beep on;beep;beep off;
 	case '2D'
 		disp('Saving 2D video');
 		t2=tic;
 		analObject.make2Dvideo(filename);
 		disp('Video saved');
 		toc(t2);
-		beep on;beep;beep off;
 	case '3D'
 		disp('Saving 3D video');
 		t2=tic;
 		analObject.make3Dvideo(filename);
 		disp('Video saved');
 		toc(t2);
-		beep on;beep;beep off;
 	otherwise
 		warning('Unknown setting, defaulting to preview');
 		disp('Preview of simulation');

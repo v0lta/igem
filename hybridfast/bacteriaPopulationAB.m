@@ -960,8 +960,10 @@ classdef bacteriaPopulationAB < handle
 		celldx=0;
 		celldy=0;
 
-		vx=10;
-		vy=10;
+		vx=1;
+		vy=1;
+		%vx=0;
+		%vy=0;
 		testx=vx*dt;
 		testy=vy*dt;
 
