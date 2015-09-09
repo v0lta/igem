@@ -638,6 +638,7 @@ classdef bacteriaPopulationAB < handle
 
 		domain=obj.domain;
 			function interpolatedValue=interpol(field,coordinateVector)
+				%disp(['# of zeros in field: ' num2str(sum(sum(field==0)))]);
 				xCoordinate=coordinateVector(1);
 				yCoordinate=coordinateVector(2);
 				m=length(domain.y);
@@ -650,16 +651,24 @@ classdef bacteriaPopulationAB < handle
 				yDiff=yCoordinate-domain.y(1);
 				iDiff=yDiff/dy;
 				i=floor(iDiff)+1;
+				iplus=i+1;
 				if i==m
-					i=m-1;
+					%zero flux boundary condition
+					%i=m-1;
+					%periodic boundary condition
+					iplus=1;
 				end
 
 				%search for j
 				xDiff=xCoordinate-domain.x(1);
 				jDiff=xDiff/dx;
 				j=floor(jDiff)+1;
+				jplus=j+1;
 				if j==n
-					j=n-1;
+					%zero flux boundary condition
+					%j=n-1;
+					%periodic boundary condition
+					jplus=1;
 				end
 
 				%delta x and delta y
@@ -668,9 +677,17 @@ classdef bacteriaPopulationAB < handle
 				sigmaY=1-deltaY;
 				sigmaX=1-deltaX;
 
+				%disp(['i: ' num2str(i)]);
+				%disp(['j: ' num2str(j)]);
+				%disp(['i+1: ' num2str(i+1)]);
+				%disp(['j+1): ' num2str(j+1)]);
+				%disp(['field(i,j): ' num2str(field(i,j))]);
+				%disp(['field(i+1,j): ' num2str(field(i+1,j))]);
+				%disp(['field(i,j+1): ' num2str(field(i,j+1))]);
+				%disp(['field(i+1,j+1): ' num2str(field(i+1,j+1))]);
 				interpolatedValue=1/(dx*dy)*(sigmaX*sigmaY*field(i,j)+...
-					sigmaY*deltaX*field(i,j+1)+sigmaX*deltaY*field(i+1,j)+...
-					deltaX*deltaY*field(i+1,j+1));
+					sigmaY*deltaX*field(i,jplus)+sigmaX*deltaY*field(iplus,j)+...
+					deltaX*deltaY*field(iplus,jplus));
 			end
 		f=@interpol;
 
@@ -737,16 +754,24 @@ classdef bacteriaPopulationAB < handle
 				yDiff=yCoordinate-domain.y(1);
 				iDiff=yDiff/dy;
 				i=floor(iDiff)+1;
+				iplus=i+1;
 				if i==m
-					i=m-1;
+					%zero flux boundary condition
+					%i=m-1;
+					%periodic boundary condition
+					iplus=1;
 				end
 
 				%search for j
 				xDiff=xCoordinate-domain.x(1);
 				jDiff=xDiff/dx;
 				j=floor(jDiff)+1;
+				jplus=j+1;
 				if j==n
-					j=n-1;
+					%zero flux boundary condition
+					%j=n-1;
+					%periodic boundary condition
+					jplus=1;
 				end
 
 				%delta x and delta y
@@ -764,8 +789,8 @@ classdef bacteriaPopulationAB < handle
 				%disp(['field(i,j+1): ' num2str(field(i,j+1))]);
 				%disp(['field(i+1,j+1): ' num2str(field(i+1,j+1))]);
 				interpolatedValue=1/(dx*dy)*(sigmaX*sigmaY*field(i,j)+...
-					sigmaY*deltaX*field(i,j+1)+sigmaX*deltaY*field(i+1,j)+...
-					deltaX*deltaY*field(i+1,j+1));
+					sigmaY*deltaX*field(i,jplus)+sigmaX*deltaY*field(iplus,j)+...
+					deltaX*deltaY*field(iplus,jplus));
 			end
 		f=@interpol;
 
@@ -834,10 +859,13 @@ classdef bacteriaPopulationAB < handle
 
 		%parallel or serial?
 		%parfor i=1:N
-		for i=1:N
-			randdx(i)=sqrt(2*currentMuArray(i)*dt)*normrnd(0,1);
-			randdy(i)=sqrt(2*currentMuArray(i)*dt)*normrnd(0,1);
-		end
+		%for i=1:N
+		%	randdx(i)=sqrt(2*currentMuArray(i)*dt)*normrnd(0,1);
+		%	randdy(i)=sqrt(2*currentMuArray(i)*dt)*normrnd(0,1);
+		%end
+
+		randdx=sqrt(2*currentMuArray*dt).*normrnd(0,1,N,1);
+		randdy=sqrt(2*currentMuArray*dt).*normrnd(0,1,N,1);
 		end
 		
 		function [celldx,celldy]=calculatecell(obj,dt)
@@ -950,22 +978,23 @@ classdef bacteriaPopulationAB < handle
 		currentMuArray=obj.determinemu(AHLField);
 
 		%calculate displacement due to chemotaxis, neighboring cell interactions and brownian motion
-		%[chemodx,chemody]=calculatechemo(obj,leucineField,currentMuArray,dt);
-		chemodx=0;
-		chemody=0;
-		%[randdx,randdy]=calculaterand(obj,currentMuArray,dt);
-		randdx=0;
-		randdy=0;
-		%[celldx,celldy]=calculatecell(obj,dt);
-		celldx=0;
-		celldy=0;
+		[chemodx,chemody]=calculatechemo(obj,leucineField,currentMuArray,dt);
+		%chemodx=0;
+		%chemody=0;
+		[randdx,randdy]=calculaterand(obj,currentMuArray,dt);
+		%randdx=0;
+		%randdy=0;
+		[celldx,celldy]=calculatecell(obj,dt);
+		%celldx=0;
+		%celldy=0;
 
-		vx=1;
-		vy=1;
+		%test periodic boundary conditions
+		%vx=1;
+		%vy=0;
 		%vx=0;
 		%vy=0;
-		testx=vx*dt;
-		testy=vy*dt;
+		%testx=vx*dt;
+		%testy=vy*dt;
 
 		%disp(['# of NaN numbers in chemodx: ' num2str(sum(isnan(chemodx)))]);
 		%disp(['# of NaN numbers in chemody: ' num2str(sum(isnan(chemody)))]);

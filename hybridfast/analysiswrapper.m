@@ -11,13 +11,15 @@ previewOrSave='save';
 %filename='speedupshort1';
 %filename='toyfull';
 %filename='revert_test';
-filename='periodic_field_test';
+%filename='periodic_field_test';
+filename='decoupled_timesteps_test';
 
 list=ls([filename '*_data.mat']);
 [k,~]=size(list);
 filename=[filename num2str(k)];
 
 %filename='revert_test';
+filename='averaging_test2';
 
 %framerate=25;
 framerate=2;

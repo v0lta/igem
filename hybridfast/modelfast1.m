@@ -109,7 +109,6 @@ classdef modelfast1 < handle
         %do the division necessary for a proper average.
         avgRhoA = avgRhoA./numBactStep;
         avgRhoB = avgRhoB./numBactStep;
-        
                 
         %increment counter (for saving data).
         counter=obj.counter;
