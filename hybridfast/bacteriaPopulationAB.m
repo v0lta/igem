@@ -717,23 +717,28 @@ classdef bacteriaPopulationAB < handle
 
 		%parallel or serial?
 		%parfor i=1:N
-		for i=1:N
-			%bacteria A
-			if i<=numA
-				if AHL(i)>VthA
-					currentMuArray(i)=muA.low;
-				else
-					currentMuArray(i)=muA.high;
-				end
-			%bacteria B
-			else
-				if AHL(i)<VthB
-					currentMuArray(i)=muB.low;
-				else
-					currentMuArray(i)=muB.high;
-				end
-			end
-		end
+		%for i=1:N
+		%	%bacteria A
+		%	if i<=numA
+		%		if AHL(i)>VthA
+		%			currentMuArray(i)=muA.low;
+		%		else
+		%			currentMuArray(i)=muA.high;
+		%		end
+		%	%bacteria B
+		%	else
+		%		if AHL(i)<VthB
+		%			currentMuArray(i)=muB.low;
+		%		else
+		%			currentMuArray(i)=muB.high;
+		%		end
+		%	end
+		%end
+
+		%alternative
+		currentMuAArray=(AHL(1:numA)>VthA)*muA.low+(AHL(1:numA)<=VthA)*muA.high;
+		currentMuBArray=(AHL(numA+1:end)<VthB)*muB.low+(AHL(numA+1:end)>=VthB)*muB.high;
+		currentMuArrayAlt=[currentMuAArray;currentMuBArray];
 		end
 
 		function [chemodx,chemody]=calculatechemo(obj,leucineField,currentMuArray,dt)
@@ -864,6 +869,7 @@ classdef bacteriaPopulationAB < handle
 		%	randdy(i)=sqrt(2*currentMuArray(i)*dt)*normrnd(0,1);
 		%end
 
+		%faster?
 		randdx=sqrt(2*currentMuArray*dt).*normrnd(0,1,N,1);
 		randdy=sqrt(2*currentMuArray*dt).*normrnd(0,1,N,1);
 		end
@@ -1006,8 +1012,8 @@ classdef bacteriaPopulationAB < handle
 		newBactX=obj.bactX+chemodx+randdx+celldx;
 		newBactY=obj.bactY+chemody+randdy+celldy;
 
-		newBactX=obj.bactX+testx;
-		newBactY=obj.bactY+testy;
+		%newBactX=obj.bactX+testx;
+		%newBactY=obj.bactY+testy;
 
 		%correct for going out of boundary
 		N=obj.numA+obj.numB;
