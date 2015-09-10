@@ -103,11 +103,11 @@ for simulationCounter=1:numSimulation
 	%nBacteriaA=1000;	%number of bacteria A
 	%nBacteriaA=300;		%number of bacteria A
 	%nBacteriaA=0;		%number of bacteria A
-	nBacteriaA=100;		%number of bacteria A
+	nBacteriaA=1000;		%number of bacteria A
 	%nBacteriaB=1000;	%number of bacteria B
 	%nBacteriaB=300;		%number of bacteria B
 	%nBacteriaB=0;		%number of bacteria B
-	nBacteriaB=100;		%number of bacteria B
+	nBacteriaB=1000;		%number of bacteria B
 	%initialpattern='gaussian';
 	%initialpattern='uniform_random';
 	%initialpattern='spot';
@@ -116,8 +116,8 @@ for simulationCounter=1:numSimulation
 
 	%% define domain
 	%square
-	XLength=1;			%Length of domain um
-	YLength=1;			%Length of domain um
+	XLength=10;			%Length of domain um
+	YLength=10;			%Length of domain um
 	Jx=101;				%# of subdivisions
 	Jy=101;				%# of subdivisions
 
@@ -142,10 +142,10 @@ for simulationCounter=1:numSimulation
 	%gamma=2.62e-8;	%mN*h/cm
 	gamma=60;	%mN*h/um
 	modulo=10;		%#
-	muHighA=1/30;	%high diffusion constant of bacteria A um^2/h
-	muLowA=1/300;			%low diffusion constant of bacteria A
-	muHighB=1/30;	%high diffusion constant of bacteria B um^2/h
-	muLowB=1/300;	%low diffusion constant of bacteria B
+	%muHighA=1/30;	%high diffusion constant of bacteria A um^2/h
+	%muLowA=1/300;			%low diffusion constant of bacteria A
+	%muHighB=1/30;	%high diffusion constant of bacteria B um^2/h
+	%muLowB=1/300;	%low diffusion constant of bacteria B
 	VthA=0.2;
 	VthB=0.1;
 

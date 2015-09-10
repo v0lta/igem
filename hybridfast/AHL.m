@@ -65,10 +65,16 @@ classdef AHL<handle
 		idx=2:numX-1;
 		%inner values
 		xGradientInner=(concentration(:,idx+1)-concentration(:,idx-1))/(2*dx);
+		%%nonperiodic
+		%%left boundary
+		%xGradientLeft=(concentration(:,2)-concentration(:,1))/dx;
+		%%right boundary
+		%xGradientRight=(concentration(:,numX)-concentration(:,numX-1))/dx;
+		%periodic
 		%left boundary
-		xGradientLeft=(concentration(:,2)-concentration(:,1))/dx;
+		xGradientLeft=(concentration(:,2)-concentration(:,numX))/(2*dx);
 		%right boundary
-		xGradientRight=(concentration(:,numX)-concentration(:,numX-1))/dx;
+		xGradientRight=(concentration(:,1)-concentration(:,numX-1))/(2*dx);
 
 		%combine
 		xGradient=[xGradientLeft xGradientInner xGradientRight];
@@ -77,10 +83,16 @@ classdef AHL<handle
 		idy=2:numY-1;
 		%inner values
 		yGradientInner=(concentration(idy+1,:)-concentration(idy-1,:))/(2*dy);
+		%%nonperiodic
+		%%upper boundary
+		%yGradientUpper=(concentration(2,:)-concentration(1,:))/dy;
+		%%lower boundary
+		%yGradientLower=(concentration(numY,:)-concentration(numY-1,:))/dy;
+		%periodic
 		%upper boundary
-		yGradientUpper=(concentration(2,:)-concentration(1,:))/dy;
+		yGradientUpper=(concentration(2,:)-concentration(numY,:))/(2*dy);
 		%lower boundary
-		yGradientLower=(concentration(numY,:)-concentration(numY-1,:))/dy;
+		yGradientLower=(concentration(1,:)-concentration(numY-1,:))/(2*dy);
 
 		%combine
 		yGradient=[yGradientUpper;yGradientInner;yGradientLower];

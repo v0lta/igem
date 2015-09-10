@@ -427,7 +427,6 @@ classdef bacteriaPopulationAB < handle
 		%determine starting and ending index of cell ids
 		limitIndices=zeros(n,2);
 
-		%custom method
 		limitIndices(1,1)=1;
 		lastLimitNumber=1;
 		lastCellid=uniqueCellidArray(1);
@@ -446,14 +445,6 @@ classdef bacteriaPopulationAB < handle
 
 		limitIndices(n,2)=N;
 
-		%vectorized method
-		%for i=1:n
-		%	currentCellid=uniqueCellidArray(i);
-		%	foo=find(cellidArraySorted==currentCellid);
-		%	limitIndices(i,1)=min(foo);
-		%	limitIndices(i,2)=max(foo);
-		%end
-
 		%initialize neighbor list
 		bactNb=cell(N,1);
 		%periodic
@@ -470,7 +461,7 @@ classdef bacteriaPopulationAB < handle
 			indexArray=[];
 			currentCellid=cellidArraySorted(i);
 
-			%custom method
+			%keep track of current cellid number
 			if lastCellid~=currentCellid
 				lastCellidNumber=lastCellidNumber+1;
 				lastCellid=currentCellid;
@@ -481,9 +472,6 @@ classdef bacteriaPopulationAB < handle
 				%	warning('Error in cell algorithm');
 				%end
 			end
-
-			%vectorized method
-			%currentCellidNumber=find(uniqueCellidArray==currentCellid);
 
 			%add current cell potential neighbors
 			endCurrentCellIndex=limitIndices(currentCellidNumber,2);
@@ -499,44 +487,21 @@ classdef bacteriaPopulationAB < handle
 
 			lastOtherCellidNumber=currentCellidNumber+1;
 
-			%vectorized method
-			%otherCellidArray=[currentCellid+1 currentCellid+Kx-1 currentCellid+Kx currentCellid+Kx+1];
-
 			for otherCellid=otherCellidArray
-				%custom method
-				%lastOtherCellidNumber
 				while lastOtherCellidNumber<n && otherCellid>uniqueCellidArray(lastOtherCellidNumber)
 					lastOtherCellidNumber=lastOtherCellidNumber+1;
 				end
-				%lastOtherCellidNumber
-				%disp('post loop');
 
 				if otherCellid==uniqueCellidArray(lastOtherCellidNumber)
 					cellidNumber=lastOtherCellidNumber;
-				else
-					cellidNumber=0;
-				end
-
-				%cellidNumber
-
-				if cellidNumber	%if cell with cellid cellidNumber contains bacteria
 					startCellIndex=limitIndices(cellidNumber,1);
 					endCellIndex=limitIndices(cellidNumber,2);
 
 					indexArray=[indexArray startCellIndex:endCellIndex];
 				end
-
-				%vectorized method
-				%cellidNumber=find(uniqueCellidArray==otherCellid);
-
-				%startCellIndex=limitIndices(cellidNumber,1);
-				%endCellIndex=limitIndices(cellidNumber,2);
-
-				%indexArray=[indexArray startCellIndex:endCellIndex];
 			end
 
 			%inner loop over potential neighbors
-			%indexArray
 			for otherIndex=indexArray
 				currentIndex=i;
 				otherIndex=otherIndex;
@@ -562,210 +527,239 @@ classdef bacteriaPopulationAB < handle
 			end
 
 			%%% -- PERIODIC BOUNDARY CONDITIONS -- %%
-			%%left-right neighbors
-			%if mod(currentCellid-1,Kx)==0		%left edge
-			%	virtType=1;
+			%%left edge neighbors
+			if mod(currentCellid-1,Kx)==0		%left edge
+				virtType=1;
 
-			%	otherCellidArray=[currentCellid+Kx-1,currentCellid+2*Kx-1];
+				otherCellidArray=[currentCellid+Kx-2,...
+					currentCellid+Kx-1,...
+					currentCellid+2*Kx-2,...
+					currentCellid+2*Kx-1];
 
-			%	lastOtherCellidNumber=currentCellidNumber+1;
+				lastOtherCellidNumber=currentCellidNumber+1;
 
-			%	for otherCellid=otherCellidArray
-			%		while lastOtherCellidNumber<n && otherCellid<uniqueCellidArray(lastOtherCellidNumber)
-			%			lastOtherCellidNumber=lastOtherCellidNumber+1;
-			%		end
-			%		%disp('post loop');
+				for otherCellid=otherCellidArray
+					while lastOtherCellidNumber<n && otherCellid>uniqueCellidArray(lastOtherCellidNumber)
+						lastOtherCellidNumber=lastOtherCellidNumber+1;
+					end
 
-			%		if otherCellid==uniqueCellidArray(lastOtherCellidNumber)
-			%			cellidNumber=lastOtherCellidNumber;
-			%			startCellIndex=limitIndices(cellidNumber,1);
-			%			endCellIndex=limitIndices(cellidNumber,2);
+					if otherCellid==uniqueCellidArray(lastOtherCellidNumber)
+						cellidNumber=lastOtherCellidNumber;
+						startCellIndex=limitIndices(cellidNumber,1);
+						endCellIndex=limitIndices(cellidNumber,2);
 
-			%			indexArray=[indexArray startCellIndex:endCellIndex];
-			%		end
-			%	end
+						indexArray=[indexArray startCellIndex:endCellIndex];
+					end
+				end
 
-			%	%inner loop over potential neighbors
-			%	for otherIndex=indexArray
-			%		currentIndex=i;
-			%		otherIndex=otherIndex;
+				%inner loop over potential neighbors
+				for otherIndex=indexArray
+					currentIndex=i;
+					otherIndex=otherIndex;
 
-			%		currentX=sortedBactX(currentIndex);
-			%		currentY=sortedBactY(currentIndex);
+					currentX=sortedBactX(currentIndex);
+					currentY=sortedBactY(currentIndex);
 
-			%		otherX=sortedBactX(otherIndex)-XLength-dx;
-			%		otherY=sortedBactY(otherIndex);
+					otherX=sortedBactX(otherIndex);
+					otherY=sortedBactY(otherIndex);
 
-			%		rsquare=(currentX-otherX)^2+(currentY-otherY)^2;
+					otherX=otherX-XLength-dx;
+					otherY=otherY;
 
-			%		if rsquare<rsearch2
-			%			r=sqrt(rsquare);
+					rsquare=(currentX-otherX)^2+(currentY-otherY)^2;
 
-			%			%convert sorted index to index of actual list
-			%			currentIndex=sortedIndices(currentIndex);
-			%			otherIndex=sortedIndices(otherIndex);
+					currentX=currentX+XLength+dx;
+					currentY=currentY;
 
-			%			virtBactNb{currentIndex}=[virtBactNb{currentIndex},...
-			%				[virtType;otherIndex;otherX;otherY;r]];
-			%			virtBactNb{otherIndex}=[virtBactNb{otherIndex},...
-			%				[virtType;currentIndex;currentX+XLength+dx;currentY;r]];
-			%		end
-			%	end
-			%end
-			%
-			%%top-bottom neighbors
-			%if currentCellid<=Kx
-			%	virtType=2;
+					if rsquare<rsearch2
+						r=sqrt(rsquare);
 
-			%	otherCellidArray=[currentCellid+Kx*(Ky-1),currentCellid+Kx*(Ky-1)+1];
+						%convert sorted index to index of actual list
+						currentIndex=sortedIndices(currentIndex);
+						otherIndex=sortedIndices(otherIndex);
 
-			%	lastOtherCellidNumber=currentCellidNumber+1;
+						virtBactNb{currentIndex}=[virtBactNb{currentIndex},...
+							[virtType;otherIndex;otherX;otherY;r]];
+						virtBactNb{otherIndex}=[virtBactNb{otherIndex},...
+							[virtType+1;currentIndex;currentX;currentY;r]];
+					end
+				end
+			end
+			
+			%%top edge neighbors
+			if currentCellid<=Kx
+				virtType=3;
 
-			%	for otherCellid=otherCellidArray
-			%		while lastOtherCellidNumber<n && otherCellid<uniqueCellidArray(lastOtherCellidNumber)
-			%			lastOtherCellidNumber=lastOtherCellidNumber+1;
-			%		end
-			%		%disp('post loop');
+				otherCellidArray=[currentCellid+(Ky-2)*Kx,...
+					currentCellid+(Ky-2)*Kx+1,...
+					currentCellid+(Ky-1)*Kx,...
+					currentCellid+(Ky-1)*Kx+1];
 
-			%		if otherCellid==uniqueCellidArray(lastOtherCellidNumber)
-			%			cellidNumber=lastOtherCellidNumber;
-			%			startCellIndex=limitIndices(cellidNumber,1);
-			%			endCellIndex=limitIndices(cellidNumber,2);
+				lastOtherCellidNumber=currentCellidNumber+1;
 
-			%			indexArray=[indexArray startCellIndex:endCellIndex];
-			%		end
-			%	end
+				for otherCellid=otherCellidArray
+					while lastOtherCellidNumber<n && otherCellid>uniqueCellidArray(lastOtherCellidNumber)
+						lastOtherCellidNumber=lastOtherCellidNumber+1;
+					end
 
-			%	%inner loop over potential neighbors
-			%	for otherIndex=indexArray
-			%		currentIndex=i;
-			%		otherIndex=otherIndex;
+					if otherCellid==uniqueCellidArray(lastOtherCellidNumber)
+						cellidNumber=lastOtherCellidNumber;
+						startCellIndex=limitIndices(cellidNumber,1);
+						endCellIndex=limitIndices(cellidNumber,2);
 
-			%		currentX=sortedBactX(currentIndex);
-			%		currentY=sortedBactY(currentIndex);
+						indexArray=[indexArray startCellIndex:endCellIndex];
+					end
+				end
 
-			%		otherX=sortedBactX(otherIndex);
-			%		otherY=sortedBactY(otherIndex)-YLength-dy;
+				%inner loop over potential neighbors
+				for otherIndex=indexArray
+					currentIndex=i;
+					otherIndex=otherIndex;
 
-			%		rsquare=(currentX-otherX)^2+(currentY-otherY)^2;
+					currentX=sortedBactX(currentIndex);
+					currentY=sortedBactY(currentIndex);
 
-			%		if rsquare<rsearch2
-			%			r=sqrt(rsquare);
+					otherX=sortedBactX(otherIndex);
+					otherY=sortedBactY(otherIndex);
 
-			%			%convert sorted index to index of actual list
-			%			currentIndex=sortedIndices(currentIndex);
-			%			otherIndex=sortedIndices(otherIndex);
+					otherX=otherX;
+					otherY=otherY-YLength-dy;
 
-			%			virtBactNb{currentIndex}=[virtBactNb{currentIndex},...
-			%				[virtType;otherIndex;otherX;otherY;r]];
-			%			virtBactNb{otherIndex}=[virtBactNb{otherIndex},...
-			%				[virtType;currentIndex;currentX;currentY+YLength+dy;r]];
-			%		end
-			%	end
-			%end
+					rsquare=(currentX-otherX)^2+(currentY-otherY)^2;
 
-			%%bottomleft-topright neighbors
-			%if currentCellid==1
-			%	virtType=3;
+					currentX=currentX;
+					currentY=currentY+YLength+dy;
 
-			%	otherCellidArray=[Kx*Ky];
+					if rsquare<rsearch2
+						r=sqrt(rsquare);
 
-			%	lastOtherCellidNumber=currentCellidNumber+1;
+						%convert sorted index to index of actual list
+						currentIndex=sortedIndices(currentIndex);
+						otherIndex=sortedIndices(otherIndex);
 
-			%	for otherCellid=otherCellidArray
-			%		while lastOtherCellidNumber<n && otherCellid<uniqueCellidArray(lastOtherCellidNumber)
-			%			lastOtherCellidNumber=lastOtherCellidNumber+1;
-			%		end
-			%		%disp('post loop');
+						virtBactNb{currentIndex}=[virtBactNb{currentIndex},...
+							[virtType;otherIndex;otherX;otherY;r]];
+						virtBactNb{otherIndex}=[virtBactNb{otherIndex},...
+							[virtType+1;currentIndex;currentX;currentY;r]];
+					end
+				end
+			end
 
-			%		if otherCellid==uniqueCellidArray(lastOtherCellidNumber)
-			%			cellidNumber=lastOtherCellidNumber;
-			%			startCellIndex=limitIndices(cellidNumber,1);
-			%			endCellIndex=limitIndices(cellidNumber,2);
+			%%topleft neighbors
+			if currentCellid==1
+				virtType=5;
 
-			%			indexArray=[indexArray startCellIndex:endCellIndex];
-			%		end
-			%	end
+				otherCellidArray=[(Ky-1)*Kx-1,...
+					(Ky-1)*Kx,...
+					Ky*Kx-1,...
+					Ky*Kx];
 
-			%	%inner loop over potential neighbors
-			%	for otherIndex=indexArray
-			%		currentIndex=i;
-			%		otherIndex=otherIndex;
+				lastOtherCellidNumber=currentCellidNumber+1;
 
-			%		currentX=sortedBactX(currentIndex);
-			%		currentY=sortedBactY(currentIndex);
+				for otherCellid=otherCellidArray
+					while lastOtherCellidNumber<n && otherCellid>uniqueCellidArray(lastOtherCellidNumber)
+						lastOtherCellidNumber=lastOtherCellidNumber+1;
+					end
 
-			%		otherX=sortedBactX(otherIndex)-XLength-dx;
-			%		otherY=sortedBactY(otherIndex)-YLength-dy;
+					if otherCellid==uniqueCellidArray(lastOtherCellidNumber)
+						cellidNumber=lastOtherCellidNumber;
+						startCellIndex=limitIndices(cellidNumber,1);
+						endCellIndex=limitIndices(cellidNumber,2);
 
-			%		rsquare=(currentX-otherX)^2+(currentY-otherY)^2;
+						indexArray=[indexArray startCellIndex:endCellIndex];
+					end
+				end
 
-			%		if rsquare<rsearch2
-			%			r=sqrt(rsquare);
+				%inner loop over potential neighbors
+				for otherIndex=indexArray
+					currentIndex=i;
+					otherIndex=otherIndex;
 
-			%			%convert sorted index to index of actual list
-			%			currentIndex=sortedIndices(currentIndex);
-			%			otherIndex=sortedIndices(otherIndex);
+					currentX=sortedBactX(currentIndex);
+					currentY=sortedBactY(currentIndex);
 
-			%			virtBactNb{currentIndex}=[virtBactNb{currentIndex},...
-			%				[virtType;otherIndex;otherX;otherY;r]];
-			%			virtBactNb{otherIndex}=[virtBactNb{otherIndex},...
-			%				[virtType;currentIndex;currentX+XLength+dx;currentY+YLength+dy;r]];
-			%		end
-			%	end
-			%end
+					otherX=sortedBactX(otherIndex);
+					otherY=sortedBactY(otherIndex);
 
-			%%bottomright-topleft neighbors
-			%if currentCellid==Kx
-			%	virtType=4;
+					otherX=otherX-XLength-dx;
+					otherY=otherY-YLength-dy;
 
-			%	otherCellidArray=[Kx*(Ky-1)+1];
+					rsquare=(currentX-otherX)^2+(currentY-otherY)^2;
 
-			%	lastOtherCellidNumber=currentCellidNumber+1;
+					currentX=currentX+XLength+dx;
+					currentY=currentY+YLength+dy;
 
-			%	for otherCellid=otherCellidArray
-			%		while lastOtherCellidNumber<n && otherCellid<uniqueCellidArray(lastOtherCellidNumber)
-			%			lastOtherCellidNumber=lastOtherCellidNumber+1;
-			%		end
-			%		%disp('post loop');
+					if rsquare<rsearch2
+						r=sqrt(rsquare);
 
-			%		if otherCellid==uniqueCellidArray(lastOtherCellidNumber)
-			%			cellidNumber=lastOtherCellidNumber;
-			%			startCellIndex=limitIndices(cellidNumber,1);
-			%			endCellIndex=limitIndices(cellidNumber,2);
+						%convert sorted index to index of actual list
+						currentIndex=sortedIndices(currentIndex);
+						otherIndex=sortedIndices(otherIndex);
 
-			%			indexArray=[indexArray startCellIndex:endCellIndex];
-			%		end
-			%	end
+						virtBactNb{currentIndex}=[virtBactNb{currentIndex},...
+							[virtType;otherIndex;otherX;otherY;r]];
+						virtBactNb{otherIndex}=[virtBactNb{otherIndex},...
+							[virtType+1;currentIndex;currentX;currentY;r]];
+					end
+				end
+			end
 
-			%	%inner loop over potential neighbors
-			%	for otherIndex=indexArray
-			%		currentIndex=i;
-			%		otherIndex=otherIndex;
+			%%topright neighbors
+			if currentCellid==Kx||currentCellid==Kx-1
+				virtType=7;
 
-			%		currentX=sortedBactX(currentIndex);
-			%		currentY=sortedBactY(currentIndex);
+				otherCellidArray=[(Ky-2)*Kx+1,...
+					(Ky-1)*Kx+1];
 
-			%		otherX=sortedBactX(otherIndex)+XLength+dx;
-			%		otherY=sortedBactY(otherIndex)-YLength-dy;
+				lastOtherCellidNumber=currentCellidNumber+1;
 
-			%		rsquare=(currentX-otherX)^2+(currentY-otherY)^2;
+				for otherCellid=otherCellidArray
+					while lastOtherCellidNumber<n && otherCellid>uniqueCellidArray(lastOtherCellidNumber)
+						lastOtherCellidNumber=lastOtherCellidNumber+1;
+					end
 
-			%		if rsquare<rsearch2
-			%			r=sqrt(rsquare);
+					if otherCellid==uniqueCellidArray(lastOtherCellidNumber)
+						cellidNumber=lastOtherCellidNumber;
+						startCellIndex=limitIndices(cellidNumber,1);
+						endCellIndex=limitIndices(cellidNumber,2);
 
-			%			%convert sorted index to index of actual list
-			%			currentIndex=sortedIndices(currentIndex);
-			%			otherIndex=sortedIndices(otherIndex);
+						indexArray=[indexArray startCellIndex:endCellIndex];
+					end
+				end
 
-			%			virtBactNb{currentIndex}=[virtBactNb{currentIndex},...
-			%				[virtType;otherIndex;otherX;otherY;r]];
-			%			virtBactNb{otherIndex}=[virtBactNb{otherIndex},...
-			%				[virtType;currentIndex;currentX-XLength-dx;currentY+YLength+dy;r]];
-			%		end
-			%	end
-			%end
+				%inner loop over potential neighbors
+				for otherIndex=indexArray
+					currentIndex=i;
+					otherIndex=otherIndex;
 
+					currentX=sortedBactX(currentIndex);
+					currentY=sortedBactY(currentIndex);
+
+					otherX=sortedBactX(otherIndex);
+					otherY=sortedBactY(otherIndex);
+
+					otherX=otherX+XLength+dx;
+					otherY=otherY-YLength-dy;
+
+					rsquare=(currentX-otherX)^2+(currentY-otherY)^2;
+
+					currentX=currentX-XLength-dx;
+					currentY=currentY+YLength+dy;
+
+					if rsquare<rsearch2
+						r=sqrt(rsquare);
+
+						%convert sorted index to index of actual list
+						currentIndex=sortedIndices(currentIndex);
+						otherIndex=sortedIndices(otherIndex);
+
+						virtBactNb{currentIndex}=[virtBactNb{currentIndex},...
+							[virtType;otherIndex;otherX;otherY;r]];
+						virtBactNb{otherIndex}=[virtBactNb{otherIndex},...
+							[virtType+1;currentIndex;currentX;currentY;r]];
+					end
+				end
+			end
 		end
 		obj.bactNb=bactNb;
 		obj.virtBactNb=virtBactNb;
@@ -875,6 +869,7 @@ classdef bacteriaPopulationAB < handle
 		if mod(obj.counter,obj.modulo)==0
 			%obj.refreshneighborsprojection();
 			obj.refreshneighborscells();
+			beep on;beep;beep off;
 		else
 			obj.updateneighbors();
 		end
@@ -1230,15 +1225,15 @@ classdef bacteriaPopulationAB < handle
 		obj.refreshorupdateneighbors();
 
 		%determine mu for every bacterium
-		currentMuArray=obj.determinemu(AHLField);
+		%currentMuArray=obj.determinemu(AHLField);
 
 		%calculate displacement due to chemotaxis, neighboring cell interactions and brownian motion
-		[chemodx,chemody]=calculatechemo(obj,leucineField,currentMuArray,dt);
-		%chemodx=0;
-		%chemody=0;
-		[randdx,randdy]=calculaterand(obj,currentMuArray,dt);
-		%randdx=0;
-		%randdy=0;
+		%[chemodx,chemody]=calculatechemo(obj,leucineField,currentMuArray,dt);
+		chemodx=0;
+		chemody=0;
+		%[randdx,randdy]=calculaterand(obj,currentMuArray,dt);
+		randdx=0;
+		randdy=0;
 		[celldx,celldy]=calculatecell(obj,dt);
 		%celldx=0;
 		%celldy=0;
