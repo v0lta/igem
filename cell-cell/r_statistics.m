@@ -25,9 +25,7 @@ clear all;close all;clc;
 %R cutoff is 2.1931
 
 %% Calculation of k for given mu, dt, gamma, r0, rcut
-%mu=1/300;
-%dt=1;
-%r0=2;
+%mu=1/300; %dt=1; %r0=2;
 %gamma=2;
 %
 %rcut=2.25;
@@ -40,18 +38,19 @@ clear all;close all;clc;
 
 %% Determination of suitable dt for given r
 %mu=1/30;
-mu=2.376e-3;
+mu=0.072e2;	%high diffusion constant of bacteria B um^2/h
 %dt=1;
 %r0=1/100;
-r0=0.5e-4;
+r0=0.5;
 
 %lambda2=(2*r0)^2/(4*mu*dt)
 
-p=0.99;	% 0.1 percent chance of detaching
+p=0.90;	% 0.1 percent chance of detaching
 v=2;	% 2 degrees of freedom
 
-f=@(dt) ncx2inv(p,v,(2*r0)^2/(4*mu*dt))*(4*mu*dt)-(2*r0*1.25)^2;
+%f=@(dt) ncx2inv(p,v,(2*r0)^2/(4*mu*dt))*(4*mu*dt)-(2*r0*1.25)^2;
+f=@(dt) ncx2inv(p,v,(2*r0)^2/(4*mu*dt))*(4*mu*dt)-(2*r0*2)^2;
 
-dt=fsolve(f,0.1)
+dt=fsolve(f,0.000001)
 
 %dt = 3.3248e-4

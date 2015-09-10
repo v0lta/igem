@@ -11,7 +11,7 @@ function runsimulation(filename,simulationCounter,poolsize,...
 	if (ischar(simulationCounter)), simulationCounter=str2num(simulationCounter);end;
 	if (ischar(poolsize)), poolsize=str2num(poolsize);end;
 	if (ischar(dtPDE)), dtPDE=str2num(dtPDE);end;
-    if (ischar(dtBact)), dtPDE=str2num(dtBact);end;
+    if (ischar(dtBact)), dtBact=str2num(dtBact);end;
 	if (ischar(tend)), tend=str2num(tend);end;
 	if (ischar(nBacteriaA)), nBacteriaA=str2num(nBacteriaA);end;
 	if (ischar(nBacteriaB)), nBacteriaB=str2num(nBacteriaB);end;
@@ -77,8 +77,8 @@ function runsimulation(filename,simulationCounter,poolsize,...
 	toc(t2);
 
 	%supercomputer: uncomment the lines below
-	myCluster=parcluster('local');
-	delete(myCluster.Jobs);
+	%myCluster=parcluster('local');
+	%delete(myCluster.Jobs);
 
 	p=gcp('nocreate');
 	if isempty(p)
@@ -173,12 +173,20 @@ function runsimulation(filename,simulationCounter,poolsize,...
 		bacteriaA=[rand(nBacteriaA,1)*XLength,rand(nBacteriaA,1)*YLength];
 	end
 
+	%bacteriaA=[1,1;...
+	%	1,2;...
+	%	2,1;...
+	%	2,2;];
+
 	%% Initialize bacteria B
 	bacteriaB=zeros(nBacteriaB,2);
 
 	switch initialpattern
-	case 'spot'
-		bacteriaB=[ones(nBacteriaB,1)*XLength/2,ones(nBacteriaB,1)*YLength/2];
+	case 'center_spot'
+		bacteriaB=[ones(nBacteriaB,1)*XLength*1/2,ones(nBacteriaB,1)*YLength/2];
+	case 'corner_spot'
+		%bacteriaB=[ones(nBacteriaB,1)*XLength,ones(nBacteriaB,1)*YLength];
+		bacteriaB=[ones(nBacteriaB,1)*XLength-3,ones(nBacteriaB,1)*YLength-3];
 	case 'gaussian'
 		bacteriaB=[normrnd(1/2*XLength,1,nBacteriaB,1),normrnd(1/2*YLength,1,nBacteriaB,1)];
 		parfor i=1:nBacteriaB
@@ -210,8 +218,13 @@ function runsimulation(filename,simulationCounter,poolsize,...
 		warning('Unknown distribution, defaulting to uniform random');
 		bacteriaB=[rand(nBacteriaB,1)*XLength,rand(nBacteriaB,1)*YLength];
 	end
+	%bacteriaB=[XLength,YLength];
+
 	disp('Bacteria initialization finished');
 	toc(t1);
+
+	%bacteriaA
+	%bacteriaB
 
 	%% initialize AHL field
 	disp('Initializing fields');

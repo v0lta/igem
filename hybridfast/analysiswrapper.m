@@ -19,10 +19,10 @@ list=ls([filename '*_data.mat']);
 filename=[filename num2str(k)];
 
 %filename='revert_test';
-filename='averaging_test2';
+filename='10_sep_real_test';
 
 %framerate=25;
-framerate=2;
+framerate=1;
 scaling=20;
 
 runanalysis(previewOrSave,filename,framerate,scaling);

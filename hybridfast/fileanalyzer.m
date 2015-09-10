@@ -118,7 +118,7 @@ classdef fileanalyzer < handle
 		X=obj.domainGrid.X;
 		Y=obj.domainGrid.Y;
 
-		frameArray=cell(nFrames,1);
+		%frameArray=cell(nFrames,1);
 
 		%rhoAArray=obj.rhoAArray;
 		%coordinateAMatrix=obj.coordinateAMatrix;
@@ -133,10 +133,8 @@ classdef fileanalyzer < handle
 		Jx=mFile.Jx;
 		Jy=mFile.Jy;
 
-		dx=round(Jx/100);
-		dy=round(Jy/100);
-		if dx<1,dx=1;end;
-		if dy<1,dy=1;end;
+		dx=max([round(Jx/100),1]);
+		dy=max([round(Jy/100),1]);
 		dxi=1:dx:Jx;
 		dyi=1:dy:Jy;
 		X=X(dyi,dxi);
@@ -145,10 +143,8 @@ classdef fileanalyzer < handle
 		%plot only 1000 bacteria
 		nBacteriaA=mFile.nBacteriaA;
 		nBacteriaB=mFile.nBacteriaB;
-		dA=round(nBacteriaA/1000);
-		dB=round(nBacteriaB/1000);
-		if dA<1,dA=1;end;
-		if dB<1,dB=1;end;
+		dA=max([round(nBacteriaA/1000),1]);
+		dB=max([round(nBacteriaB/1000),1]);
 		dAi=1:dA:nBacteriaA;
 		dBi=1:dB:nBacteriaB;
 
@@ -163,6 +159,10 @@ classdef fileanalyzer < handle
 
 			%density
 			rhoA=mFile.rhoAArray(dyi,dxi,i);
+			%size(rhoA)
+			%mean(mean(rhoA))
+			%DataHash(rhoA)
+			surf(X,Y,rhoA);
 			mesh(X,Y,rhoA,'facecolor','none');
 			view(3);
 
@@ -288,17 +288,17 @@ classdef fileanalyzer < handle
 		Jx=mFile.Jx;
 		Jy=mFile.Jy;
 
-		dx=round(Jx/100);
-		dy=round(Jy/100);
-		if dx<1,dx=1;end;
-		if dy<1,dy=1;end;
+		dx=max([round(Jx/100),1]);
+		dy=max([round(Jy/100),1]);
 		dxi=1:dx:Jx;
 		dyi=1:dy:Jy;
 		X=X(dyi,dxi);
 		Y=Y(dyi,dxi);
 
-		fig=figure('units','normalized','outerposition',[0 0 1 1],'Visible','off');
-		for i=1:nFrames
+		%fig=figure('units','normalized','outerposition',[0 0 1 1],'Visible','off');
+		fig=figure('units','normalized','outerposition',[0 0 1 1],'Visible','on');
+		%for i=1:nFrames
+		for i=1:1
 		%parfor i=1:nFrames
 			%fig=figure('units','normalized','outerposition',[0 0 1 1],'Visible','off');
 			hold on;
@@ -308,6 +308,9 @@ classdef fileanalyzer < handle
 
 			%density
 			rhoA=mFile.rhoAArray(dyi,dxi,i);
+			%size(rhoA)
+			%mean(mean(rhoA))
+			%DataHash(rhoA)
 			surf(X,Y,rhoA);
 			shading('flat');
 			view(2);
@@ -324,7 +327,7 @@ classdef fileanalyzer < handle
 			%formatting
 			title('Bacteria A');
 			zlim([rhoALimit]);
-			axis equal;
+			axis image;
 			xlabel('x');
 			ylabel('y');
 			zlabel('Density');
@@ -353,7 +356,7 @@ classdef fileanalyzer < handle
 			title('Bacteria B');
 			%legend('Density','Bacterium');
 			zlim([rhoBLimit]);
-			axis equal;
+			axis image;
 			xlabel('x');
 			ylabel('y');
 			zlabel('Density');
@@ -373,7 +376,7 @@ classdef fileanalyzer < handle
 			title('AHL');
 			%legend('Concentration');
 			zlim([AHLLimit*scaling]);
-			axis equal;
+			axis image;
 			xlabel('x');
 			ylabel('y');
 			zlabel('Concentration');
@@ -393,7 +396,7 @@ classdef fileanalyzer < handle
 			title('Leucine');
 			%legend('Concentration');
 			zlim([leucineLimit*scaling]);
-			axis equal;
+			axis image;
 			xlabel('x');
 			ylabel('y');
 			zlabel('Concentration');
@@ -403,7 +406,7 @@ classdef fileanalyzer < handle
 			writeVideo(vidObj2D,getframe(fig));
 			%frameArray{i}=getframe(fig);
 			%delete(fig);
-			clf;
+			%clf;
 		end
 
 %		for i=1:nFrames
@@ -440,10 +443,8 @@ classdef fileanalyzer < handle
 		Jx=mFile.Jx;
 		Jy=mFile.Jy;
 
-		dx=round(Jx/100);
-		dy=round(Jy/100);
-		if dx<1,dx=1;end;
-		if dy<1,dy=1;end;
+		dx=max([round(Jx/100),1]);
+		dy=max([round(Jy/100),1]);
 		dxi=1:dx:Jx;
 		dyi=1:dy:Jy;
 		X=X(dyi,dxi);
@@ -452,10 +453,8 @@ classdef fileanalyzer < handle
 		%plot only 1000 bacteria
 		nBacteriaA=mFile.nBacteriaA;
 		nBacteriaB=mFile.nBacteriaB;
-		dA=round(nBacteriaA/1000);
-		dB=round(nBacteriaB/1000);
-		if dA<1,dA=1;end;
-		if dB<1,dB=1;end;
+		dA=max([round(nBacteriaA/1000),1]);
+		dB=max([round(nBacteriaB/1000),1]);
 		dAi=1:dA:nBacteriaA;
 		dBi=1:dB:nBacteriaB;
 
@@ -583,7 +582,7 @@ classdef fileanalyzer < handle
 		X=obj.domainGrid.X;
 		Y=obj.domainGrid.Y;
 
-		frameArray=cell(nFrames,1);
+		%frameArray=cell(nFrames,1);
 
 		rhoAArray=obj.rhoAArray;
 		coordinateAMatrix=obj.coordinateAMatrix;
@@ -598,10 +597,8 @@ classdef fileanalyzer < handle
 		Jx=mFile.Jx;
 		Jy=mFile.Jy;
 
-		dx=round(Jx/100);
-		dy=round(Jy/100);
-		if dx<1,dx=1;end;
-		if dy<1,dy=1;end;
+		dx=max([round(Jx/100),1]);
+		dy=max([round(Jy/100),1]);
 		dxi=1:dx:Jx;
 		dyi=1:dy:Jy;
 		X=X(dyi,dxi);
@@ -632,7 +629,7 @@ classdef fileanalyzer < handle
 			%formatting
 			title('Bacteria A');
 			zlim([rhoALimit]);
-			axis equal;
+			axis image;
 			xlabel('x');
 			ylabel('y');
 			zlabel('Density');
@@ -660,7 +657,7 @@ classdef fileanalyzer < handle
 			title('Bacteria B');
 			%legend('Density','Bacterium');
 			zlim([rhoBLimit]);
-			axis equal;
+			axis image;
 			xlabel('x');
 			ylabel('y');
 			zlabel('Density');
@@ -679,7 +676,7 @@ classdef fileanalyzer < handle
 			title('AHL');
 			%legend('Concentration');
 			zlim([AHLLimit*scaling]);
-			axis equal;
+			axis image;
 			xlabel('x');
 			ylabel('y');
 			zlabel('Concentration');
@@ -698,7 +695,7 @@ classdef fileanalyzer < handle
 			title('Leucine');
 			%legend('Concentration');
 			zlim([leucineLimit*scaling]);
-			axis equal;
+			axis image;
 			xlabel('x');
 			ylabel('y');
 			zlabel('Concentration');

@@ -197,6 +197,9 @@ for i=1:numSimulation
 	outputstr2=[outputstr2 temp];
 end
 
+outputstr1=[outputstr1 'exit'];
+outputstr2=[outputstr2 'exit'];
+
 fid=fopen('simulation.pbs','w');
 fprintf(fid,outputstr1);
 fclose(fid);
