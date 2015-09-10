@@ -89,8 +89,8 @@ classdef modelfast1 < handle
         avgRhoA = zeros(Jy,Jx);
         avgRhoB = zeros(Jy,Jx);
             
-        %comment this assertion for improved performance!
-        assert(mod(dtPDE,dtBact) == 0, 'dtBact step must be divisible by dtPDE step.');
+        %supercomputer: comment this assertion for improved performance!
+        %assert(mod(dtPDE,dtBact) == 0, 'dtBact step must be divisible by dtPDE step.');
             
         numBactStep =  dtPDE/dtBact;
         

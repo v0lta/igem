@@ -454,9 +454,10 @@ classdef bacteriaPopulationAB < handle
 				lastCellid=currentCellid;
 				currentCellidNumber=lastCellidNumber;
 
-				if lastCellid~=uniqueCellidArray(lastCellidNumber)
-					warning('Error in cell algorithm');
-				end
+				%supercomputer: comment this error check for improved performance!
+				%if lastCellid~=uniqueCellidArray(lastCellidNumber)
+				%	warning('Error in cell algorithm');
+				%end
 			end
 
 			%add current cell potential neighbors
