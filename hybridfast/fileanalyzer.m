@@ -295,8 +295,8 @@ classdef fileanalyzer < handle
 		X=X(dyi,dxi);
 		Y=Y(dyi,dxi);
 
-		%fig=figure('units','normalized','outerposition',[0 0 1 1],'Visible','off');
-		fig=figure('units','normalized','outerposition',[0 0 1 1],'Visible','on');
+		fig=figure('units','normalized','outerposition',[0 0 1 1],'Visible','off');
+		%fig=figure('units','normalized','outerposition',[0 0 1 1],'Visible','on');
 		%for i=1:nFrames
 		for i=1:1
 		%parfor i=1:nFrames
@@ -406,7 +406,7 @@ classdef fileanalyzer < handle
 			writeVideo(vidObj2D,getframe(fig));
 			%frameArray{i}=getframe(fig);
 			%delete(fig);
-			%clf;
+			clf;
 		end
 
 %		for i=1:nFrames
@@ -703,6 +703,65 @@ classdef fileanalyzer < handle
 			pause(0.1);
 			clf;
 		end
+		end
+
+		function makeinteractionvideo(obj,filename);
+		%plot bacteria and their radii
+
+		framerate=obj.framerate;
+		nFrames=obj.nFrames;
+
+		vidObjinteraction=VideoWriter([filename '_interaction.avi']);
+		set(vidObjinteraction,'FrameRate',framerate);
+		open(vidObjinteraction);
+		
+		domain=obj.domain;
+
+		XLength=domain.x(end);
+		dx=domain.x(2)-domain.x(1);
+		YLength=domain.y(end);
+		dy=domain.y(2)-domain.y(1);
+
+		mFile=obj.mFile;
+		r0=mFile.r0;
+
+		fig=figure('units','normalized','outerposition',[0 0 1 1],'Visible','off');
+		for i=1:nFrames
+			hold on;
+
+			coordinateAArray=mFile.coordinateAMatrix(:,:,i);
+			coordinateBArray=mFile.coordinateBMatrix(:,:,i);
+
+			xCoordinateAArray=coordinateAArray(:,1);
+			yCoordinateAArray=coordinateAArray(:,2);
+
+			xCoordinateBArray=coordinateBArray(:,1);
+			yCoordinateBArray=coordinateBArray(:,2);
+
+			xCoordinateArray=[xCoordinateAArray;xCoordinateBArray];
+			yCoordinateArray=[yCoordinateAArray;yCoordinateBArray];
+
+			[N,~]=size(xCoordinateArray);
+
+			%plot bacteria
+			scatter(xCoordinateAArray,yCoordinateAArray);
+
+			%plot radii
+			viscircles([xCoordinateArray,yCoordinateArray],ones(N,1)*r0);
+
+			%formatting
+			title('Bacteria A');
+			axis image;
+			xlim([0 XLength+dx]);
+			ylim([0 YLength+dy]);
+			xlabel('x');
+			ylabel('y');
+
+			writeVideo(vidObjinteraction,getframe(fig));
+			clf;
+		end
+
+		vidObjinteraction.close();
 		end
 	end
 end

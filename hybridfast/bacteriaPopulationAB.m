@@ -579,9 +579,9 @@ classdef bacteriaPopulationAB < handle
 						otherIndex=sortedIndices(otherIndex);
 
 						virtBactNb{currentIndex}=[virtBactNb{currentIndex},...
-							[virtType;otherIndex;otherX;otherY;r]];
+							[otherIndex;otherX;otherY;r;virtType]];
 						virtBactNb{otherIndex}=[virtBactNb{otherIndex},...
-							[virtType+1;currentIndex;currentX;currentY;r]];
+							[currentIndex;currentX;currentY;r;virtType+1]];
 					end
 				end
 			end
@@ -638,9 +638,9 @@ classdef bacteriaPopulationAB < handle
 						otherIndex=sortedIndices(otherIndex);
 
 						virtBactNb{currentIndex}=[virtBactNb{currentIndex},...
-							[virtType;otherIndex;otherX;otherY;r]];
+							[otherIndex;otherX;otherY;r;virtType]];
 						virtBactNb{otherIndex}=[virtBactNb{otherIndex},...
-							[virtType+1;currentIndex;currentX;currentY;r]];
+							[currentIndex;currentX;currentY;r;virtType+1]];
 					end
 				end
 			end
@@ -697,9 +697,9 @@ classdef bacteriaPopulationAB < handle
 						otherIndex=sortedIndices(otherIndex);
 
 						virtBactNb{currentIndex}=[virtBactNb{currentIndex},...
-							[virtType;otherIndex;otherX;otherY;r]];
+							[otherIndex;otherX;otherY;r;virtType]];
 						virtBactNb{otherIndex}=[virtBactNb{otherIndex},...
-							[virtType+1;currentIndex;currentX;currentY;r]];
+							[currentIndex;currentX;currentY;r;virtType+1]];
 					end
 				end
 			end
@@ -754,9 +754,9 @@ classdef bacteriaPopulationAB < handle
 						otherIndex=sortedIndices(otherIndex);
 
 						virtBactNb{currentIndex}=[virtBactNb{currentIndex},...
-							[virtType;otherIndex;otherX;otherY;r]];
+							[otherIndex;otherX;otherY;r;virtType]];
 						virtBactNb{otherIndex}=[virtBactNb{otherIndex},...
-							[virtType+1;currentIndex;currentX;currentY;r]];
+							[currentIndex;currentX;currentY;r;virtType+1]];
 					end
 				end
 			end
@@ -838,6 +838,15 @@ classdef bacteriaPopulationAB < handle
 		bactX=obj.bactX;
 		bactY=obj.bactY;
 		bactNb=obj.bactNb;
+		virtBactNb=obj.virtBactNb;
+
+		domain=obj.domain;
+		XLength=domain.x(end);
+		YLength=domain.y(end);
+		dx=domain.x(2)-domain.x(1);
+		dy=domain.y(2)-domain.y(1);
+		Xdx=XLength+dx;
+		Ydy=YLength+dy;
 
 		%parallel or serial? faster for large bateria population
 		parfor i=1:N
@@ -858,8 +867,54 @@ classdef bacteriaPopulationAB < handle
 				A(2:4,j)=[otherX;otherY;r];
 			end
 			bactNb{i}=A;
+
+			A=virtBactNb{i};
+			[~,m]=size(A);
+
+			for j=1:m
+				otherIndex=A(1,j);
+				otherX=bactX(otherIndex);
+				otherY=bactY(otherIndex);
+
+				virtType=A(5,j);
+
+				switch virtType
+				case 1	%left edge
+					otherX=otherX-Xdx;
+					otherY=otherY;
+				case 2	%right edge
+					otherX=otherX+Xdx;
+					otherY=otherY;
+				case 3	%top edge
+					otherX=otherX;
+					otherY=otherY-Ydy;
+				case 4	%bottom edge
+					otherX=otherX;
+					otherY=otherY+Ydy;
+				case 5	%top left corner
+					otherX=otherX-Xdx;
+					otherY=otherY-Ydy;
+				case 6	%bottom right corner
+					otherX=otherX+Xdx;
+					otherY=otherY+Ydy;
+				case 7	%top right corner
+					otherX=otherX+Xdx;
+					otherY=otherY-Ydy;
+				case 8	%bottom left corner
+					otherX=otherX-Xdx;
+					otherY=otherY+Ydy;
+				otherwise
+					error('Unkown edge case');
+				end
+
+				r=sqrt((currentX-otherX)^2+(currentY-otherY)^2);
+
+				A(2:4,j)=[otherX;otherY;r];
+			end
+			virtBactNb{i}=A;
 		end
 		obj.bactNb=bactNb;
+		obj.virtBactNb=virtBactNb;
 		end
 
 		function refreshorupdateneighbors(obj)
@@ -869,7 +924,6 @@ classdef bacteriaPopulationAB < handle
 		if mod(obj.counter,obj.modulo)==0
 			%obj.refreshneighborsprojection();
 			obj.refreshneighborscells();
-			beep on;beep;beep off;
 		else
 			obj.updateneighbors();
 		end
@@ -1175,6 +1229,7 @@ classdef bacteriaPopulationAB < handle
 		celldy=zeros(N,1);
 
 		bactNb=obj.bactNb;
+		virtBactNb=obj.virtBactNb;
 
 		%parallel or serial? -> parallel
 		parfor i=1:N
@@ -1185,7 +1240,15 @@ classdef bacteriaPopulationAB < handle
 
 			%load neighbor matrix
 			nbMatrix=bactNb{i};
-			[~,m]=size(nbMatrix);
+			[~,m1]=size(nbMatrix);
+
+			%load virtual neighbor matrix
+			virtNbMatrix=virtBactNb{i};
+			[~,m2]=size(virtNbMatrix);
+
+			%total neighbor matrix
+			nbMatrix=[nbMatrix,virtNbMatrix(1:end-1,:)];
+			m=m1+m2;
 
 			%initialise total displacement
 			totaldx=0;

@@ -173,10 +173,8 @@ function runsimulation(filename,simulationCounter,poolsize,...
 		bacteriaA=[rand(nBacteriaA,1)*XLength,rand(nBacteriaA,1)*YLength];
 	end
 
-	%bacteriaA=[1,1;...
-	%	1,2;...
-	%	2,1;...
-	%	2,2;];
+	bacteriaA=[8.5,8.5;...
+		1.5,1.5];
 
 	%% Initialize bacteria B
 	bacteriaB=zeros(nBacteriaB,2);
@@ -219,6 +217,7 @@ function runsimulation(filename,simulationCounter,poolsize,...
 		bacteriaB=[rand(nBacteriaB,1)*XLength,rand(nBacteriaB,1)*YLength];
 	end
 	%bacteriaB=[XLength,YLength];
+	bacteriaB=[XLength/2,YLength/2];
 
 	disp('Bacteria initialization finished');
 	toc(t1);

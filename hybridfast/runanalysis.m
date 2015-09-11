@@ -52,6 +52,12 @@ function runanalysis(previewOrSave,filename,framerate,scaling)
 		analObject.make3Dvideo(filename);
 		disp('Video saved');
 		toc(t2);
+	case 'interaction'
+		disp('Saving interaction video');
+		t2=tic;
+		analObject.makeinteractionvideo(filename);
+		disp('Video saved');
+		toc(t2);
 	otherwise
 		warning('Unknown setting, defaulting to preview');
 		disp('Preview of simulation');
