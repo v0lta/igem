@@ -4,7 +4,7 @@ function runsimulation(filename,simulationCounter,poolsize,...
 	bandwidth,...
 	kappa,r0,k1,k2,k3,gamma,modulo,...
 	muHighA,muLowA,muHighB,muLowB,VthA,VthB,...
-	alpha,beta,kAHL,kleucine,DAHL,Dleucine)
+	alpha,beta,kAHL,kleucine,DAHL,Dleucine,minConcentration)
 	%run simulation with given parameters and output data in filename.m
 	
 	%convert str to numeric values
@@ -39,6 +39,7 @@ function runsimulation(filename,simulationCounter,poolsize,...
 	if (ischar(kleucine)), kleucine=str2num(kleucine);end;
 	if (ischar(DAHL)), DAHL=str2num(DAHL);end;
 	if (ischar(Dleucine)), Dleucine=str2num(Dleucine);end;
+	if (ischar(minConcentration)), minConcentration=str2num(minConcentration);end;
 
 	disp('Saving parameters in matlab file');
 	t2=tic;
@@ -72,7 +73,8 @@ function runsimulation(filename,simulationCounter,poolsize,...
 		'kAHL',...
 		'kleucine',...
 		'DAHL',...
-		'Dleucine');
+		'Dleucine',...
+		'minConcentration');
 	disp('Parameters saved');
 	toc(t2);
 
@@ -131,93 +133,114 @@ function runsimulation(filename,simulationCounter,poolsize,...
 	paramleucine.Dleucine=Dleucine;	%Diffusion constant of leucine
 
 	%% Initialize bacteria A
+	%periodic
+	dx=domain.x(2)-domain.x(1);
+	dy=domain.y(2)-domain.y(1);
 	disp('Initializing bacteria');
 	t1=tic;
 	bacteriaA=zeros(nBacteriaA,2);
 
 	switch initialpattern
 	case 'center_spot'
-		bacteriaA=[ones(nBacteriaA,1)*XLength*1/2,ones(nBacteriaA,1)*YLength/2];
+		%bacteriaA=[ones(nBacteriaA,1)*XLength*1/2,ones(nBacteriaA,1)*YLength/2];
+		%periodic
+		bacteriaA=[ones(nBacteriaA,1)*(XLength+dx)*1/2,ones(nBacteriaA,1)*(YLength+dy)/2];
 	case 'corner_spot'
 		%bacteriaA=[ones(nBacteriaA,1)*XLength,ones(nBacteriaA,1)*YLength];
 		bacteriaA=[ones(nBacteriaA,1)*XLength-3,ones(nBacteriaA,1)*YLength-3];
 	case 'gaussian'
-		bacteriaA=[normrnd(1/2*XLength,1,nBacteriaA,1),normrnd(1/2*YLength,1,nBacteriaA,1)];
-		parfor i=1:nBacteriaA
-			XY=bacteriaA(i,:);
-			x=XY(1);
-			y=XY(2);
+		bacteriaA=[normrnd(1/2*XLength,XLength/10,nBacteriaA,1),normrnd(1/2*YLength,YLength/10,nBacteriaA,1)];
+		%periodic
+		bacteriaA(:,1)=mod(bacteriaA(:,1),XLength+dx);
+		bacteriaA(:,2)=mod(bacteriaA(:,2),YLength+dy);
+		%parfor i=1:nBacteriaA
+		%	XY=bacteriaA(i,:);
+		%	x=XY(1);
+		%	y=XY(2);
 
-			if x>XLength
-				x=XLength;
-			elseif x<0
-				x=0;
-			else
-				x=x;
-			end
+		%	if x>XLength
+		%		x=XLength;
+		%	elseif x<0
+		%		x=0;
+		%	else
+		%		x=x;
+		%	end
 
-			if y>YLength
-				y=YLength;
-			elseif y<0
-				y=0;
-			else
-				y=y
-			end
+		%	if y>YLength
+		%		y=YLength;
+		%	elseif y<0
+		%		y=0;
+		%	else
+		%		y=y
+		%	end
 
-			bacteriaA(i,:)=[x,y];
-		end
+		%	bacteriaA(i,:)=[x,y];
+		%end
 	case 'uniform_random'
-		bacteriaA=[rand(nBacteriaA,1)*XLength,rand(nBacteriaA,1)*YLength];
+		%bacteriaA=[rand(nBacteriaA,1)*XLength,rand(nBacteriaA,1)*YLength];
+		%periodic
+		bacteriaA=[rand(nBacteriaA,1)*(XLength+dx),rand(nBacteriaA,1)*(YLength+dy)];
 	otherwise
 		warning('Unknown distribution, defaulting to uniform random');
-		bacteriaA=[rand(nBacteriaA,1)*XLength,rand(nBacteriaA,1)*YLength];
+		%bacteriaA=[rand(nBacteriaA,1)*XLength,rand(nBacteriaA,1)*YLength];
+		%periodic
+		bacteriaA=[rand(nBacteriaA,1)*(XLength+dx),rand(nBacteriaA,1)*(YLength+dy)];
 	end
 
-	bacteriaA=[8.5,8.5;...
-		1.5,1.5];
+%	bacteriaA=[8.5,8.5;...
+%		1.5,1.5];
 
 	%% Initialize bacteria B
 	bacteriaB=zeros(nBacteriaB,2);
 
 	switch initialpattern
 	case 'center_spot'
-		bacteriaB=[ones(nBacteriaB,1)*XLength*1/2,ones(nBacteriaB,1)*YLength/2];
+		%bacteriaB=[ones(nBacteriaB,1)*XLength*1/2,ones(nBacteriaB,1)*YLength/2];
+		%periodic
+		bacteriaB=[ones(nBacteriaB,1)*(XLength+dx)*1/2,ones(nBacteriaB,1)*(YLength+dy)/2];
 	case 'corner_spot'
 		%bacteriaB=[ones(nBacteriaB,1)*XLength,ones(nBacteriaB,1)*YLength];
 		bacteriaB=[ones(nBacteriaB,1)*XLength-3,ones(nBacteriaB,1)*YLength-3];
 	case 'gaussian'
-		bacteriaB=[normrnd(1/2*XLength,1,nBacteriaB,1),normrnd(1/2*YLength,1,nBacteriaB,1)];
-		parfor i=1:nBacteriaB
-			XY=bacteriaB(i,:);
-			x=XY(1);
-			y=XY(2);
+		bacteriaB=[normrnd(1/2*XLength,XLength/10,nBacteriaB,1),normrnd(1/2*YLength,YLength/10,nBacteriaB,1)];
+		%periodic
+		bacteriaB(:,1)=mod(bacteriaB(:,1),XLength+dx);
+		bacteriaB(:,2)=mod(bacteriaB(:,2),YLength+dy);
+		%parfor i=1:nBacteriaB
+		%	XY=bacteriaB(i,:);
+		%	x=XY(1);
+		%	y=XY(2);
 
-			if x>XLength
-				x=XLength;
-			elseif x<0
-				x=0;
-			else
-				x=x;
-			end
+		%	if x>XLength
+		%		x=XLength;
+		%	elseif x<0
+		%		x=0;
+		%	else
+		%		x=x;
+		%	end
 
-			if y>YLength
-				y=YLength;
-			elseif y<0
-				y=0;
-			else
-				y=y
-			end
+		%	if y>YLength
+		%		y=YLength;
+		%	elseif y<0
+		%		y=0;
+		%	else
+		%		y=y
+		%	end
 
-			bacteriaB(i,:)=[x,y];
-		end
+		%	bacteriaB(i,:)=[x,y];
+		%end
 	case 'uniform_random'
-		bacteriaB=[rand(nBacteriaB,1)*XLength,rand(nBacteriaB,1)*YLength];
+		%bacteriaB=[rand(nBacteriaB,1)*XLength,rand(nBacteriaB,1)*YLength];
+		%periodic
+		bacteriaB=[rand(nBacteriaB,1)*(XLength+dx),rand(nBacteriaB,1)*(YLength+dy)];
 	otherwise
 		warning('Unknown distribution, defaulting to uniform random');
-		bacteriaB=[rand(nBacteriaB,1)*XLength,rand(nBacteriaB,1)*YLength];
+		%bacteriaB=[rand(nBacteriaB,1)*XLength,rand(nBacteriaB,1)*YLength];
+		%periodic
+		bacteriaB=[rand(nBacteriaB,1)*(XLength+dx),rand(nBacteriaB,1)*(YLength+dy)];
 	end
 	%bacteriaB=[XLength,YLength];
-	bacteriaB=[XLength/2,YLength/2];
+	%bacteriaB=[XLength/2,YLength/2];
 
 	disp('Bacteria initialization finished');
 	toc(t1);
@@ -235,7 +258,7 @@ function runsimulation(filename,simulationCounter,poolsize,...
 
 	%uniform
 	%AHLconcentration=zeros(m,n)+1e-5;
-	AHLconcentration=ones(m,n)*1e-5;
+	AHLconcentration=ones(m,n)*minConcentration;
     %AHLconcentration(end-10:end,end-10:end) = 10;
 
 	%boundary conditions
@@ -258,7 +281,7 @@ function runsimulation(filename,simulationCounter,poolsize,...
 	%[X,Y]=meshgrid(domain.x,domain.y);
 
 	%uniform
-	leucineconcentration=ones(m,n)*1e-5;
+	leucineconcentration=ones(m,n)*minConcentration;
     %leucineconcentration(end-10:end,end-10:end) = 10;
 
 	%boundary conditions

@@ -15,6 +15,8 @@ classdef leucine<handle
 
 		Jx;
 		Jy;
+
+		minConcentration;
 	end
 
 	methods
@@ -30,6 +32,7 @@ classdef leucine<handle
 		obj.Jx=length(domain.x);
 		obj.Jy=length(domain.y);
 		obj.concentration=concentration;
+		obj.minConcentration=min(min(concentration));
 		obj.calculategradient();
 		obj.westBoundary=boundaryArray(:,1);
 		obj.eastBoundary=boundaryArray(:,2);
@@ -356,16 +359,19 @@ classdef leucine<handle
         %Periodic boundary conditions:
         obj.updateperiodic(rhoANew,dt);
 
-		concentration=obj.concentration;
+		%concentration=obj.concentration;
 		%Correct for negative concentration
-		for j=1:Jx
-			for i=1:Jy
-				if concentration(i,j)<1e-5
-					concentration(i,j)=1e-5;
-				end
-			end
-		end
-		obj.concentration=concentration;
+		%for j=1:Jx
+		%	for i=1:Jy
+		%		if concentration(i,j)<1e-5
+		%			concentration(i,j)=1e-5;
+		%		end
+		%	end
+		%end
+		%obj.concentration=concentration;
+
+		%vectorized
+		obj.concentration=max(obj.concentration,ones(Jy,Jx)*obj.minConcentration);
 
 		%update gradient
 		obj.calculategradient();

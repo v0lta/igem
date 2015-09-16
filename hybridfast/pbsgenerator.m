@@ -7,23 +7,26 @@ outputstr2='';
 
 outputstr1=[outputstr1 '#!/bin/bash -l\n'];
 outputstr1=[outputstr1 '#PBS -l nodes=1:ppn=20\n'];
-outputstr1=[outputstr1 '#PBS -l walltime=02:00:00\n'];
+outputstr1=[outputstr1 '#PBS -l walltime=10:00:00\n'];
 outputstr1=[outputstr1 'cd ~/hybridfast\n'];
 outputstr1=[outputstr1 'module load matlab/R2014a\n'];
 
 outputstr2=[outputstr2 'cd ~/hybridfast\n'];
 outputstr2=[outputstr2 'module load matlab/R2014a\n'];
 
-filename='10_sep_real_test';
+filename='15_sep_real_gaussian_test';
 poolsize=20;
 numSimulation=1;
 
 %% - realistic parameters - %%
 %% Simulation parameters
-dtPDE=0.1;       %time step PDE (h)
+dtPDE=0.05;       %time step PDE (h)
 dtBact=0.01;   %time step Bact (h)
 %tend=10;			%end time of simulation
-tend=0.1;			%end time of simulation
+
+%tend=0.05;			%end time of simulation
+tend=2;			%end time of simulation
+
 %tend=2;			%end time of simulation
 %tend=30;			%end time of simulation
 %nBacteriaA=1000;	%number of bacteria A
@@ -36,18 +39,18 @@ nBacteriaAArray=5e4;		%number of bacteria A
 nBacteriaBArray=5e4;		%number of bacteria B
 %nBacteriaB=0;		%number of bacteria B
 %nBacteriaB=1;		%number of bacteria B
-%initialpattern='gaussian';
-initialpattern='uniform_random';
+initialpattern='gaussian';
+%initialpattern='uniform_random';
 %initialpattern='spot';
 
 %% define domain
 XLength=1000;			%Length of domain um
 YLength=1000;			%Length of domain um
-Jx=1000;			%# of subdivisions
-Jy=1000;			%# of subdivisions
+Jx=700;			%# of subdivisions
+Jy=700;			%# of subdivisions
 
 %% define kernel functions and bandwidth
-bandwidthArray=100;
+bandwidthArray=15;
 %bandwidth=10;
 
 %% define constants
@@ -62,20 +65,21 @@ k3Array=5e-4;			%mN/um
 gammaArray=1e-5;	%mN*h/um
 moduloArray=10;		%#
 muHighAArray=0.072e5;	%high diffusion constant of bacteria A
-muLowAArray=muHighAArray*1e-2;			%low diffusion constant of bacteria A
+muLowAArray=muHighAArray*1e-3;			%low diffusion constant of bacteria A
 muHighBArray=2.376e5;	%high diffusion constant of bacteria B
-muLowBArray=muHighBArray*1e-2;	%low diffusion constant of bacteria B
-VthAArray=0.2e-3;		%nmol/cl
+muLowBArray=muHighBArray*1e-3;	%low diffusion constant of bacteria B
+VthAArray=0.2e-4;		%nmol/cl
 %VthBArray=[0.1 100];%nmol/cl
-VthBArray=0.1e-3;%nmol/cl
+VthBArray=0.1e-4;%nmol/cl
 
 %AHL and leucine
 alphaArray=17.9e-4;	%nmol/h
 betaArray=5.4199e-4;	%nmol/h
-kAHLArray=1/48;		%1/h
-kleucineArray=1/80;	%1/h
+kAHLArray=1/48*log(2);		%1/h
+kleucineArray=1/80*log(2);	%1/h
 DAHLArray=50e5;		%um^2/h
 DleucineArray=26.46e5;	%um^2/h
+minConcentration=1e-10;	%nmol/cl
 
 
 %%% -- toy parameters -- %%
@@ -134,6 +138,7 @@ DleucineArray=26.46e5;	%um^2/h
 %kleucineArray=3e-1;		%1/h
 %DAHLArray=1/30;			%cm^2/h
 %DleucineArray=1/20;	%um^2/h
+%minConcentration=1e-10;	%nmol/cl
 
 
 for i=1:numSimulation
@@ -192,7 +197,8 @@ for i=1:numSimulation
 		num2str(kAHL),' ',...
 		num2str(kleucine),' ',...
 		num2str(DAHL),' ',...
-		num2str(Dleucine),'\n'];
+		num2str(Dleucine),' ',...
+		num2str(minConcentration),'\n'];
 	outputstr1=[outputstr1 temp];
 	outputstr2=[outputstr2 temp];
 end

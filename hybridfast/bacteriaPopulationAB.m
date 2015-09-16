@@ -1288,15 +1288,15 @@ classdef bacteriaPopulationAB < handle
 		obj.refreshorupdateneighbors();
 
 		%determine mu for every bacterium
-		%currentMuArray=obj.determinemu(AHLField);
+		currentMuArray=obj.determinemu(AHLField);
 
 		%calculate displacement due to chemotaxis, neighboring cell interactions and brownian motion
-		%[chemodx,chemody]=calculatechemo(obj,leucineField,currentMuArray,dt);
-		chemodx=0;
-		chemody=0;
-		%[randdx,randdy]=calculaterand(obj,currentMuArray,dt);
-		randdx=0;
-		randdy=0;
+		[chemodx,chemody]=calculatechemo(obj,leucineField,currentMuArray,dt);
+		%chemodx=0;
+		%chemody=0;
+		[randdx,randdy]=calculaterand(obj,currentMuArray,dt);
+		%randdx=0;
+		%randdy=0;
 		[celldx,celldy]=calculatecell(obj,dt);
 		%celldx=0;
 		%celldy=0;
@@ -1362,13 +1362,17 @@ classdef bacteriaPopulationAB < handle
 		%Periodic boundary condition
 		%parallel or serial?
 		%parfor i=1:N
-		for i=1:N
-			currentX=newBactX(i);
-			currentY=newBactY(i);
+		%for i=1:N
+		%	currentX=newBactX(i);
+		%	currentY=newBactY(i);
 
-			newBactX(i)=mod(currentX,domainXEndPeriodic);
-			newBactY(i)=mod(currentY,domainYEndPeriodic);
-		end
+		%	newBactX(i)=mod(currentX,domainXEndPeriodic);
+		%	newBactY(i)=mod(currentY,domainYEndPeriodic);
+		%end
+
+		%vectorized
+		newBactX=mod(newBactX,domainXEndPeriodic);
+		newBactY=mod(newBactY,domainYEndPeriodic);
 
 		obj.bactX=newBactX;
 		obj.bactY=newBactY;

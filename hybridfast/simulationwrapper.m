@@ -69,6 +69,7 @@ close all;clear;
 %kleucine=1/80;		%1/h
 %DAHL=50e5;			%um^2/h
 %Dleucine=26.46e5;	%um^2/h
+%minConcentration=1e-10;	%nmol/cl
 %
 %runsimulation(filename,simulationCounter,poolsize,...
 %	dtPDE,dtBact,tend,nBacteriaA,nBacteriaB,initialpattern,...
@@ -89,11 +90,11 @@ close all;clear;
 
 % toy parameters %%
 
-numSimulation=2;
+numSimulation=1;
 for simulationCounter=1:numSimulation
 poolsize=2;
 
-filename='toy_finished_test';
+filename='high_diffusion_of_species_x1_no_attraction';
 
 list=ls([filename '*_data.mat']);
 [k,~]=size(list);
@@ -102,17 +103,17 @@ filename=[filename num2str(k+1)];
 %% Simulation parameters
 dtPDE=0.5;       %time step PDE
 dtBact = 0.1;   %time step Bact
-tend=50;			 %end time of simulation
+tend=100;			 %end time of simulation
 %tend=1;			%end time of simulation
 %tend=30;			%end time of simulation
 N=tend/dtPDE;			%time steps
 %N=200;				%time steps
 %nBacteriaA=1000;	%number of bacteria A
-nBacteriaA=300;		%number of bacteria A
+nBacteriaA=500;		%number of bacteria A
 %nBacteriaA=0;		%number of bacteria A
 %nBacteriaA=2;		%number of bacteria A
 %nBacteriaB=1000;	%number of bacteria B
-nBacteriaB=300;		%number of bacteria B
+nBacteriaB=500;		%number of bacteria B
 %nBacteriaB=0;		%number of bacteria B
 %nBacteriaB=1;		%number of bacteria B
 %initialpattern='gaussian';
@@ -123,10 +124,10 @@ initialpattern='uniform_random';
 
 %% define domain
 %square
-XLength=10;			%Length of domain um
-YLength=10;			%Length of domain um
-Jx=101;				%# of subdivisions
-Jy=101;				%# of subdivisions
+XLength=20;			%Length of domain um
+YLength=20;			%Length of domain um
+Jx=201;				%# of subdivisions
+Jy=201;				%# of subdivisions
 %Jx=2;				%# of subdivisions
 %Jy=2;				%# of subdivisions
 
@@ -147,7 +148,8 @@ kappa=2;
 r0=1;		%um
 k1=10;			%mN/um
 k2=5;			%mN/um
-k3=20;			%mN/um	%original parameter
+%k3=20;			%mN/um	%original parameter
+k3=0;			%mN/um	%original parameter
 %k3=0;			%mN/um
 %gamma=2.62e-8;	%mN*h/cm
 gamma=60;	%mN*h/um
@@ -168,8 +170,9 @@ kAHL=2e-1;			%1/h
 kleucine=1e-1;		%1/h
 %kAHL=0;			%1/h
 %kleucine=0;		%1/h
-DAHL=1/30;			%cm^2/h
-Dleucine=1/20;	%um^2/h
+DAHL=1/30*1e0;			%cm^2/h
+Dleucine=1/20*1e0;	%um^2/h
+minConcentration=1e-5;	%nmol/cl
 
 runsimulation(filename,simulationCounter,poolsize,...
 	dtPDE,dtBact,tend,nBacteriaA,nBacteriaB,initialpattern,...
@@ -177,14 +180,14 @@ runsimulation(filename,simulationCounter,poolsize,...
 	bandwidth,...
 	kappa,r0,k1,k2,k3,gamma,modulo,...
 	muHighA,muLowA,muHighB,muLowB,VthA,VthB,...
-	alpha,beta,kAHL,kleucine,DAHL,Dleucine);
+	alpha,beta,kAHL,kleucine,DAHL,Dleucine,minConcentration);
 
 beep on;beep;beep off;
 
 %% analysis
 previewOrSave='save';
 framerate=10;
-scaling=20;
+scaling=1;
 
 runanalysis(previewOrSave,filename,framerate,scaling);
 

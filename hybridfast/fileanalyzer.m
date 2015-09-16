@@ -71,26 +71,26 @@ classdef fileanalyzer < handle
 
 		%maxRhoA=mFile.maxRhoA;
 		%minRhoA=mFile.minRhoA;
-		minRhoA=min(min(min(obj.mFile.rhoAArray)));
-		maxRhoA=max(max(max(obj.mFile.rhoAArray)));
+		minRhoA=min(min(min(mFile.rhoAArray)));
+		maxRhoA=max(max(max(mFile.rhoAArray)));
 		%currentMaxRhoA=max(max(obj.mFile.rhoAArray(:,:,k)));
 
 		%maxRhoB=mFile.maxRhoB;
 		%minRhoB=mFile.minRhoB;
-		minRhoB=min(min(min(obj.mFile.rhoBArray)));
-		maxRhoB=max(max(max(obj.mFile.rhoBArray)));
+		minRhoB=min(min(min(mFile.rhoBArray)));
+		maxRhoB=max(max(max(mFile.rhoBArray)));
 		%currentMaxRhoB=max(max(obj.mFile.rhoBArray(:,:,k)));
 
 		%maxAHL=mFile.maxAHL;
 		%minAHL=mFile.minAHL;
-		minAHL=min(min(min(obj.mFile.AHLArray)));
-		maxAHL=max(max(max(obj.mFile.AHLArray)));
+		minAHL=min(min(min(mFile.AHLArray)));
+		maxAHL=max(max(max(mFile.AHLArray)));
 		%currentMaxAHL=max(max(obj.mFile.AHLArray(:,:,k)));
 
 		%maxleucine=mFile.maxleucine;
 		%minleucine=mFile.minleucine;
-		minleucine=min(min(min(obj.mFile.leucineArray)));
-		maxleucine=max(max(max(obj.mFile.leucineArray)));
+		minleucine=min(min(min(mFile.leucineArray)));
+		maxleucine=max(max(max(mFile.leucineArray)));
 		%currentMaxleucine=max(max(obj.mFile.leucineArray(:,:,k)));
 
 		rhoALimit=[minRhoA,maxRhoA];
@@ -137,6 +137,8 @@ classdef fileanalyzer < handle
 		dy=max([round(Jy/100),1]);
 		dxi=1:dx:Jx;
 		dyi=1:dy:Jy;
+		dx=X(1,2)-X(1,1);
+		dy=Y(2,1)-Y(1,1);
 		X=X(dyi,dxi);
 		Y=Y(dyi,dxi);
 
@@ -177,9 +179,10 @@ classdef fileanalyzer < handle
 
 			%formatting
 			title('Bacteria A');
-			%xlim([0,XLength]);
-			%ylim([0,YLength]);
-			zlim([rhoALimit])
+			%periodic
+			xlim([0,XLength+dx]);
+			ylim([0,YLength+dy]);
+			zlim(rhoALimit)
 			foo = get(gca,'dataaspectratio');
 			set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
 			xlabel('x');
@@ -206,9 +209,10 @@ classdef fileanalyzer < handle
 
 			%formatting
 			title('Bacteria B');
-			%xlim([0,XLength]);
-			%ylim([0,YLength]);
-			zlim([rhoBLimit]);
+			%periodic
+			xlim([0,XLength+dx]);
+			ylim([0,YLength+dy]);
+			zlim(rhoBLimit);
 			foo = get(gca,'dataaspectratio');
 			set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
 			xlabel('x');
@@ -228,7 +232,7 @@ classdef fileanalyzer < handle
 			title('AHL');
 			xlim([0,XLength]);
 			ylim([0,YLength]);
-			zlim([AHLLimit*scaling]);
+			zlim(AHLLimit*scaling);
 			foo = get(gca,'dataaspectratio');
 			set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
 			xlabel('x');
@@ -248,14 +252,14 @@ classdef fileanalyzer < handle
 			title('Leucine');
 			xlim([0,XLength]);
 			ylim([0,YLength]);
-			zlim([leucineLimit*scaling]);
+			zlim(leucineLimit*scaling);
 			foo = get(gca,'dataaspectratio');
 			set(gca,'dataaspectratio',[foo(1) foo(1) foo(3)]);
 			xlabel('x');
 			ylabel('y');
 			zlabel('Concentration');
 
-			writeVideo(vidObj3D,getframe(gcf));
+			writeVideo(vidObj3D,getframe(fig));
 			%frameArray{i}=getframe(fig);
 			%delete(fig);
 			clf;
@@ -271,6 +275,9 @@ classdef fileanalyzer < handle
 		framerate=obj.framerate;
 		nFrames=obj.nFrames;
 
+		XLength=obj.XLength;
+		YLength=obj.YLength;
+
 		scaling=obj.scaling;
 		[rhoALimit,rhoBLimit,AHLLimit,leucineLimit]=obj.limitoptimizer(1);
 
@@ -281,7 +288,7 @@ classdef fileanalyzer < handle
 		X=obj.domainGrid.X;
 		Y=obj.domainGrid.Y;
 
-		frameArray=cell(nFrames,1);
+		%frameArray=cell(nFrames,1);
 
 		%plot coarser grid if given grid is too fine
 		mFile=obj.mFile;
@@ -292,13 +299,14 @@ classdef fileanalyzer < handle
 		dy=max([round(Jy/100),1]);
 		dxi=1:dx:Jx;
 		dyi=1:dy:Jy;
+		dx=X(1,2)-X(1,1);
+		dy=Y(2,1)-Y(1,1);
 		X=X(dyi,dxi);
 		Y=Y(dyi,dxi);
 
 		fig=figure('units','normalized','outerposition',[0 0 1 1],'Visible','off');
 		%fig=figure('units','normalized','outerposition',[0 0 1 1],'Visible','on');
-		%for i=1:nFrames
-		for i=1:1
+		for i=1:nFrames
 		%parfor i=1:nFrames
 			%fig=figure('units','normalized','outerposition',[0 0 1 1],'Visible','off');
 			hold on;
@@ -326,7 +334,9 @@ classdef fileanalyzer < handle
 
 			%formatting
 			title('Bacteria A');
-			zlim([rhoALimit]);
+			xlim([0,XLength+dx]);
+			ylim([0,YLength+dy]);
+			zlim(rhoALimit);
 			axis image;
 			xlabel('x');
 			ylabel('y');
@@ -355,6 +365,8 @@ classdef fileanalyzer < handle
 			%formatting
 			title('Bacteria B');
 			%legend('Density','Bacterium');
+			xlim([0,XLength+dx]);
+			ylim([0,YLength+dy]);
 			zlim([rhoBLimit]);
 			axis image;
 			xlabel('x');
